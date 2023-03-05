@@ -6,13 +6,11 @@ typedef enum RunState
     AWAITING_INPUT,
     PLAYER_TURN,
     COMP_TURN,
-    INPUT_RATE_BUFFER
 } RunState;
 
 typedef struct GameState
 {
     RunState run_state;
-    float input_rate_accum;
     vec3 fg_col[SCREEN_COLS * SCREEN_ROWS];
     vec3 bg_col[SCREEN_COLS * SCREEN_ROWS];
     Glyph glyphs[SCREEN_COLS * SCREEN_ROWS];
@@ -22,7 +20,7 @@ typedef struct GameState
 
 global_variable GameState _game_state;
 
-void game_update(float dt, bool keys[])
+void game_update(float dt, int *_new_key)
 {
     switch (_game_state.run_state)
     {
@@ -42,25 +40,36 @@ void game_update(float dt, bool keys[])
 
         case AWAITING_INPUT:
         {
-            if (keys[GLFW_KEY_H])
+            if (*_new_key != GLFW_KEY_UNKNOWN)
             {
-                _game_state.player_x--;
-                _game_state.run_state = COMP_TURN;
-            }
-            else if (keys[GLFW_KEY_J])
-            {
-                _game_state.player_y++;
-                _game_state.run_state = COMP_TURN;
-            }
-            else if (keys[GLFW_KEY_K])
-            {
-                _game_state.player_y--;
-                _game_state.run_state = COMP_TURN;
-            }
-            else if (keys[GLFW_KEY_L])
-            {
-                _game_state.player_x++;
-                _game_state.run_state = COMP_TURN;
+                switch (*_new_key)
+                {
+                    case GLFW_KEY_H:
+                    {
+                        _game_state.player_x--;
+                        _game_state.run_state = PLAYER_TURN;
+                    } break;
+
+                    case GLFW_KEY_J:
+                    {
+                        _game_state.player_y++;
+                        _game_state.run_state = PLAYER_TURN;
+                    } break;
+
+                    case GLFW_KEY_K:
+                    {
+                        _game_state.player_y--;
+                        _game_state.run_state = PLAYER_TURN;
+                    } break;
+                    
+                    case GLFW_KEY_L:
+                    {
+                        _game_state.player_x++;
+                        _game_state.run_state = PLAYER_TURN;
+                    } break;
+                }
+
+                *_new_key = GLFW_KEY_UNKNOWN;
             }
         } break;
 
@@ -71,33 +80,9 @@ void game_update(float dt, bool keys[])
 
         case COMP_TURN:
         {
-#ifdef ADDLOAD
-            for(long i = 0; i < 200000000; i++) {}
-#endif
-            
-            _game_state.run_state = INPUT_RATE_BUFFER;
-        } break;
-
-        case INPUT_RATE_BUFFER:
-        {
-            if (_game_state.input_rate_accum > 0.1)
-            {
-#ifdef DEBUG
-                printf("%f\n", _game_state.input_rate_accum);
-#endif
-                _game_state.input_rate_accum = 0.0f;
-                _game_state.run_state = AWAITING_INPUT;
-            }
-            
-        } break;
-
-        default:
-        {
-            
+            _game_state.run_state = AWAITING_INPUT;
         } break;
     }
-    
-    _game_state.input_rate_accum += dt;
 }
 
 void game_render(float dt)

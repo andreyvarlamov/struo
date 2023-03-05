@@ -1,6 +1,6 @@
 #include "main.h"
 
-global_variable bool _keys[1024];
+global_variable int _new_key;
 
 void _key_callback(
     GLFWwindow *window,
@@ -18,11 +18,7 @@ void _key_callback(
     {
         if (action == GLFW_PRESS)
         {
-            _keys[key] = true;
-        }
-        else if (action == GLFW_RELEASE)
-        {
-            _keys[key] = false;
+            _new_key = key;
         }
     }
 }
@@ -38,6 +34,8 @@ int main()
     render_prepare_shader();
     render_prepare_render();
 
+    _new_key = GLFW_KEY_UNKNOWN;
+
     float delta_time = 0.0f;
     float last_frame = 0.0f;
     while(!glfwWindowShouldClose(window))
@@ -52,7 +50,7 @@ int main()
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        game_update(delta_time, _keys);
+        game_update(delta_time, &_new_key);
         game_render(delta_time);
 
         glfwSwapBuffers(window);

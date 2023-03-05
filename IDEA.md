@@ -40,7 +40,7 @@ Speed
 # Plan
 
 * [x] Engine cleanup
-* [ ] Player and movement
+* [x] Player and movement
 * [ ] Map, level, rect room, basic map state, collisions with map
 * [ ] Basic ECS, player, enemies, AI, simple follow player
 * [ ] Map procgen
@@ -49,6 +49,7 @@ Speed
 * [ ] Combat
 * [ ] Try to build on diff machines, on windows. spend a couple hrs to see if possible
 * [ ] ---> Iter 1 (single room level w/ combat)
+* [ ] More input refactoring, key repeat, diagonal movement (maybe?)
 * [ ] Basic UI
 * [ ] Multiple levels
 * [ ] Item pickups
