@@ -30,5 +30,6 @@ typedef GLuint VboID;
 
 #include "file_io.c"
 #include "render.c"
+#include "game.c"
 
 #endif

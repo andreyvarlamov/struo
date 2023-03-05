@@ -1,5 +1,14 @@
 #include "main.h"
 
+typedef struct RenderData
+{
+    TexID atlas;
+    ShaderID shader;
+    VaoID vao;
+} RenderData;
+
+global_variable RenderData _render_data;
+
 GLFWwindow *render_init_window(GLFWkeyfun key_callback)
 {
     glfwInit();
@@ -31,13 +40,13 @@ GLFWwindow *render_init_window(GLFWkeyfun key_callback)
     return window;
 }
 
-void render_load_resources(TexID *atlas, ShaderID *shader)
+void render_load_resources()
 {
-    *atlas = fio_load_tex_from_file("res/texture/cp437_rgba.png");
-    *shader = fio_load_shader_from_file("res/shaders/atlas.vs", "res/shaders/atlas.fs");
+    _render_data.atlas = fio_load_tex_from_file("res/texture/cp437_rgba.png");
+    _render_data.shader = fio_load_shader_from_file("res/shaders/atlas.vs", "res/shaders/atlas.fs");
 }
 
-void render_init_vao(VaoID *vao)
+void render_init_vao()
 {
     VboID vbo;
     float vertices[] = {
@@ -51,11 +60,11 @@ void render_init_vao(VaoID *vao)
         1.0f, 0.0f, 1.0f, 0.0f,
     };
 
-    glGenVertexArrays(1, vao);
+    glGenVertexArrays(1, &_render_data.vao);
     glGenBuffers(1, &vbo);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBindVertexArray(*vao);
+    glBindVertexArray(_render_data.vao);
 
     glBufferData(
         GL_ARRAY_BUFFER,
@@ -72,9 +81,9 @@ void render_init_vao(VaoID *vao)
     glBindVertexArray(0);
 }
 
-void render_prepare_shader(ShaderID shader)
+void render_prepare_shader()
 {
-    glUseProgram(shader);
+    glUseProgram(_render_data.shader);
 
     mat4 projection;
     glm_ortho(
@@ -88,89 +97,60 @@ void render_prepare_shader(ShaderID shader)
     );
 
     glUniformMatrix4fv(
-        glGetUniformLocation(shader, "projection"),
+        glGetUniformLocation(_render_data.shader, "projection"),
         1, GL_FALSE, (float *) projection
     );
 
     glUniform1f(
-        glGetUniformLocation(shader, "screen_tile_width"),
+        glGetUniformLocation(_render_data.shader, "screen_tile_width"),
         SCREEN_TILE_WIDTH
     );
 
     glUniform1f(
-        glGetUniformLocation(shader, "atlas_cols"),
+        glGetUniformLocation(_render_data.shader, "atlas_cols"),
         ATLAS_COLS
     );
     
-    glUniform1i(glGetUniformLocation(shader, "image"), 0);
+    glUniform1i(glGetUniformLocation(_render_data.shader, "image"), 0);
 
     glUseProgram(0);
 }
 
-void render_prepare_render(ShaderID shader, TexID atlas, VaoID vao)
+void render_prepare_render()
 {
-    glUseProgram(shader);
+    glUseProgram(_render_data.shader);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, atlas);
-    glBindVertexArray(vao);
+    glBindTexture(GL_TEXTURE_2D, _render_data.atlas);
+    glBindVertexArray(_render_data.vao);
 }
 
-void render_frame(float dt, ShaderID shader)
+void render_render_tile(
+    vec2 screen_offset,
+    vec2 atlas_offset, vec3 fg_color, vec3 bg_color
+)
 {
-    local_persist float accum = 0.0f; 
-    local_persist int rnds[SCREEN_COLS * SCREEN_ROWS] = {0};
-    accum += dt;
-        
-    if (accum > 0.2)
-    {
-        for (size_t j = 0; j < SCREEN_COLS * SCREEN_ROWS; j++)
-        {
-            rnds[j] = rand() % 256;
-        }
+    glUniform2fv(
+        glGetUniformLocation(_render_data.shader, "screen_offset"),
+        1, screen_offset
+    );
 
-        accum = 0.0;
-    }
+    glUniform2fv(
+        glGetUniformLocation(_render_data.shader, "atlas_offset"),
+        1, atlas_offset
+    );
 
+    glUniform3fv(
+        glGetUniformLocation(_render_data.shader, "fg_color"),
+        1, fg_color
+    );
 
-    for (int i = 0; i < SCREEN_COLS * SCREEN_ROWS; i++)
-    {
-        float color_offset = (float)rnds[i];
-        float f_r = sin(glfwGetTime() + color_offset          ) / 2.0f + 0.5f;
-        float f_g = sin(glfwGetTime() + color_offset + 2.09439) / 2.0f + 0.5f;
-        float f_b = sin(glfwGetTime() + color_offset + 2.09439 * 2) / 2.0f + 0.5f;
-        glUniform3fv(
-            glGetUniformLocation(shader, "fg_color"),
-            1, (vec3) { f_r, f_g, f_b }
-        );
-        float b_r = cos(glfwGetTime() + color_offset          ) / 2.0f + 0.5f;
-        float b_g = cos(glfwGetTime() + color_offset + 2.09439) / 2.0f + 0.5f;
-        float b_b = cos(glfwGetTime() + color_offset + 2.09439 * 2) / 2.0f + 0.5f;
-        glUniform3fv(
-            glGetUniformLocation(shader, "bg_color"),
-            1, (vec3) { b_r, b_g, b_b }
-        );
+    glUniform3fv(
+        glGetUniformLocation(_render_data.shader, "bg_color"),
+        1, bg_color
+    );
 
-        vec2 screen_offset ={
-            (i % SCREEN_COLS) * SCREEN_TILE_WIDTH,
-            (i / SCREEN_COLS) * SCREEN_TILE_WIDTH
-        };
-        glUniform2fv(
-            glGetUniformLocation(shader, "screen_offset"),
-            1, screen_offset
-        );
-
-        vec2 atlas_offset = {
-            (float) (rnds[i] % (int) ATLAS_COLS),
-            (float) (rnds[i] / (int) ATLAS_COLS)
-        };
-        glUniform2fv(
-            glGetUniformLocation(shader, "atlas_offset"),
-            1, atlas_offset
-        );
-
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-    }
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 void render_clean_render()

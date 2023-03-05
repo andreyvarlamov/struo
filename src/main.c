@@ -16,20 +16,14 @@ void _key_callback(
 
 int main()
 {
+    srand(time(NULL));
+
     GLFWwindow *window = render_init_window(_key_callback);
     
-    TexID atlas;
-    ShaderID shader;
-    render_load_resources(&atlas, &shader);
-    
-    VaoID vao;
-    render_init_vao(&vao);
-
-    render_prepare_shader(shader);
-
-    render_prepare_render(shader, atlas, vao);
-
-    srand(time(NULL));
+    render_load_resources();
+    render_init_vao();
+    render_prepare_shader();
+    render_prepare_render();
 
     float delta_time = 0.0f;
     float last_frame = 0.0f;
@@ -45,7 +39,8 @@ int main()
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        render_frame(delta_time, shader);
+        game_update(delta_time);
+        game_render(delta_time);
 
         glfwSwapBuffers(window);
     }
