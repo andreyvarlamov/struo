@@ -13,6 +13,7 @@ typedef struct Map
     vec3 fg_col[SCREEN_COLS * SCREEN_ROWS];
     vec3 bg_col[SCREEN_COLS * SCREEN_ROWS];
     Glyph glyphs[SCREEN_COLS * SCREEN_ROWS];
+    bool blocked[SCREEN_COLS * SCREEN_ROWS];
 } Map;
 
 typedef struct GameState
@@ -34,39 +35,48 @@ void game_init_map(int width, int height)
         glm_vec3_copy(GLM_VEC3_ZERO, _game_state.map.bg_col[i]);
     }
 
-    int border_tiles_count = width * 2 + height * 2 - 4;
-    int *fill_indeces = (int *) calloc(1, border_tiles_count * sizeof(int));
+    int wall_tiles_count = width * 2 + height * 2 - 4;
+    int *wall_indeces = (int *) calloc(1, wall_tiles_count * sizeof(int));
 
-    int fill_indeces_iter = 0;
+    int wall_indeces_iter = 0;
 
     // Draw horizontal boundaries
     for (int i = 0; i < width; i++)
     {
-        fill_indeces[fill_indeces_iter] = i;
-        fill_indeces_iter++;
-        fill_indeces[fill_indeces_iter] = util_xy_to_i(i, height - 1, width);
-        fill_indeces_iter++;
+        wall_indeces[wall_indeces_iter] = i;
+        wall_indeces_iter++;
+        wall_indeces[wall_indeces_iter] = util_xy_to_i(i, height - 1, width);
+        wall_indeces_iter++;
     }
-    printf("\n");
 
+    // Draw vertical boundaries
     for (int i = 1; i < height - 1; i++)
     {
-        fill_indeces[fill_indeces_iter] = util_xy_to_i(0, i, width);
-        fill_indeces_iter++;
-        fill_indeces[fill_indeces_iter] = util_xy_to_i(width - 1, i, width);
-        fill_indeces_iter++;
+        wall_indeces[wall_indeces_iter] = util_xy_to_i(0, i, width);
+        wall_indeces_iter++;
+        wall_indeces[wall_indeces_iter] = util_xy_to_i(width - 1, i, width);
+        wall_indeces_iter++;
     }
-    for (int i  = 0; i < border_tiles_count; i++)
+    
+    for (int i  = 0; i < wall_tiles_count; i++)
     {
-        _game_state.map.glyphs[fill_indeces[i]] = '#';
-        glm_vec3_copy((vec3) { 0.6f, 0.6f, 0.6f }, _game_state.map.fg_col[fill_indeces[i]]);
-        glm_vec3_copy((vec3) { 0.7f, 0.7f, 0.7f }, _game_state.map.bg_col[fill_indeces[i]]);
-        printf("%d ", fill_indeces[i]);
+        _game_state.map.glyphs[wall_indeces[i]] = '#';
+        glm_vec3_copy((vec3) { 0.6f, 0.6f, 0.6f }, _game_state.map.fg_col[wall_indeces[i]]);
+        glm_vec3_copy((vec3) { 0.7f, 0.7f, 0.7f }, _game_state.map.bg_col[wall_indeces[i]]);
+        _game_state.map.blocked[wall_indeces[i]] = true;
     }
 
-    free(fill_indeces);
+    free(wall_indeces);
+}
 
-    printf("\n");
+void game_try_move_player(int x, int y, int width)
+{
+    if (!_game_state.map.blocked[util_xy_to_i(x, y, width)])
+    {
+        _game_state.player_x = x;
+        _game_state.player_y = y;
+    }
+
 }
 
 void game_update(float dt, int *_new_key)
@@ -91,25 +101,25 @@ void game_update(float dt, int *_new_key)
                 {
                     case GLFW_KEY_H:
                     {
-                        _game_state.player_x--;
+                        game_try_move_player(_game_state.player_x - 1, _game_state.player_y, SCREEN_COLS);
                         _game_state.run_state = PLAYER_TURN;
                     } break;
 
                     case GLFW_KEY_J:
                     {
-                        _game_state.player_y++;
+                        game_try_move_player(_game_state.player_x, _game_state.player_y + 1, SCREEN_COLS);
                         _game_state.run_state = PLAYER_TURN;
                     } break;
 
                     case GLFW_KEY_K:
                     {
-                        _game_state.player_y--;
+                        game_try_move_player(_game_state.player_x, _game_state.player_y - 1, SCREEN_COLS);
                         _game_state.run_state = PLAYER_TURN;
                     } break;
                     
                     case GLFW_KEY_L:
                     {
-                        _game_state.player_x++;
+                        game_try_move_player(_game_state.player_x + 1, _game_state.player_y, SCREEN_COLS);
                         _game_state.run_state = PLAYER_TURN;
                     } break;
                 }
@@ -151,6 +161,6 @@ void game_render(float dt)
     render_render_tile(
         (vec2) { _game_state.player_x * SCREEN_TILE_WIDTH, _game_state.player_y * SCREEN_TILE_WIDTH },
         0x02,
-        GLM_VEC3_ONE, GLM_VEC3_ZERO
+        (vec3) { 1.0f, 1.0f, 0.5f }, GLM_VEC3_ZERO
     );
 }
