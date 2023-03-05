@@ -12,6 +12,7 @@ typedef struct GameState
 {
     RunState run_state;
     Map map;
+    ECS ecs;
     int player_x;
     int player_y;
 } GameState;
