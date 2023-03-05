@@ -24,9 +24,10 @@
 
 typedef GLuint TexID;
 typedef GLuint ShaderID;
-
 typedef GLuint VaoID;
 typedef GLuint VboID;
+
+typedef unsigned char Glyph;
 
 #include "file_io.c"
 #include "render.c"

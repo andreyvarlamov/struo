@@ -127,9 +127,14 @@ void render_prepare_render()
 
 void render_render_tile(
     vec2 screen_offset,
-    vec2 atlas_offset, vec3 fg_color, vec3 bg_color
+    Glyph glyph, vec3 fg_color, vec3 bg_color
 )
 {
+    vec2 atlas_offset = {
+        (float) (glyph % (Glyph) ATLAS_COLS),
+        (float) (glyph / (Glyph) ATLAS_COLS)
+    };
+
     glUniform2fv(
         glGetUniformLocation(_render_data.shader, "screen_offset"),
         1, screen_offset
