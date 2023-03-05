@@ -8,17 +8,66 @@ typedef enum RunState
     COMP_TURN,
 } RunState;
 
-typedef struct GameState
+typedef struct Map
 {
-    RunState run_state;
     vec3 fg_col[SCREEN_COLS * SCREEN_ROWS];
     vec3 bg_col[SCREEN_COLS * SCREEN_ROWS];
     Glyph glyphs[SCREEN_COLS * SCREEN_ROWS];
+} Map;
+
+typedef struct GameState
+{
+    RunState run_state;
+    Map map;
     int player_x;
     int player_y;
 } GameState;
 
 global_variable GameState _game_state;
+
+void game_init_map(int width, int height)
+{
+    for (int i = 0; i <  width * height; i++)
+    {
+        _game_state.map.glyphs[i] = 0xF9;
+        glm_vec3_copy((vec3) { 0.05f, 0.05f, 0.05f }, _game_state.map.fg_col[i]);
+        glm_vec3_copy(GLM_VEC3_ZERO, _game_state.map.bg_col[i]);
+    }
+
+    int border_tiles_count = width * 2 + height * 2 - 4;
+    int *fill_indeces = (int *) calloc(1, border_tiles_count * sizeof(int));
+
+    int fill_indeces_iter = 0;
+
+    // Draw horizontal boundaries
+    for (int i = 0; i < width; i++)
+    {
+        fill_indeces[fill_indeces_iter] = i;
+        fill_indeces_iter++;
+        fill_indeces[fill_indeces_iter] = util_xy_to_i(i, height - 1, width);
+        fill_indeces_iter++;
+    }
+    printf("\n");
+
+    for (int i = 1; i < height - 1; i++)
+    {
+        fill_indeces[fill_indeces_iter] = util_xy_to_i(0, i, width);
+        fill_indeces_iter++;
+        fill_indeces[fill_indeces_iter] = util_xy_to_i(width - 1, i, width);
+        fill_indeces_iter++;
+    }
+    for (int i  = 0; i < border_tiles_count; i++)
+    {
+        _game_state.map.glyphs[fill_indeces[i]] = '#';
+        glm_vec3_copy((vec3) { 0.6f, 0.6f, 0.6f }, _game_state.map.fg_col[fill_indeces[i]]);
+        glm_vec3_copy((vec3) { 0.7f, 0.7f, 0.7f }, _game_state.map.bg_col[fill_indeces[i]]);
+        printf("%d ", fill_indeces[i]);
+    }
+
+    free(fill_indeces);
+
+    printf("\n");
+}
 
 void game_update(float dt, int *_new_key)
 {
@@ -29,11 +78,7 @@ void game_update(float dt, int *_new_key)
             _game_state.player_x = SCREEN_COLS / 2;
             _game_state.player_y = SCREEN_ROWS / 2;
 
-            for (int i = 0; i <  SCREEN_COLS * SCREEN_ROWS; i++)
-            {
-                _game_state.glyphs[i] = '#';
-                glm_vec3_copy((vec3) { 0.1f, 0.1f, 0.1f }, _game_state.fg_col[i]);
-            }
+            game_init_map(SCREEN_COLS, SCREEN_ROWS);
 
             _game_state.run_state = AWAITING_INPUT;
         } break;
@@ -87,6 +132,8 @@ void game_update(float dt, int *_new_key)
 
 void game_render(float dt)
 {
+    // Render map
+    // ----------
     for (size_t i = 0; i < SCREEN_COLS * SCREEN_ROWS; i++)
     {
         vec2 screen_offset ={
@@ -96,8 +143,8 @@ void game_render(float dt)
 
         render_render_tile(
             screen_offset,
-            _game_state.glyphs[i],
-            _game_state.fg_col[i], _game_state.bg_col[i]
+            _game_state.map.glyphs[i],
+            _game_state.map.fg_col[i], _game_state.map.bg_col[i]
         );
     }
 
