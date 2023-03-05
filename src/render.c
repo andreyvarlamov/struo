@@ -42,8 +42,8 @@ GLFWwindow *render_init_window(GLFWkeyfun key_callback)
 
 void render_load_resources()
 {
-    _render_data.atlas = fio_load_tex_from_file("res/texture/cp437_rgba.png");
-    _render_data.shader = fio_load_shader_from_file("res/shaders/atlas.vs", "res/shaders/atlas.fs");
+    _render_data.atlas = resource_load_texture("res/texture/cp437_rgba.png");
+    _render_data.shader = resource_load_shader("res/shaders/atlas.vs", "res/shaders/atlas.fs");
 }
 
 void render_init_vao()

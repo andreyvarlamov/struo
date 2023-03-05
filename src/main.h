@@ -29,7 +29,8 @@ typedef GLuint VboID;
 
 typedef unsigned char Glyph;
 
-#include "file_io.c"
+#include "util.c"
+#include "resource.c"
 #include "render.c"
 #include "game.c"
 

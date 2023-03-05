@@ -1,30 +1,6 @@
 #include "main.h"
 
-char *_read_file(const char *path)
-{
-    FILE *f;
-    long len;
-    char* content;
-
-    f = fopen(path, "rb");
-    if (!f)
-    {
-        printf("Could not open file at %s\n", path);
-        exit(-1);
-    }
-
-    fseek(f, 0, SEEK_END);
-    len = ftell(f);
-    fseek(f, 0, SEEK_SET);
-    content = (char*) calloc(1, len+1);
-    fread(content, 1, len, f);
-    content[len] = 0; // Null terminate. TODO: Make sure this works properly
-    fclose(f);
-
-    return content;
-}
-
-TexID fio_load_tex_from_file(const char *path)
+TexID resource_load_texture(const char *path)
 {
     int width, height, nr_channels;
     unsigned char *data = stbi_load(path, &width, &height, &nr_channels, 0);
@@ -50,10 +26,10 @@ TexID fio_load_tex_from_file(const char *path)
     return tex_id;
 }
 
-ShaderID fio_load_shader_from_file(const char *v_path, const char *f_path)
+ShaderID resource_load_shader(const char *v_path, const char *f_path)
 {
-    const char *v_content = _read_file(v_path);
-    const char *f_content = _read_file(f_path);
+    const char *v_content = util_read_file(v_path);
+    const char *f_content = util_read_file(f_path);
 
     GLuint vertex = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex, 1, &v_content, NULL);

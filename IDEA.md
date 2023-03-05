@@ -39,29 +39,29 @@ Speed
 
 # Plan
 
-* Engine cleanup
-* Player and movement
-* Map, level, rect room, basic map state, collisions with map
-* Basic ECS, player, enemies, AI, simple follow player
-* Map procgen
-* A*, more AI
-* FOV
-* Combat
-* Try to build on diff machines, on windows. spend a couple hrs to see if possible
-* ---> Iter 1 (single room level w/ combat)
-* Basic UI
-* Multiple levels
-* Item pickups
-* Progression
-* ---> Iter 2 (single building branch w/ progression and items)
-* Base location; persistent
-* Machine entities
-* Tie up with items
-* Game flow: base location<->branches
-* ---> Iter 3
-* More game flow
-* Loose ends
-* Game over (won or lost)
-* ---> Iter 4 (shippable)
-* Mechanics Improvements
-* Extension to have a more interesting plot/twist
+* [x] Engine cleanup
+* [ ] Player and movement
+* [ ] Map, level, rect room, basic map state, collisions with map
+* [ ] Basic ECS, player, enemies, AI, simple follow player
+* [ ] Map procgen
+* [ ] A*, more AI
+* [ ] FOV
+* [ ] Combat
+* [ ] Try to build on diff machines, on windows. spend a couple hrs to see if possible
+* [ ] ---> Iter 1 (single room level w/ combat)
+* [ ] Basic UI
+* [ ] Multiple levels
+* [ ] Item pickups
+* [ ] Progression
+* [ ] ---> Iter 2 (single building branch w/ progression and items)
+* [ ] Base location; persistent
+* [ ] Machine entities
+* [ ] Tie up with items
+* [ ] Game flow: base location<->branches
+* [ ] ---> Iter 3
+* [ ] More game flow
+* [ ] Loose ends
+* [ ] Game over (won or lost)
+* [ ] ---> Iter 4 (shippable)
+* [ ] Mechanics Improvements
+* [ ] Extension to have a more interesting plot/twist

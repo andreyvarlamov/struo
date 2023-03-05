@@ -1,5 +1,7 @@
 #include "main.h"
 
+global_variable bool _keys[1024];
+
 void _key_callback(
     GLFWwindow *window,
     int key,
@@ -11,6 +13,17 @@ void _key_callback(
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(window, true);
+    }
+    else if (key >= 0 && key < 1024)
+    {
+        if (action == GLFW_PRESS)
+        {
+            _keys[key] = true;
+        }
+        else if (action == GLFW_RELEASE)
+        {
+            _keys[key] = false;
+        }
     }
 }
 
@@ -39,7 +52,7 @@ int main()
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        game_update(delta_time);
+        game_update(delta_time, _keys);
         game_render(delta_time);
 
         glfwSwapBuffers(window);
