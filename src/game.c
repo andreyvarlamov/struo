@@ -12,8 +12,8 @@ typedef struct GameState
 {
     RunState run_state;
     Map map;
-    int player_x;
-    int player_y;
+    Entity player;
+    Entity enemies[ENEMY_NUM];
 } GameState;
 
 global_variable GameState _game_state;
@@ -22,8 +22,8 @@ void game_try_move_player(int x, int y, int width)
 {
     if (!_game_state.map.blocked[util_xy_to_i(x, y, width)])
     {
-        _game_state.player_x = x;
-        _game_state.player_y = y;
+        _game_state.player.x = x;
+        _game_state.player.y = y;
     }
 }
 
@@ -33,10 +33,28 @@ void game_update(float dt, int *_new_key)
     {
         case INIT:
         {
-            _game_state.player_x = SCREEN_COLS / 2;
-            _game_state.player_y = SCREEN_ROWS / 2;
-
             map_init(&_game_state.map, SCREEN_COLS, SCREEN_ROWS);
+
+            // Init player
+            // -----------
+            _game_state.player.x = SCREEN_COLS / 2;
+            _game_state.player.y = SCREEN_ROWS / 2;
+            _game_state.player.glyph = 0x02;
+            _game_state.player.alive = true;
+            glm_vec3_copy((vec3) { 1.0f, 1.0f, 0.5f }, _game_state.player.fg);
+            glm_vec3_copy(GLM_VEC3_ZERO, _game_state.player.bg);
+            
+            // Init enemies
+            // ------------
+            for (size_t i = 0; i < 3; i++)
+            {
+                _game_state.enemies[i].x = SCREEN_COLS / (3 + i);
+                _game_state.enemies[i].y = SCREEN_ROWS / (3 + i);
+                _game_state.enemies[i].glyph = 'r';
+                _game_state.enemies[i].alive = true;
+                glm_vec3_copy((vec3) { 0.8f, 0.05f, 0.05f }, _game_state.enemies[i].fg);
+                glm_vec3_copy(GLM_VEC3_ZERO, _game_state.enemies[i].bg);
+            }
 
             _game_state.run_state = AWAITING_INPUT;
         } break;
@@ -49,25 +67,41 @@ void game_update(float dt, int *_new_key)
                 {
                     case GLFW_KEY_H:
                     {
-                        game_try_move_player(_game_state.player_x - 1, _game_state.player_y, SCREEN_COLS);
+                        game_try_move_player(
+                            _game_state.player.x - 1,
+                            _game_state.player.y,
+                            SCREEN_COLS
+                        );
                         _game_state.run_state = PLAYER_TURN;
                     } break;
 
                     case GLFW_KEY_J:
                     {
-                        game_try_move_player(_game_state.player_x, _game_state.player_y + 1, SCREEN_COLS);
+                        game_try_move_player(
+                            _game_state.player.x,
+                            _game_state.player.y + 1,
+                            SCREEN_COLS
+                        );
                         _game_state.run_state = PLAYER_TURN;
                     } break;
 
                     case GLFW_KEY_K:
                     {
-                        game_try_move_player(_game_state.player_x, _game_state.player_y - 1, SCREEN_COLS);
+                        game_try_move_player(
+                            _game_state.player.x,
+                            _game_state.player.y - 1,
+                            SCREEN_COLS
+                        );
                         _game_state.run_state = PLAYER_TURN;
                     } break;
                     
                     case GLFW_KEY_L:
                     {
-                        game_try_move_player(_game_state.player_x + 1, _game_state.player_y, SCREEN_COLS);
+                        game_try_move_player(
+                            _game_state.player.x + 1,
+                            _game_state.player.y,
+                            SCREEN_COLS
+                        );
                         _game_state.run_state = PLAYER_TURN;
                     } break;
                 }
@@ -106,9 +140,34 @@ void game_render(float dt)
         );
     }
 
-    render_render_tile(
-        (vec2) { _game_state.player_x * SCREEN_TILE_WIDTH, _game_state.player_y * SCREEN_TILE_WIDTH },
-        0x02,
-        (vec3) { 1.0f, 1.0f, 0.5f }, GLM_VEC3_ZERO
-    );
+    // Render enemies
+    // --------------
+    for (size_t i = 0; i < ENEMY_NUM; i++)
+    {
+        if (_game_state.enemies[i].alive)
+        {
+            render_render_tile(
+                (vec2) {
+                    _game_state.enemies[i].x * SCREEN_TILE_WIDTH,
+                    _game_state.enemies[i].y * SCREEN_TILE_WIDTH
+                },
+                _game_state.enemies[i].glyph,
+                _game_state.enemies[i].fg, _game_state.enemies[i].bg
+            );
+        }
+    }
+
+    // Render player
+    // -------------
+    if (_game_state.player.alive)
+    {
+        render_render_tile(
+            (vec2) {
+                _game_state.player.x * SCREEN_TILE_WIDTH,
+                _game_state.player.y * SCREEN_TILE_WIDTH
+            },
+            _game_state.player.glyph,
+            _game_state.player.fg, _game_state.player.bg
+        );
+    }
 }

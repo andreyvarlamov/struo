@@ -22,6 +22,8 @@
 // NOTE: Assumes square font in a square atlas
 #define ATLAS_COLS 16.0f
 
+#define ENEMY_NUM 32
+
 typedef GLuint TexID;
 typedef GLuint ShaderID;
 typedef GLuint VaoID;
@@ -33,6 +35,7 @@ typedef unsigned char Glyph;
 #include "resource.c"
 #include "render.c"
 #include "map.c"
+#include "entity.c"
 #include "game.c"
 
 #endif
