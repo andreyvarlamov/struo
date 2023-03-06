@@ -118,7 +118,7 @@ void game_update(float dt, int *_new_key)
     {
         case INIT:
         {
-            map_init(&_game_state.map, SCREEN_COLS, SCREEN_ROWS);
+            map_gen_level(&_game_state.map, SCREEN_COLS, SCREEN_ROWS);
 
             // Init player
             // -----------
