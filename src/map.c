@@ -90,7 +90,6 @@ void map_gen_rect(Map *map, int width, int height)
     free(indices_to_draw);
 }
 
-#if 0
 void map_gen_level(Map *map, int width, int height)
 {
     // Fill room with floor
@@ -102,39 +101,15 @@ void map_gen_level(Map *map, int width, int height)
     }
 
     // Create outer wall
-    int wall_tiles_count = width * 2 + height * 2 - 4;
-    int *wall_indeces = (int *) calloc(1, wall_tiles_count * sizeof(int));
-
-    int wall_indeces_iter = 0;
-
-    for (int i = 0; i < width; i++)
-    {
-        wall_indeces[wall_indeces_iter] = i;
-        wall_indeces_iter++;
-        wall_indeces[wall_indeces_iter] = util_xy_to_i(i, height - 1, width);
-        wall_indeces_iter++;
-    }
-
-    for (int i = 1; i < height - 1; i++)
-    {
-        wall_indeces[wall_indeces_iter] = util_xy_to_i(0, i, width);
-        wall_indeces_iter++;
-        wall_indeces[wall_indeces_iter] = util_xy_to_i(width - 1, i, width);
-        wall_indeces_iter++;
-    }
-    
-    for (int i  = 0; i < wall_tiles_count; i++)
-    {
-        map->glyphs[wall_indeces[i]] = '#';
-        glm_vec3_copy((vec3) { 0.6f, 0.6f, 0.6f }, map->fg_col[wall_indeces[i]]);
-        glm_vec3_copy((vec3) { 0.7f, 0.7f, 0.7f }, map->bg_col[wall_indeces[i]]);
-        map->blocked[wall_indeces[i]] = true;
-    }
-
-    free(wall_indeces);
+    int *indices_to_draw = NULL;
+    size_t index_count = 0;
+    _map_get_room_indices(
+        0, 0, width, height, width, height,
+        &indices_to_draw, &index_count
+    );
 
     // Add room walls 
-    int room_num = rand() % 10;
+    int room_num = 5 + (rand() % 10);
 
     for (int i = 0; i < room_num; i++)
     {
@@ -144,10 +119,20 @@ void map_gen_level(Map *map, int width, int height)
         int x = rand() % (width - room_width + 1);
         int y = rand() % (height - room_height + 1);
 
-        _map_draw_room(x, y, room_width, room_height);
-
+        _map_get_room_indices(
+            x, y, room_width, room_height, width, height,
+            &indices_to_draw, &index_count
+        );
     }
+
+    for (size_t i  = 0; i < index_count; i++)
+    {
+        map->glyphs[indices_to_draw[i]] = '#';
+        glm_vec3_copy((vec3) { 0.6f, 0.6f, 0.6f }, map->fg_col[indices_to_draw[i]]);
+        glm_vec3_copy((vec3) { 0.7f, 0.7f, 0.7f }, map->bg_col[indices_to_draw[i]]);
+        map->blocked[indices_to_draw[i]] = true;
+    }
+
     // Add doors
     // Add windows
 }
-#endif
