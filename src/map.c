@@ -17,7 +17,7 @@ void _map_gen_room(
         || x + width > map_width || y + height > map_height
     )
     {
-        printf("_map_gen_rooms: WARNING: Room out of bounds. Skipping...");
+        printf("_map_gen_rooms: WARNING: Room out of bounds. Skipping...\n");
         return;
     }
 
@@ -45,9 +45,10 @@ void _map_gen_line(
         case DIR_NORTH:
         case DIR_SOUTH:
         {
-            if (start < 0 || start + len >= map_height || pos >= map_width)
+            if (start < 0 || start + len > map_height || pos >= map_width)
             {
-                printf("_map_gen_line: WARNING: Line out of bounds. Skipping...");
+                printf("_map_gen_line: WARNING: Line out of bounds. Skipping...\n");
+                return;
             }
 
             for (int i = start; i < start + len; i++)
@@ -59,9 +60,10 @@ void _map_gen_line(
         case DIR_EAST:
         case DIR_WEST:
         {
-            if (start < 0 || start + len >= map_width || pos >= map_height)
+            if (start < 0 || start + len > map_width || pos >= map_height)
             {
-                printf("_map_gen_line: WARNING: Line out of bounds. Skipping...");
+                printf("_map_gen_line: WARNING: Line out of bounds. Skipping...\n");
+                return;
             }
 
             for (int i = start; i < start + len; i++)
@@ -148,6 +150,59 @@ void map_gen_rect_room(Map *map, int width, int height)
 }
 
 void map_gen_level(Map *map, int width, int height)
+{
+    for (int i = 0; i <  width * height; i++)
+    {
+        map->glyphs[i] = 0xF9;
+        glm_vec3_copy((vec3) { 0.05f, 0.05f, 0.05f }, map->fg_col[i]);
+        glm_vec3_copy(GLM_VEC3_ZERO, map->bg_col[i]);
+    }
+
+    unsigned char *walls = calloc(1, width * height * sizeof(unsigned char));
+
+    int bsp_passes = 7;
+
+    int room_x = 0;
+    int room_y = 0;
+    int room_width = width;
+    int room_height = height;
+
+    int type = rand() % 2;
+
+    for (int i = 0; i < bsp_passes; i++)
+    {
+        if (type)
+        {
+            int new_width = room_width % 2 == 0 ? room_width / 2 : room_width / 2 + 0;
+            _map_gen_line(walls, width, height, room_y, room_height, room_x + new_width, DIR_NORTH);
+            room_x = room_x + new_width;
+            room_width = new_width - (room_width % 2 == 0 ? 0 : 1);
+        }
+        else
+        {
+            int new_height = room_height % 2 == 0 ? room_height / 2 : room_height / 2 + 0;
+            _map_gen_line(walls, width, height, room_x, room_width, room_y + new_height, DIR_EAST);
+            room_y = room_y + new_height;
+            room_height = new_height - (room_height % 2 == 0 ? 0 : 1);
+        }
+        type = (type + 1) % 2;
+    }
+
+    for (int i  = 0; i < width * height; i++)
+    {
+        if (walls[i] == 1)
+        {
+            map->glyphs[i] = '#';
+            glm_vec3_copy((vec3) { 0.6f, 0.6f, 0.6f }, map->fg_col[i]);
+            glm_vec3_copy((vec3) { 0.7f, 0.7f, 0.7f }, map->bg_col[i]);
+            map->blocked[i] = true;
+        }
+    }
+
+    free(walls);
+}
+
+void map_gen_draft(Map *map, int width, int height)
 {
     for (int i = 0; i <  width * height; i++)
     {
