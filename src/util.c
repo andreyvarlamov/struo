@@ -37,8 +37,17 @@ void util_i_to_xy(size_t i, int width, int *x_out, int *y_out)
 
 typedef enum Direction
 {
-    NORTH,
-    EAST,
-    SOUTH,
-    WEST
+    DIR_NORTH,
+    DIR_EAST,
+    DIR_SOUTH,
+    DIR_WEST,
+    DIR_NONE
 } Direction;
+
+int util_calc_sqr_distance(int x1, int y1, int x2, int y2)
+{
+    int d_x = x1 - x2;
+    int d_y = y1 - y2;
+
+    return d_x * d_x + d_y * d_y;
+}

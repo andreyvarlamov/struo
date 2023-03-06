@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <time.h>
+#include <limits.h>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
