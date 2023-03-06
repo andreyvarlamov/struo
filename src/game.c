@@ -4,7 +4,6 @@ typedef enum RunState
 {
     INIT,
     AWAITING_INPUT,
-    PLAYER_TURN,
     COMP_TURN,
 } RunState;
 
@@ -14,17 +13,46 @@ typedef struct GameState
     Map map;
     Entity player;
     Entity enemies[ENEMY_NUM];
+    size_t enemy_num;
 } GameState;
 
 global_variable GameState _game_state;
 
-void game_try_move_player(int x, int y, int width)
+bool game_try_move_entity(int *x, int *y, Direction dir, int map_width)
 {
-    if (!_game_state.map.blocked[util_xy_to_i(x, y, width)])
+    int new_x = *x;
+    int new_y = *y;
+
+    switch (dir)
     {
-        _game_state.player.x = x;
-        _game_state.player.y = y;
+        case NORTH:
+        {
+            new_y--;
+        } break;
+        case EAST:
+        {
+            new_x++;
+        } break;
+        case SOUTH:
+        {
+            new_y++;
+        } break;
+        case WEST:
+        {
+            new_x--;
+        } break;
     }
+
+    bool did_move = false;
+
+    if (!_game_state.map.blocked[util_xy_to_i(new_x, new_y, map_width)])
+    {
+        *x = new_x;
+        *y = new_y;
+        did_move = true;
+    }
+
+    return did_move;
 }
 
 void game_update(float dt, int *_new_key)
@@ -46,6 +74,7 @@ void game_update(float dt, int *_new_key)
             
             // Init enemies
             // ------------
+            _game_state.enemy_num = ENEMY_NUM;
             for (size_t i = 0; i < 3; i++)
             {
                 _game_state.enemies[i].x = SCREEN_COLS / (3 + i);
@@ -61,62 +90,83 @@ void game_update(float dt, int *_new_key)
 
         case AWAITING_INPUT:
         {
+            bool did_move = false;
+
             if (*_new_key != GLFW_KEY_UNKNOWN)
             {
                 switch (*_new_key)
                 {
                     case GLFW_KEY_H:
                     {
-                        game_try_move_player(
-                            _game_state.player.x - 1,
-                            _game_state.player.y,
+                        did_move = game_try_move_entity(
+                            &_game_state.player.x,
+                            &_game_state.player.y,
+                            WEST,
                             SCREEN_COLS
                         );
-                        _game_state.run_state = PLAYER_TURN;
                     } break;
 
                     case GLFW_KEY_J:
                     {
-                        game_try_move_player(
-                            _game_state.player.x,
-                            _game_state.player.y + 1,
+                        did_move = game_try_move_entity(
+                            &_game_state.player.x,
+                            &_game_state.player.y,
+                            SOUTH,
                             SCREEN_COLS
                         );
-                        _game_state.run_state = PLAYER_TURN;
                     } break;
 
                     case GLFW_KEY_K:
                     {
-                        game_try_move_player(
-                            _game_state.player.x,
-                            _game_state.player.y - 1,
+                        did_move = game_try_move_entity(
+                            &_game_state.player.x,
+                            &_game_state.player.y,
+                            NORTH,
                             SCREEN_COLS
                         );
-                        _game_state.run_state = PLAYER_TURN;
                     } break;
                     
                     case GLFW_KEY_L:
                     {
-                        game_try_move_player(
-                            _game_state.player.x + 1,
-                            _game_state.player.y,
+                        did_move = game_try_move_entity(
+                            &_game_state.player.x,
+                            &_game_state.player.y,
+                            EAST,
                             SCREEN_COLS
                         );
-                        _game_state.run_state = PLAYER_TURN;
                     } break;
                 }
 
                 *_new_key = GLFW_KEY_UNKNOWN;
             }
-        } break;
 
-        case PLAYER_TURN:
-        {
-            _game_state.run_state = COMP_TURN;
+            if (did_move)
+            {
+                _game_state.run_state = COMP_TURN;
+            }
         } break;
 
         case COMP_TURN:
         {
+            for (size_t i = 0; i < _game_state.enemy_num; i++)
+            {
+                if (_game_state.enemies[i].alive)
+                {
+                    bool did_move = false;
+                    do
+                    {
+                        Direction dir = rand() % 4;
+
+                        did_move = game_try_move_entity(
+                            &_game_state.enemies[i].x,
+                            &_game_state.enemies[i].y,
+                            dir,
+                            SCREEN_COLS
+                        );
+                    }
+                    while (!did_move);
+                }
+            }
             _game_state.run_state = AWAITING_INPUT;
         } break;
     }
@@ -142,7 +192,7 @@ void game_render(float dt)
 
     // Render enemies
     // --------------
-    for (size_t i = 0; i < ENEMY_NUM; i++)
+    for (size_t i = 0; i < _game_state.enemy_num; i++)
     {
         if (_game_state.enemies[i].alive)
         {

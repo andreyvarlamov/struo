@@ -34,3 +34,11 @@ void util_i_to_xy(size_t i, int width, int *x_out, int *y_out)
     *x_out = (int) i % width;
     *y_out = (int) i / width;
 }
+
+typedef enum Direction
+{
+    NORTH,
+    EAST,
+    SOUTH,
+    WEST
+} Direction;
