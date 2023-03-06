@@ -9,11 +9,12 @@ typedef enum RunState
 
 typedef struct GameState
 {
-    RunState run_state;
     Map map;
-    Entity player;
+    bool collisions[SCREEN_COLS * SCREEN_ROWS];
     Entity enemies[ENEMY_NUM];
+    Entity player;
     size_t enemy_num;
+    RunState run_state;
 } GameState;
 
 global_variable GameState _game_state;
@@ -45,7 +46,7 @@ bool game_try_move_entity(int *x, int *y, Direction dir, int map_width)
 
     bool did_move = false;
 
-    if (!_game_state.map.blocked[util_xy_to_i(new_x, new_y, map_width)])
+    if (!_game_state.collisions[util_xy_to_i(new_x, new_y, map_width)])
     {
         *x = new_x;
         *y = new_y;
@@ -53,6 +54,38 @@ bool game_try_move_entity(int *x, int *y, Direction dir, int map_width)
     }
 
     return did_move;
+}
+
+void game_update_collisions()
+{
+    // Refresh collisions based on underlying map
+    memcpy(
+        &_game_state.collisions,
+        &_game_state.map.blocked,
+        SCREEN_COLS * SCREEN_ROWS * sizeof(bool)
+    );
+
+    // Update based on player's position
+    // ---------------------------------
+    _game_state.collisions[
+        util_xy_to_i(_game_state.player.x, _game_state.player.y, SCREEN_COLS)
+    ] = true;
+
+    // Update based enemies' positions
+    // --------------------------------
+    for (size_t i = 0; i < _game_state.enemy_num; i++)
+    {
+        if ( _game_state.enemies[i].alive)
+        {
+            _game_state.collisions[
+                util_xy_to_i(
+                    _game_state.enemies[i].x,
+                    _game_state.enemies[i].y,
+                    SCREEN_COLS
+                )
+            ] = true;
+        }
+    }
 }
 
 void game_update(float dt, int *_new_key)
@@ -142,6 +175,7 @@ void game_update(float dt, int *_new_key)
 
             if (did_move)
             {
+                game_update_collisions();
                 _game_state.run_state = COMP_TURN;
             }
         } break;
@@ -152,21 +186,27 @@ void game_update(float dt, int *_new_key)
             {
                 if (_game_state.enemies[i].alive)
                 {
-                    bool did_move = false;
-                    do
+                    bool should_move = (rand() % 4) == 0;
+                    if (should_move)
                     {
-                        Direction dir = rand() % 4;
+                        bool did_move = false;
+                        do
+                        {
+                            Direction dir = rand() % 4;
 
-                        did_move = game_try_move_entity(
-                            &_game_state.enemies[i].x,
-                            &_game_state.enemies[i].y,
-                            dir,
-                            SCREEN_COLS
-                        );
+                            did_move = game_try_move_entity(
+                                &_game_state.enemies[i].x,
+                                &_game_state.enemies[i].y,
+                                dir,
+                                SCREEN_COLS
+                            );
+                        }
+                        while (!did_move);
                     }
-                    while (!did_move);
                 }
             }
+
+            game_update_collisions();
             _game_state.run_state = AWAITING_INPUT;
         } break;
     }

@@ -42,7 +42,10 @@ Speed
 * [x] Engine cleanup
 * [x] Player and movement
 * [x] Map, level, rect room, basic map state, collisions with map
-* [ ] Basic ECS, player, enemies, AI, simple follow player
+* [x] Entities
+* [x] Enemiy random move AI
+* [x] Collisions between entities
+* [ ] Simple follow player AI
 * [ ] Map procgen
 * [ ] A*, more AI
 * [ ] FOV
