@@ -45,19 +45,22 @@ Speed
 * [x] Entities
 * [x] Enemiy random move AI
 * [x] Collisions between entities
-* [ ] Simple follow player AI
-* [ ] Map procgen
+* [x] Simple follow player AI
+* [ ] Map procgen - Square map BSP
+* [ ] Map procgen - Read prefabs from file
+* [ ] Map procgen - Populate BSP rooms with prefabs
 * [ ] A*, more AI
 * [ ] FOV
 * [ ] Combat
 * [ ] Try to build on diff machines, on windows. spend a couple hrs to see if possible
 * [ ] ---> Iter 1 (single room level w/ combat)
-* [ ] More input refactoring, key repeat, diagonal movement (maybe?)
+* [ ] Map procgen - Cellular automata algorithm to make some rooms destroyed
 * [ ] Basic UI
 * [ ] Multiple levels
 * [ ] Item pickups
 * [ ] Progression
 * [ ] ---> Iter 2 (single building branch w/ progression and items)
+* [ ] Map procgen - More prefabs
 * [ ] Base location; persistent
 * [ ] Machine entities
 * [ ] Tie up with items
@@ -65,6 +68,7 @@ Speed
 * [ ] ---> Iter 3
 * [ ] More game flow
 * [ ] Loose ends
+* [ ] More input refactoring, key repeat, diagonal movement (maybe?)
 * [ ] Game over (won or lost)
 * [ ] ---> Iter 4 (shippable)
 * [ ] Mechanics Improvements
