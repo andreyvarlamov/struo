@@ -35,6 +35,11 @@ void util_i_to_xy(size_t i, int width, int *x_out, int *y_out)
     *y_out = (int) i / width;
 }
 
+bool util_check_xy_within_bounds(int x, int y, int map_width, int map_height)
+{
+    return x >= 0 && x < map_width && y >=0 && y < map_height;
+}
+
 typedef enum Direction
 {
     DIR_NORTH,
