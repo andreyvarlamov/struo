@@ -16,8 +16,8 @@
 #define local_persist static
 #define internal static
 
-#define SCREEN_COLS 90
-#define SCREEN_ROWS 60
+#define SCREEN_COLS 65
+#define SCREEN_ROWS 65
 #define SCREEN_TILE_WIDTH 16.0f
 
 // NOTE: Assumes square font in a square atlas

@@ -60,7 +60,6 @@ Speed
 * [ ] Item pickups
 * [ ] Progression
 * [ ] ---> Iter 2 (single building branch w/ progression and items)
-* [ ] Map procgen - More prefabs
 * [ ] Base location; persistent
 * [ ] Machine entities
 * [ ] Tie up with items
@@ -71,5 +70,6 @@ Speed
 * [ ] More input refactoring, key repeat, diagonal movement (maybe?)
 * [ ] Game over (won or lost)
 * [ ] ---> Iter 4 (shippable)
+* [ ] Map procgen - More prefabs
 * [ ] Mechanics Improvements
 * [ ] Extension to have a more interesting plot/twist
