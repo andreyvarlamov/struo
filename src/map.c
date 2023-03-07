@@ -10,7 +10,7 @@ typedef struct Map
 
 // to_fill should come preallocated and initialized
 void _map_gen_room(
-    unsigned char *to_fill, int map_width, int map_height,
+    Glyph *to_fill, int map_width, int map_height, Glyph glyph,
     int x, int y, int width, int height)
 {
     if (x < 0 || y < 0 || x >= width || y >= height
@@ -24,20 +24,20 @@ void _map_gen_room(
     // Draw horizontal boundaries
     for (int i = x; i < x + width; i++)
     {
-        to_fill[util_xy_to_i(i, y, map_width)] = 1;
-        to_fill[util_xy_to_i(i, y + height - 1, map_width)] = 1;
+        to_fill[util_xy_to_i(i, y, map_width)] = glyph;
+        to_fill[util_xy_to_i(i, y + height - 1, map_width)] = glyph;
     }
 
     // Draw vertical boundaries
     for (int i = y + 1; i < y + height - 1; i++)
     {
-        to_fill[util_xy_to_i(x, i, map_width)] = 1;
-        to_fill[util_xy_to_i(x + width - 1, i, map_width)] = 1;
+        to_fill[util_xy_to_i(x, i, map_width)] = glyph;
+        to_fill[util_xy_to_i(x + width - 1, i, map_width)] = glyph;
     }
 }
 
 void _map_gen_line(
-    unsigned char *to_fill, int map_width, int map_height,
+    Glyph *to_fill, int map_width, int map_height, Glyph glyph,
     int start, int len, int pos, Direction dir)
 {
     switch (dir)
@@ -53,7 +53,7 @@ void _map_gen_line(
 
             for (int i = start; i < start + len; i++)
             {
-                to_fill[util_xy_to_i(pos, i, map_width)] = 1;
+                to_fill[util_xy_to_i(pos, i, map_width)] = glyph;
             }
         } break;
 
@@ -68,7 +68,7 @@ void _map_gen_line(
 
             for (int i = start; i < start + len; i++)
             {
-                to_fill[util_xy_to_i(i, pos, map_width)] = 1;
+                to_fill[util_xy_to_i(i, pos, map_width)] = glyph;
             }
         } break;
 
@@ -80,7 +80,7 @@ void _map_gen_line(
 }
 
 void _map_gen_cubicle_section(
-    unsigned char *to_fill, int map_width, int map_height,
+    Glyph *to_fill, int map_width, int map_height, Glyph glyph,
     int x, int y, Direction entry_dir, int width, int length, int cubicle_num
 )
 {
@@ -88,30 +88,30 @@ void _map_gen_cubicle_section(
     {
         case DIR_NORTH:
         {
-            _map_gen_line(to_fill, map_width, map_height, y, length, x, DIR_NORTH);
-            _map_gen_line(to_fill, map_width, map_height, y, length, x + width - 1, DIR_NORTH);
-            _map_gen_line(to_fill, map_width, map_height, x, width, y + length, DIR_EAST);
+            _map_gen_line(to_fill, map_width, map_height, glyph, y, length, x, DIR_NORTH);
+            _map_gen_line(to_fill, map_width, map_height, glyph, y, length, x + width - 1, DIR_NORTH);
+            _map_gen_line(to_fill, map_width, map_height, glyph, x, width, y + length, DIR_EAST);
 
             int cubicle_offset = width / cubicle_num;
             int start = x + cubicle_offset;
             for (int i = 0; i < cubicle_num - 1; i++)
             {
-                _map_gen_line(to_fill, map_width, map_height, y, length, start, DIR_NORTH);
+                _map_gen_line(to_fill, map_width, map_height, glyph, y, length, start, DIR_NORTH);
                 start += cubicle_offset;
             }
         } break;
 
         case DIR_EAST:
         {
-            _map_gen_line(to_fill, map_width, map_height, x, length, y, DIR_EAST);
-            _map_gen_line(to_fill, map_width, map_height, x, length, y + width - 1, DIR_EAST);
-            _map_gen_line(to_fill, map_width, map_height, y, width, x, DIR_NORTH);
+            _map_gen_line(to_fill, map_width, map_height, glyph, x, length, y, DIR_EAST);
+            _map_gen_line(to_fill, map_width, map_height, glyph, x, length, y + width - 1, DIR_EAST);
+            _map_gen_line(to_fill, map_width, map_height, glyph, y, width, x, DIR_NORTH);
 
             int cubicle_offset = width / cubicle_num;
             int start = y + cubicle_offset;
             for (int i = 0; i < cubicle_num - 1; i++)
             {
-                _map_gen_line(to_fill, map_width, map_height, x, length, start, DIR_EAST);
+                _map_gen_line(to_fill, map_width, map_height, glyph, x, length, start, DIR_EAST);
                 start += cubicle_offset;
             }
         } break;
@@ -132,14 +132,14 @@ void map_gen_rect_room(Map *map, int width, int height)
         glm_vec3_copy(GLM_VEC3_ZERO, map->bg_col[i]);
     }
 
-    unsigned char *walls = calloc(1, width * height * sizeof(unsigned char));
-    _map_gen_room(walls, width, height, 0, 0, width, height);
+    Glyph *walls = calloc(1, width * height * sizeof(Glyph));
+    _map_gen_room(walls, width, height, '#', 0, 0, width, height);
 
     for (int i  = 0; i < width * height; i++)
     {
-        if (walls[i] == 1)
+        if (walls[i] == '#')
         {
-            map->glyphs[i] = '#';
+            map->glyphs[i] = walls[i];
             glm_vec3_copy((vec3) { 0.6f, 0.6f, 0.6f }, map->fg_col[i]);
             glm_vec3_copy((vec3) { 0.7f, 0.7f, 0.7f }, map->bg_col[i]);
             map->blocked[i] = true;
@@ -158,7 +158,7 @@ void map_gen_level(Map *map, int width, int height)
         glm_vec3_copy(GLM_VEC3_ZERO, map->bg_col[i]);
     }
 
-    unsigned char *walls = calloc(1, width * height * sizeof(unsigned char));
+    Glyph *walls = calloc(1, width * height * sizeof(Glyph));
 
     int bsp_passes = 7;
 
@@ -174,14 +174,14 @@ void map_gen_level(Map *map, int width, int height)
         if (type)
         {
             int new_width = room_width % 2 == 0 ? room_width / 2 : room_width / 2 + 0;
-            _map_gen_line(walls, width, height, room_y, room_height, room_x + new_width, DIR_NORTH);
+            _map_gen_line(walls, width, height, '#', room_y, room_height, room_x + new_width, DIR_NORTH);
             room_x = room_x + new_width;
             room_width = new_width - (room_width % 2 == 0 ? 0 : 1);
         }
         else
         {
             int new_height = room_height % 2 == 0 ? room_height / 2 : room_height / 2 + 0;
-            _map_gen_line(walls, width, height, room_x, room_width, room_y + new_height, DIR_EAST);
+            _map_gen_line(walls, width, height, '#', room_x, room_width, room_y + new_height, DIR_EAST);
             room_y = room_y + new_height;
             room_height = new_height - (room_height % 2 == 0 ? 0 : 1);
         }
@@ -190,7 +190,7 @@ void map_gen_level(Map *map, int width, int height)
 
     for (int i  = 0; i < width * height; i++)
     {
-        if (walls[i] == 1)
+        if (walls[i] == '#')
         {
             map->glyphs[i] = '#';
             glm_vec3_copy((vec3) { 0.6f, 0.6f, 0.6f }, map->fg_col[i]);
@@ -211,19 +211,19 @@ void map_gen_draft(Map *map, int width, int height)
         glm_vec3_copy(GLM_VEC3_ZERO, map->bg_col[i]);
     }
 
-    unsigned char *walls = calloc(1, width * height * sizeof(unsigned char));
+    Glyph *walls = calloc(1, width * height * sizeof(Glyph));
 
-    _map_gen_room(walls, width, height, 0, 0, width, height);
+    _map_gen_room(walls, width, height, '#', 0, 0, width, height);
     
-    _map_gen_line(walls, width, height, 3, 10, 5, DIR_NORTH);
-    _map_gen_line(walls, width, height, 5, 10, 13, DIR_EAST);
+    _map_gen_line(walls, width, height, '#', 3, 10, 5, DIR_NORTH);
+    _map_gen_line(walls, width, height, '#', 5, 10, 13, DIR_EAST);
 
-    _map_gen_cubicle_section(walls, width, height, 5, 32, DIR_NORTH, 40, 10, 5);
-    _map_gen_cubicle_section(walls, width, height, 50, 5, DIR_EAST, 40, 10, 5);
+    _map_gen_cubicle_section(walls, width, height, '#', 5, 32, DIR_NORTH, 40, 10, 5);
+    _map_gen_cubicle_section(walls, width, height, '#', 50, 5, DIR_EAST, 40, 10, 5);
 
     for (int i  = 0; i < width * height; i++)
     {
-        if (walls[i] == 1)
+        if (walls[i] == '#')
         {
             map->glyphs[i] = '#';
             glm_vec3_copy((vec3) { 0.6f, 0.6f, 0.6f }, map->fg_col[i]);
