@@ -142,26 +142,42 @@ void game_update(float dt, int *_new_key)
 
             // Init player
             // -----------
-            // _game_state.player.x = SCREEN_COLS / 3;
-            // _game_state.player.y = SCREEN_ROWS / 3;
-            _game_state.player.x = 1;
-            _game_state.player.y = 1;
+            _game_state.player.x = 3;
+            _game_state.player.y = 30;
             _game_state.player.glyph = 0x02;
             _game_state.player.alive = true;
             glm_vec3_copy((vec3) { 1.0f, 1.0f, 0.5f }, _game_state.player.fg);
             glm_vec3_copy(GLM_VEC3_ZERO, _game_state.player.bg);
-            
+
+            game_update_collisions();
+
             // Init enemies
             // ------------
             _game_state.enemy_num = ENEMY_NUM;
-            for (size_t i = 0; i < 6; i++)
+            for (size_t i = 0; i < 20; i++)
             {
-                _game_state.enemies[i].x = 3 * i + 3;
-                _game_state.enemies[i].y = 3 * i + 3;
-                _game_state.enemies[i].glyph = 'r';
-                _game_state.enemies[i].alive = true;
-                glm_vec3_copy((vec3) { 0.8f, 0.05f, 0.05f }, _game_state.enemies[i].fg);
-                glm_vec3_copy(GLM_VEC3_ZERO, _game_state.enemies[i].bg);
+                int x = -1;
+                int y = -1;
+                int attempts = 20;
+                do
+                {
+                    x = rand() % SCREEN_COLS;
+                    y = rand() % SCREEN_ROWS;
+                    attempts--;
+                }
+                while (_game_state.collisions[util_xy_to_i(x, y, SCREEN_COLS)] && attempts >= 0);
+
+                if (x != -1 && y != -1)
+                {
+                    _game_state.enemies[i].x = x;
+                    _game_state.enemies[i].y = y;
+                    _game_state.enemies[i].glyph = 'r';
+                    _game_state.enemies[i].alive = true;
+                    glm_vec3_copy((vec3) { 1.0f, 0.5f, 0.05f }, _game_state.enemies[i].fg);
+                    glm_vec3_copy((vec3) { 0.5f, 0.15f, 0.15f }, _game_state.enemies[i].bg);
+
+                    game_update_collisions();
+                }
             }
 
             _game_state.run_state = AWAITING_INPUT;
@@ -300,7 +316,7 @@ void game_update(float dt, int *_new_key)
 #else
                     Point enemy_pos = { _game_state.enemies[i].x, _game_state.enemies[i].y };
                     Point player_pos = { _game_state.player.x, _game_state.player.y };
-                    Point next = pathfinding_bfs(_game_state.map.blocked, SCREEN_COLS, SCREEN_ROWS, enemy_pos, player_pos);
+                    Point next = pathfinding_bfs(_game_state.collisions, SCREEN_COLS, SCREEN_ROWS, enemy_pos, player_pos);
                     bool did_move = false;
 
                     if (next.x != -1 && next.y != -1)
