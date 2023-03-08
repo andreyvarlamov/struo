@@ -301,10 +301,22 @@ void game_update(float dt, int *_new_key)
                     Point enemy_pos = { _game_state.enemies[i].x, _game_state.enemies[i].y };
                     Point player_pos = { _game_state.player.x, _game_state.player.y };
                     Point next = pathfinding_bfs(_game_state.map.blocked, SCREEN_COLS, SCREEN_ROWS, enemy_pos, player_pos);
+                    bool did_move = false;
 
                     if (next.x != -1 && next.y != -1)
                     {
-                        game_try_move_entity_xy(&_game_state.enemies[i].x, &_game_state.enemies[i].y, next.x, next.y, SCREEN_COLS);
+                        did_move = game_try_move_entity_xy(
+                            &_game_state.enemies[i].x,
+                            &_game_state.enemies[i].y,
+                            next.x,
+                            next.y,
+                            SCREEN_COLS
+                        );
+                    }
+
+                    if (did_move)
+                    {
+                        game_update_collisions();
                     }
 #endif
                 }
