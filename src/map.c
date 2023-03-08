@@ -10,7 +10,7 @@ typedef struct Map
 
 // to_fill should come preallocated and initialized
 void _map_gen_room(
-    Glyph *to_fill, int map_width, int map_height, Glyph glyph,
+    char *to_fill, int map_width, int map_height,
     Rect room)
 {
     if (!util_check_rect_in_bounds(room, map_width, map_height))
@@ -22,20 +22,20 @@ void _map_gen_room(
     // Draw horizontal boundaries
     for (int i = room.x; i < room.x + room.width; i++)
     {
-        to_fill[util_xy_to_i(i, room.y, map_width)] = glyph;
-        to_fill[util_xy_to_i(i, room.y + room.height - 1, map_width)] = glyph;
+        to_fill[util_xy_to_i(i, room.y, map_width)] = 1;
+        to_fill[util_xy_to_i(i, room.y + room.height - 1, map_width)] = 1;
     }
 
     // Draw vertical boundaries
     for (int i = room.y + 1; i < room.y + room.height - 1; i++)
     {
-        to_fill[util_xy_to_i(room.x, i, map_width)] = glyph;
-        to_fill[util_xy_to_i(room.x + room.width - 1, i, map_width)] = glyph;
+        to_fill[util_xy_to_i(room.x, i, map_width)] = 1;
+        to_fill[util_xy_to_i(room.x + room.width - 1, i, map_width)] = 1;
     }
 }
 
 void _map_gen_line(
-    Glyph *to_fill, int map_width, int map_height, Glyph glyph,
+    char *to_fill, int map_width, int map_height,
     int start, int len, int pos, Direction dir)
 {
     switch (dir)
@@ -51,7 +51,7 @@ void _map_gen_line(
 
             for (int i = start; i < start + len; i++)
             {
-                to_fill[util_xy_to_i(pos, i, map_width)] = glyph;
+                to_fill[util_xy_to_i(pos, i, map_width)] = 1;
             }
         } break;
 
@@ -66,7 +66,7 @@ void _map_gen_line(
 
             for (int i = start; i < start + len; i++)
             {
-                to_fill[util_xy_to_i(i, pos, map_width)] = glyph;
+                to_fill[util_xy_to_i(i, pos, map_width)] = 1;
             }
         } break;
 
@@ -77,75 +77,26 @@ void _map_gen_line(
     }
 }
 
-void _map_gen_cubicle_section(
-    Glyph *to_fill, int map_width, int map_height, Glyph glyph,
-    int x, int y, Direction entry_dir, int width, int length, int cubicle_num
+void _map_gen_from_prefab(
+    char *to_fill, int map_width, int map_height,
+    Rect rect, const char* prefab_path
 )
 {
-    switch (entry_dir)
-    {
-        case DIR_NORTH:
-        {
-            _map_gen_line(to_fill, map_width, map_height, glyph, y, length, x, DIR_NORTH);
-            _map_gen_line(to_fill, map_width, map_height, glyph, y, length, x + width - 1, DIR_NORTH);
-            _map_gen_line(to_fill, map_width, map_height, glyph, x, width, y + length, DIR_EAST);
+    char* prefab = util_read_file(prefab_path);
+    size_t prefab_i = 0;
 
-            int cubicle_offset = width / cubicle_num;
-            int start = x + cubicle_offset;
-            for (int i = 0; i < cubicle_num - 1; i++)
+    for (int y_i = rect.y; y_i < rect.y + rect.height; y_i++)
+    {
+        for (int x_i = rect.x; x_i < rect.x + rect.width; x_i++)
+        {
+            while (prefab[prefab_i] == '\n')
             {
-                _map_gen_line(to_fill, map_width, map_height, glyph, y, length, start, DIR_NORTH);
-                start += cubicle_offset;
+                prefab_i++;
             }
-        } break;
-
-        case DIR_EAST:
-        {
-            _map_gen_line(to_fill, map_width, map_height, glyph, x, length, y, DIR_EAST);
-            _map_gen_line(to_fill, map_width, map_height, glyph, x, length, y + width - 1, DIR_EAST);
-            _map_gen_line(to_fill, map_width, map_height, glyph, y, width, x, DIR_NORTH);
-
-            int cubicle_offset = width / cubicle_num;
-            int start = y + cubicle_offset;
-            for (int i = 0; i < cubicle_num - 1; i++)
-            {
-                _map_gen_line(to_fill, map_width, map_height, glyph, x, length, start, DIR_EAST);
-                start += cubicle_offset;
-            }
-        } break;
-
-        default:
-        {
-
-        } break;
-    }
-}
-
-void map_gen_rect_room(Map *map, int width, int height)
-{
-    for (int i = 0; i <  width * height; i++)
-    {
-        map->glyphs[i] = 0xF9;
-        glm_vec3_copy((vec3) { 0.05f, 0.05f, 0.05f }, map->fg_col[i]);
-        glm_vec3_copy(GLM_VEC3_ZERO, map->bg_col[i]);
-    }
-
-    Glyph *walls = calloc(1, width * height * sizeof(Glyph));
-    Rect map_rect = { 0, 0, width, height };
-    _map_gen_room(walls, width, height, '#', map_rect);
-
-    for (int i  = 0; i < width * height; i++)
-    {
-        if (walls[i] == '#')
-        {
-            map->glyphs[i] = walls[i];
-            glm_vec3_copy((vec3) { 0.6f, 0.6f, 0.6f }, map->fg_col[i]);
-            glm_vec3_copy((vec3) { 0.7f, 0.7f, 0.7f }, map->bg_col[i]);
-            map->blocked[i] = true;
+            to_fill[util_xy_to_i(x_i, y_i, map_width)] = prefab[prefab_i] - '0'; // '0' -> 0
+            prefab_i++;
         }
     }
-
-    free(walls);
 }
 
 // Rect -> 2 half rects. Order of rects_out depends on dir.
@@ -221,6 +172,8 @@ void _map_rect_halves(Rect rect, Direction dir, Rect *rects_out)
     switch (dir)
     {
         case DIR_NORTH:
+        case DIR_EAST:
+        case DIR_SOUTH:
         case DIR_WEST:
         {
             //up-down and left-right, so no swap necessary
@@ -228,19 +181,46 @@ void _map_rect_halves(Rect rect, Direction dir, Rect *rects_out)
             rects_out[1] = rect_b;
         } break;
 
-        case DIR_SOUTH:
-        case DIR_EAST:
-        {
-            //down-up and right-left, swap
-            rects_out[0] = rect_b;
-            rects_out[1] = rect_a;
-        } break;
+        // case DIR_SOUTH:
+        // case DIR_EAST:
+        // {
+        //     //down-up and right-left, swap
+        //     rects_out[0] = rect_b;
+        //     rects_out[1] = rect_a;
+        // } break;
 
         default:
         {
             printf("_map_rect_halves: ERROR: Invalid direction.\n");
         } break;
     }
+}
+
+void map_gen_rect_room(Map *map, int width, int height)
+{
+    for (int i = 0; i <  width * height; i++)
+    {
+        map->glyphs[i] = 0xF9;
+        glm_vec3_copy((vec3) { 0.05f, 0.05f, 0.05f }, map->fg_col[i]);
+        glm_vec3_copy(GLM_VEC3_ZERO, map->bg_col[i]);
+    }
+
+    char *walls = calloc(1, width * height * sizeof(Glyph));
+    Rect map_rect = { 0, 0, width, height };
+    _map_gen_room(walls, width, height, map_rect);
+
+    for (int i  = 0; i < width * height; i++)
+    {
+        if (walls[i] == 1)
+        {
+            map->glyphs[i] = '#';
+            glm_vec3_copy((vec3) { 0.6f, 0.6f, 0.6f }, map->fg_col[i]);
+            glm_vec3_copy((vec3) { 0.7f, 0.7f, 0.7f }, map->bg_col[i]);
+            map->blocked[i] = true;
+        }
+    }
+
+    free(walls);
 }
 
 void map_gen_level(Map *map, int width, int height)
@@ -252,12 +232,12 @@ void map_gen_level(Map *map, int width, int height)
         glm_vec3_copy(GLM_VEC3_ZERO, map->bg_col[i]);
     }
 
-    Glyph *walls = calloc(1, width * height * sizeof(Glyph));
+    char *walls = calloc(1, width * height * sizeof(Glyph));
 
     Rect to_split = { 0, 0, width, height };
 
     int bsp_passes = 5;
-    Direction dir = rand() % DIR_NONE;
+    Direction dir = DIR_WEST;
 
     Rect *rooms_to_draw = calloc(1, (bsp_passes + 1) * sizeof(Rect));
     size_t r_iter = 0;
@@ -277,54 +257,112 @@ void map_gen_level(Map *map, int width, int height)
         dir = (dir + 1) % DIR_NONE;
     }
     
-    for (int i = 0; i < bsp_passes + 1; i++)
-    {
-        _map_gen_room(walls, width, height, '#', rooms_to_draw[i]);
-    }
+    _map_gen_from_prefab(walls, width, height, rooms_to_draw[0], "res/prefabs/lobby.txt");
+    _map_gen_from_prefab(walls, width, height, rooms_to_draw[1], "res/prefabs/office.txt");
+    _map_gen_from_prefab(walls, width, height, rooms_to_draw[2], "res/prefabs/cafe.txt");
+    _map_gen_from_prefab(walls, width, height, rooms_to_draw[3], "res/prefabs/lounge.txt");
+    _map_gen_from_prefab(walls, width, height, rooms_to_draw[4], "res/prefabs/meeting.txt");
+    _map_gen_from_prefab(walls, width, height, rooms_to_draw[5], "res/prefabs/executive.txt");
+
+    // for (int i = 5; i < bsp_passes + 1; i++)
+    // {
+    //     _map_gen_room(walls, width, height, rooms_to_draw[i]);
+    // }
 
     free (rooms_to_draw);
 
+    vec3 lobby_bg = { 0.05f, 0.05f, 0.05f };
     for (int i  = 0; i < width * height; i++)
     {
-        if (walls[i] == '#')
+        if (walls[i] == 74) // lobby floor
+        {
+            map->glyphs[i] = 0xFE;
+            glm_vec3_copy((vec3) { 0.1f, 0.1f, 0.1f }, map->fg_col[i]);
+            glm_vec3_copy(lobby_bg, map->bg_col[i]);
+            map->blocked[i] = true;
+        }
+        else if (walls[i] == 1) // wall
         {
             map->glyphs[i] = '#';
             glm_vec3_copy((vec3) { 0.6f, 0.6f, 0.6f }, map->fg_col[i]);
             glm_vec3_copy((vec3) { 0.7f, 0.7f, 0.7f }, map->bg_col[i]);
             map->blocked[i] = true;
         }
-    }
-
-    free(walls);
-}
-
-void map_gen_draft(Map *map, int width, int height)
-{
-    for (int i = 0; i <  width * height; i++)
-    {
-        map->glyphs[i] = 0xF9;
-        glm_vec3_copy((vec3) { 0.05f, 0.05f, 0.05f }, map->fg_col[i]);
-        glm_vec3_copy(GLM_VEC3_ZERO, map->bg_col[i]);
-    }
-
-    Glyph *walls = calloc(1, width * height * sizeof(Glyph));
-
-    Rect map_rect = { 0, 0, width, height };
-    _map_gen_room(walls, width, height, '#', map_rect);
-    
-    _map_gen_line(walls, width, height, '#', 3, 10, 5, DIR_NORTH);
-    _map_gen_line(walls, width, height, '#', 5, 10, 13, DIR_EAST);
-
-    _map_gen_cubicle_section(walls, width, height, '#', 5, 32, DIR_NORTH, 40, 10, 5);
-    _map_gen_cubicle_section(walls, width, height, '#', 50, 5, DIR_EAST, 40, 10, 5);
-
-    for (int i  = 0; i < width * height; i++)
-    {
-        if (walls[i] == '#')
+        else if (walls[i] == 2) // table
         {
-            map->glyphs[i] = '#';
-            glm_vec3_copy((vec3) { 0.6f, 0.6f, 0.6f }, map->fg_col[i]);
+            map->glyphs[i] = 0xD2;
+            glm_vec3_copy((vec3) { 0.5f, 0.1f, 0.1f }, map->fg_col[i]);
+            glm_vec3_copy(lobby_bg, map->bg_col[i]);
+            map->blocked[i] = true;
+        }
+        else if (walls[i] == 3) // chair
+        {
+            map->glyphs[i] = 0x7F;
+            glm_vec3_copy((vec3) { 0.3f, 0.3f, 0.1f }, map->fg_col[i]);
+            glm_vec3_copy(lobby_bg, map->bg_col[i]);
+            map->blocked[i] = false;
+        }
+        else if (walls[i] == 4) // bush
+        {
+            map->glyphs[i] = 0xB0;
+            glm_vec3_copy((vec3) { 0.1f, 0.6f, 0.1f }, map->fg_col[i]);
+            glm_vec3_copy(lobby_bg, map->bg_col[i]);
+            map->blocked[i] = false;
+        }
+        else if (walls[i] == 5) // Blue flower
+        {
+            map->glyphs[i] = 0x0F;
+            glm_vec3_copy((vec3) { 0.1f, 0.1f, 0.6f }, map->fg_col[i]);
+            glm_vec3_copy(lobby_bg, map->bg_col[i]);
+            map->blocked[i] = true;
+        }
+        else if (walls[i] == 6) // couch
+        {
+            map->glyphs[i] = 0xB1;
+            glm_vec3_copy((vec3) { 1.0f, 0.1f, 0.1f }, map->fg_col[i]);
+            glm_vec3_copy(lobby_bg, map->bg_col[i]);
+            map->blocked[i] = false;
+        }
+        else if (walls[i] == 7) // door (blocked)
+        {
+            map->glyphs[i] = 0xD7;
+            glm_vec3_copy((vec3) { 0.1f, 0.1f, 0.1f }, map->fg_col[i]);
+            glm_vec3_copy((vec3) { 0.5f, 0.5f, 0.5f }, map->bg_col[i]);
+            map->blocked[i] = true;
+        }
+        else if (walls[i] == 8) // window outside
+        {
+            map->glyphs[i] = 0xCE;
+            glm_vec3_copy((vec3) { 0.5f, 0.6f, 0.8f }, map->fg_col[i]);
             glm_vec3_copy((vec3) { 0.7f, 0.7f, 0.7f }, map->bg_col[i]);
+            map->blocked[i] = true;
+        }
+        else if (walls[i] == 9) // Screen
+        {
+            map->glyphs[i] = 0x08;
+            glm_vec3_copy((vec3) { 0.7f, 0.7f, 0.7f }, map->fg_col[i]);
+            glm_vec3_copy(lobby_bg, map->bg_col[i]);
+            map->blocked[i] = true;
+        }
+        else if (walls[i] == 10) // Cubicle walls
+        {
+            map->glyphs[i] = 0xB2;
+            glm_vec3_copy((vec3) { 0.5f, 0.5f, 0.5f }, map->fg_col[i]);
+            glm_vec3_copy(lobby_bg, map->bg_col[i]);
+            map->blocked[i] = true;
+        }
+        else if (walls[i] == 11) // Music box
+        {
+            map->glyphs[i] = 0x0E;
+            glm_vec3_copy((vec3) { 0.5f, 0.0f, 0.5f }, map->fg_col[i]);
+            glm_vec3_copy(lobby_bg, map->bg_col[i]);
+            map->blocked[i] = true;
+        }
+        else if (walls[i] == 12) // Red flower
+        {
+            map->glyphs[i] = 0x0F;
+            glm_vec3_copy((vec3) { 1.0f, 0.0f, 0.1f }, map->fg_col[i]);
+            glm_vec3_copy(lobby_bg, map->bg_col[i]);
             map->blocked[i] = true;
         }
     }
