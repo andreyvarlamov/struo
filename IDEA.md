@@ -46,10 +46,11 @@ Speed
 * [x] Enemiy random move AI
 * [x] Collisions between entities
 * [x] Simple follow player AI
-* [ ] Map procgen - Square map BSP
-* [ ] Map procgen - Read prefabs from file
-* [ ] Map procgen - Populate BSP rooms with prefabs
-* [ ] A*, more AI
+* [x] Map procgen - Square map BSP
+* [x] Map procgen - Read prefabs from file
+* [x] Map procgen - Populate BSP rooms with prefabs
+* [ ] BFS Pathfinding
+* [ ] Better follow player AI
 * [ ] FOV
 * [ ] Combat
 * [ ] Try to build on diff machines, on windows. spend a couple hrs to see if possible

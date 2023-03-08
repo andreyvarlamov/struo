@@ -35,6 +35,7 @@ typedef unsigned char Glyph;
 #include "util.c"
 #include "resource.c"
 #include "render.c"
+#include "pathfinding.c"
 #include "map.c"
 #include "entity.c"
 #include "game.c"

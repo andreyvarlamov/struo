@@ -223,6 +223,34 @@ void map_gen_rect_room(Map *map, int width, int height)
     free(walls);
 }
 
+void map_gen_test(Map *map, int width, int height)
+{
+    for (int i = 0; i <  width * height; i++)
+    {
+        map->glyphs[i] = 0xF9;
+        glm_vec3_copy((vec3) { 0.25f, 0.25f, 0.25f }, map->fg_col[i]);
+        glm_vec3_copy(GLM_VEC3_ZERO, map->bg_col[i]);
+    }
+    
+    char *walls = calloc(1, width * height * sizeof(Glyph));
+    Rect map_rect = { 0, 0, width, height };
+    _map_gen_room(walls, width, height, map_rect);
+    _map_gen_line(walls, width, height, 0, 10, 5, DIR_SOUTH);
+
+    for (int i  = 0; i < width * height; i++)
+    {
+        if (walls[i] == 1)
+        {
+            map->glyphs[i] = '#';
+            glm_vec3_copy((vec3) { 0.6f, 0.6f, 0.6f }, map->fg_col[i]);
+            glm_vec3_copy((vec3) { 0.7f, 0.7f, 0.7f }, map->bg_col[i]);
+            map->blocked[i] = true;
+        }
+    }
+
+    free(walls);
+}
+
 void map_gen_level(Map *map, int width, int height)
 {
     for (int i = 0; i <  width * height; i++)
@@ -279,7 +307,7 @@ void map_gen_level(Map *map, int width, int height)
             map->glyphs[i] = 0xFE;
             glm_vec3_copy((vec3) { 0.1f, 0.1f, 0.1f }, map->fg_col[i]);
             glm_vec3_copy(lobby_bg, map->bg_col[i]);
-            map->blocked[i] = true;
+            map->blocked[i] = false;
         }
         else if (walls[i] == 1) // wall
         {
