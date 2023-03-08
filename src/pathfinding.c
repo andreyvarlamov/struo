@@ -2,7 +2,7 @@
 
 // blocked, map_width, map_height - from map data
 // path from s to g
-void pathfinding_bfs(
+Point pathfinding_bfs(
     bool *blocked, int map_width, int map_height,
     Point s, Point g
 )
@@ -24,7 +24,10 @@ void pathfinding_bfs(
     queue[q_e].y = s.y;
     q_e++;
 
+    Point *path = calloc(1, map_width * map_height * sizeof(Point));
+
     bool found = false;
+    Point found_p = { -1, -1 };
 
     while (q_s < q_e)
     {
@@ -63,9 +66,15 @@ void pathfinding_bfs(
 
                 if (!vis)
                 {
+                    // Remember parent node
+                    path[util_xy_to_i(nbr.x, nbr.y, map_width)].x = curr.x;
+                    path[util_xy_to_i(nbr.x, nbr.y, map_width)].y = curr.y;
+
                     if (nbr.x == g.x && nbr.x && nbr.y == g.y)
                     {
                         found = true;
+                        found_p.x = nbr.x;
+                        found_p.y = nbr.y;
                         break;
                     }
 
@@ -87,5 +96,27 @@ void pathfinding_bfs(
         }
     }
 
+    Point prev = { -1, -1 };
+    if (found)
+    {
+        Point cursor = { found_p.x, found_p.y };
+
+        while (cursor.x != s.x || cursor.y != s.y)
+        {
+            prev.x = cursor.x;
+            prev.y = cursor.y;
+            cursor.x = path[util_xy_to_i(prev.x, prev.y, map_width)].x;
+            cursor.y = path[util_xy_to_i(prev.x, prev.y, map_width)].y;
+        }
+        // printf("Next step: %d, %d", prev.x, prev.y);
+    }
+
+
     blocked[util_xy_to_i(g.x, g.y, map_width)] = old_blocked;
+
+    free(visited);
+    free(queue);
+    free(path);
+
+    return prev;
 }

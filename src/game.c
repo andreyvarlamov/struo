@@ -80,6 +80,26 @@ bool game_try_move_entity(int *x, int *y, Direction dir, int map_width)
     return did_move;
 }
 
+bool game_try_move_entity_xy(int *x, int *y, int new_x, int new_y, int map_width)
+{
+    bool did_move = false;
+    if (!_game_state.collisions[util_xy_to_i(new_x, new_y, map_width)])
+    {
+        *x = new_x;
+        *y = new_y;
+        did_move = true;
+    }
+    else if (_game_state.player.x == new_x
+        && _game_state.player.y == new_y)
+    {
+        printf("Attacking player.\n");
+        // TODO: Attack player
+        did_move = true;
+    }
+
+    return did_move;
+}
+
 void game_update_collisions()
 {
     // Refresh collisions based on underlying map
@@ -122,8 +142,10 @@ void game_update(float dt, int *_new_key)
 
             // Init player
             // -----------
-            _game_state.player.x = SCREEN_COLS / 2;
-            _game_state.player.y = SCREEN_ROWS / 2;
+            // _game_state.player.x = SCREEN_COLS / 3;
+            // _game_state.player.y = SCREEN_ROWS / 3;
+            _game_state.player.x = 1;
+            _game_state.player.y = 1;
             _game_state.player.glyph = 0x02;
             _game_state.player.alive = true;
             glm_vec3_copy((vec3) { 1.0f, 1.0f, 0.5f }, _game_state.player.fg);
@@ -192,6 +214,11 @@ void game_update(float dt, int *_new_key)
                             SCREEN_COLS
                         );
                     } break;
+
+                    case GLFW_KEY_PERIOD:
+                    {
+                        did_move = true;
+                    } break;
                 }
 
                 *_new_key = GLFW_KEY_UNKNOWN;
@@ -210,7 +237,7 @@ void game_update(float dt, int *_new_key)
             {
                 if (_game_state.enemies[i].alive)
                 {
-#ifdef RANDOM_MOVE_AI
+#if 0
                     bool should_move = (rand() % 4) == 0;
                     if (should_move)
                     {
@@ -228,7 +255,7 @@ void game_update(float dt, int *_new_key)
                         }
                         while (!did_move);
                     }
-#else
+#elif 0
                     Direction dir = DIR_NONE;
                     int min_dist = INT_MAX;
 
@@ -269,6 +296,15 @@ void game_update(float dt, int *_new_key)
                         {
                             game_update_collisions();
                         }
+                    }
+#else
+                    Point enemy_pos = { _game_state.enemies[i].x, _game_state.enemies[i].y };
+                    Point player_pos = { _game_state.player.x, _game_state.player.y };
+                    Point next = pathfinding_bfs(_game_state.map.blocked, SCREEN_COLS, SCREEN_ROWS, enemy_pos, player_pos);
+
+                    if (next.x != -1 && next.y != -1)
+                    {
+                        game_try_move_entity_xy(&_game_state.enemies[i].x, &_game_state.enemies[i].y, next.x, next.y, SCREEN_COLS);
                     }
 #endif
                 }
