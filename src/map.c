@@ -11,28 +11,26 @@ typedef struct Map
 // to_fill should come preallocated and initialized
 void _map_gen_room(
     Glyph *to_fill, int map_width, int map_height, Glyph glyph,
-    int x, int y, int width, int height)
+    Rect room)
 {
-    if (x < 0 || y < 0 || x >= width || y >= height
-        || x + width > map_width || y + height > map_height
-    )
+    if (!util_check_rect_in_bounds(room, map_width, map_height))
     {
         printf("_map_gen_rooms: WARNING: Room out of bounds. Skipping...\n");
         return;
     }
 
     // Draw horizontal boundaries
-    for (int i = x; i < x + width; i++)
+    for (int i = room.x; i < room.x + room.width; i++)
     {
-        to_fill[util_xy_to_i(i, y, map_width)] = glyph;
-        to_fill[util_xy_to_i(i, y + height - 1, map_width)] = glyph;
+        to_fill[util_xy_to_i(i, room.y, map_width)] = glyph;
+        to_fill[util_xy_to_i(i, room.y + room.height - 1, map_width)] = glyph;
     }
 
     // Draw vertical boundaries
-    for (int i = y + 1; i < y + height - 1; i++)
+    for (int i = room.y + 1; i < room.y + room.height - 1; i++)
     {
-        to_fill[util_xy_to_i(x, i, map_width)] = glyph;
-        to_fill[util_xy_to_i(x + width - 1, i, map_width)] = glyph;
+        to_fill[util_xy_to_i(room.x, i, map_width)] = glyph;
+        to_fill[util_xy_to_i(room.x + room.width - 1, i, map_width)] = glyph;
     }
 }
 
@@ -133,7 +131,8 @@ void map_gen_rect_room(Map *map, int width, int height)
     }
 
     Glyph *walls = calloc(1, width * height * sizeof(Glyph));
-    _map_gen_room(walls, width, height, '#', 0, 0, width, height);
+    Rect map_rect = { 0, 0, width, height };
+    _map_gen_room(walls, width, height, '#', map_rect);
 
     for (int i  = 0; i < width * height; i++)
     {
@@ -149,6 +148,101 @@ void map_gen_rect_room(Map *map, int width, int height)
     free(walls);
 }
 
+// Rect -> 2 half rects. Order of rects_out depends on dir.
+// If divided length is even, rects will be returned "wall-to-wall"
+// if odd - overlapping.
+void _map_rect_halves(Rect rect, Direction dir, Rect *rects_out)
+{
+    /*
+        n = 10; n/2 = 5
+        0123456789
+        |...||...|
+        aaaaabbbbb
+        a width = 5 -> n/2   OR n-n/2
+        b start = 5 -> n/2   OR n-n/2
+        b width = 5 -> n-n/2 OR n/2
+
+        n = 9; n/2 = 4:
+        OPTION 1 (NO)------
+        012345678
+        |..||...|
+        aaaabbbbb
+        a width = 4 -> n/2
+        b start = 4 -> n/2
+        b width = 5 -> n-n/2
+        ------
+        OPTION 2 (YES)------
+        012345678
+        |...||..|
+        aaaaabbbb
+        a width = 5 -> n-n/2
+        b start = 5 -> n-n/2
+        b width = 4 -> n/2
+    */
+
+    Rect rect_a = { 0 };
+    Rect rect_b = { 0 };
+
+    switch (dir)
+    {
+        case DIR_NORTH:
+        case DIR_SOUTH:
+        {
+            int h = rect.height;
+            rect_a.x = rect.x;
+            rect_a.y = rect.y;
+            rect_a.width = rect.width;
+            rect_a.height = h - h/2;
+            rect_b.x = rect.x;
+            rect_b.y = rect.y + (h - h/2);
+            rect_b.width = rect.width;
+            rect_b.height = h/2;
+        } break;
+
+        case DIR_EAST:
+        case DIR_WEST:
+        {
+            int w = rect.width;
+            rect_a.x = rect.x;
+            rect_a.y = rect.y;
+            rect_a.width = w - w/2;
+            rect_a.height = rect.height;
+            rect_b.x = rect.x + (w - w/2);
+            rect_b.y = rect.y;
+            rect_b.width = w/2;
+            rect_b.height = rect.height;
+        } break;
+
+        default:
+        {
+        } break;
+    }
+
+    switch (dir)
+    {
+        case DIR_NORTH:
+        case DIR_WEST:
+        {
+            //up-down and left-right, so no swap necessary
+            rects_out[0] = rect_a;
+            rects_out[1] = rect_b;
+        } break;
+
+        case DIR_SOUTH:
+        case DIR_EAST:
+        {
+            //down-up and right-left, swap
+            rects_out[0] = rect_b;
+            rects_out[1] = rect_a;
+        } break;
+
+        default:
+        {
+            printf("_map_rect_halves: ERROR: Invalid direction.\n");
+        } break;
+    }
+}
+
 void map_gen_level(Map *map, int width, int height)
 {
     for (int i = 0; i <  width * height; i++)
@@ -160,33 +254,35 @@ void map_gen_level(Map *map, int width, int height)
 
     Glyph *walls = calloc(1, width * height * sizeof(Glyph));
 
-    int bsp_passes = 7;
+    Rect to_split = { 0, 0, width, height };
 
-    int room_x = 0;
-    int room_y = 0;
-    int room_width = width;
-    int room_height = height;
+    int bsp_passes = 5;
+    Direction dir = rand() % DIR_NONE;
 
-    int type = rand() % 2;
+    Rect *rooms_to_draw = calloc(1, (bsp_passes + 1) * sizeof(Rect));
+    size_t r_iter = 0;
 
-    for (int i = 0; i < bsp_passes; i++)
+    for (int bsp_iter = 0; bsp_iter < bsp_passes; bsp_iter++)
     {
-        if (type)
+        Rect rooms[2] = {0};
+        _map_rect_halves(to_split, dir, rooms);
+        rooms_to_draw[r_iter] = rooms[0];
+        r_iter++;
+        if (bsp_iter == bsp_passes - 1)
         {
-            int new_width = room_width % 2 == 0 ? room_width / 2 : room_width / 2 + 0;
-            _map_gen_line(walls, width, height, '#', room_y, room_height, room_x + new_width, DIR_NORTH);
-            room_x = room_x + new_width;
-            room_width = new_width - (room_width % 2 == 0 ? 0 : 1);
+            rooms_to_draw[r_iter] = rooms[1];
+            r_iter++;
         }
-        else
-        {
-            int new_height = room_height % 2 == 0 ? room_height / 2 : room_height / 2 + 0;
-            _map_gen_line(walls, width, height, '#', room_x, room_width, room_y + new_height, DIR_EAST);
-            room_y = room_y + new_height;
-            room_height = new_height - (room_height % 2 == 0 ? 0 : 1);
-        }
-        type = (type + 1) % 2;
+        to_split = rooms[1];
+        dir = (dir + 1) % DIR_NONE;
     }
+    
+    for (int i = 0; i < bsp_passes + 1; i++)
+    {
+        _map_gen_room(walls, width, height, '#', rooms_to_draw[i]);
+    }
+
+    free (rooms_to_draw);
 
     for (int i  = 0; i < width * height; i++)
     {
@@ -213,7 +309,8 @@ void map_gen_draft(Map *map, int width, int height)
 
     Glyph *walls = calloc(1, width * height * sizeof(Glyph));
 
-    _map_gen_room(walls, width, height, '#', 0, 0, width, height);
+    Rect map_rect = { 0, 0, width, height };
+    _map_gen_room(walls, width, height, '#', map_rect);
     
     _map_gen_line(walls, width, height, '#', 3, 10, 5, DIR_NORTH);
     _map_gen_line(walls, width, height, '#', 5, 10, 13, DIR_EAST);
