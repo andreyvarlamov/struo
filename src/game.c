@@ -92,7 +92,7 @@ bool game_try_move_entity_xy(int *x, int *y, int new_x, int new_y, int map_width
     else if (_game_state.player.x == new_x
         && _game_state.player.y == new_y)
     {
-        printf("Attacking player.\n");
+        // printf("Attacking player.\n");
         // TODO: Attack player
         did_move = true;
     }
@@ -231,6 +231,27 @@ void game_update(float dt, int *_new_key)
                         );
                     } break;
 
+                    case GLFW_KEY_COMMA:
+                    {
+                        int x = -1;
+                        int y = -1;
+                        int attempts = 20;
+                        do
+                        {
+                            x = rand() % SCREEN_COLS;
+                            y = rand() % SCREEN_ROWS;
+                            attempts--;
+                        }
+                        while (_game_state.collisions[util_xy_to_i(x, y, SCREEN_COLS)] && attempts >= 0);
+
+                        if (x != -1 && y != -1)
+                        {
+                            _game_state.player.x = x;
+                            _game_state.player.y = y;
+                            did_move = true;
+                        }
+                    } break;
+
                     case GLFW_KEY_PERIOD:
                     {
                         did_move = true;
@@ -313,7 +334,7 @@ void game_update(float dt, int *_new_key)
                             game_update_collisions();
                         }
                     }
-#else
+#elif 1
                     Point enemy_pos = { _game_state.enemies[i].x, _game_state.enemies[i].y };
                     Point player_pos = { _game_state.player.x, _game_state.player.y };
                     Point next = pathfinding_bfs(_game_state.collisions, SCREEN_COLS, SCREEN_ROWS, enemy_pos, player_pos);

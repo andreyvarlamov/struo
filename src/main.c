@@ -38,6 +38,9 @@ int main()
 
     float delta_time = 0.0f;
     float last_frame = 0.0f;
+
+    float delta_sum = {0};
+    int frame_count = 30;
     while(!glfwWindowShouldClose(window))
     {
 #ifdef STEP_THROUGH_GAME_LOOP
@@ -46,6 +49,17 @@ int main()
         float current_frame = glfwGetTime();
         delta_time = current_frame - last_frame;
         last_frame = current_frame;
+
+        if (frame_count <= 0)
+        {
+            printf(" `````````````````````````````` Avg delay: %f ms\n", delta_sum / 30.0f * 1000.0f);
+            delta_sum = 0.0f;
+            frame_count = 30;
+        }
+
+        delta_sum += delta_time;
+        frame_count--;
+
         glfwPollEvents();
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
