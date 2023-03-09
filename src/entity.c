@@ -32,13 +32,25 @@ bool entity_check_pos_within_fov(const bool *opaque, int map_width, int map_heig
 
     for(Point i = { 0, 0 }; i.x < n.x || i.y < n.y;)
     {
-        if ((1 + 2 * i.x) * n.y < (1 + 2 * i.y) * n.x)
+        int decision = (1 + 2 * i.x) * n.y - (1 + 2 * i.y) * n.x;
+        if (decision == 0)
         {
+            // Diagonal step
+            pos.x += sign.x;
+            pos.y += sign.y;
+            i.x++;
+            i.y++;
+
+        }
+        else if (decision < 0)
+        {
+            // Horizontal step
             pos.x += sign.x;
             i.x++;
         }
         else
         {
+            // Vertical step
             pos.y += sign.y;
             i.y++;
         }
