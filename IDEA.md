@@ -54,7 +54,7 @@ Speed
 * [x] Clean up and refactoring
 * [x] Enemey LOS
 * [x] Player FOV
-* [ ] Opaque/transparent
+* [x] Opaque/transparent
 * [ ] Map memory
 * [ ] Combat
 * [ ] Try to build on diff machines, on windows. spend a couple hrs to see if possible

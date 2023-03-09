@@ -132,7 +132,7 @@ void game_update(float dt, int *_new_key)
 
             game_update_collisions();
             entity_calc_player_fov(
-                _game_state.map.blocked, SCREEN_COLS, SCREEN_COLS,
+                _game_state.map.opaque, SCREEN_COLS, SCREEN_COLS,
                 _game_state.player.pos, _game_state.player_fov
             );
 
@@ -247,7 +247,7 @@ void game_update(float dt, int *_new_key)
             if (did_move)
             {
                 entity_calc_player_fov(
-                    _game_state.map.blocked, SCREEN_COLS, SCREEN_ROWS,
+                    _game_state.map.opaque, SCREEN_COLS, SCREEN_ROWS,
                     _game_state.player.pos, _game_state.player_fov
                 );
                 game_update_collisions();
@@ -323,7 +323,7 @@ void game_update(float dt, int *_new_key)
                     }
 #elif 1
                     if (entity_check_pos_within_fov(
-                        _game_state.map.blocked,
+                        _game_state.map.opaque,
                         SCREEN_COLS, SCREEN_ROWS,
                         _game_state.enemies[i].pos,
                         _game_state.player.pos

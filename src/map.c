@@ -2,10 +2,11 @@
 
 typedef struct Map
 {
-    vec3 fg_col[SCREEN_COLS * SCREEN_ROWS];
-    vec3 bg_col[SCREEN_COLS * SCREEN_ROWS];
+    vec3 fg_col [SCREEN_COLS * SCREEN_ROWS];
+    vec3 bg_col [SCREEN_COLS * SCREEN_ROWS];
     Glyph glyphs[SCREEN_COLS * SCREEN_ROWS];
     bool blocked[SCREEN_COLS * SCREEN_ROWS];
+    bool opaque [SCREEN_COLS * SCREEN_ROWS];
 } Map;
 
 // to_fill should come preallocated and initialized
@@ -292,11 +293,6 @@ void map_gen_level(Map *map, int width, int height)
     _map_gen_from_prefab(walls, width, height, rooms_to_draw[4], "res/prefabs/meeting.txt");
     _map_gen_from_prefab(walls, width, height, rooms_to_draw[5], "res/prefabs/executive.txt");
 
-    // for (int i = 5; i < bsp_passes + 1; i++)
-    // {
-    //     _map_gen_room(walls, width, height, rooms_to_draw[i]);
-    // }
-
     free (rooms_to_draw);
 
     vec3 lobby_bg = { 0.05f, 0.05f, 0.05f };
@@ -315,6 +311,7 @@ void map_gen_level(Map *map, int width, int height)
             glm_vec3_copy((vec3) { 0.6f, 0.6f, 0.6f }, map->fg_col[i]);
             glm_vec3_copy((vec3) { 0.7f, 0.7f, 0.7f }, map->bg_col[i]);
             map->blocked[i] = true;
+            map->opaque[i] = true;
         }
         else if (walls[i] == 2) // table
         {
@@ -357,6 +354,7 @@ void map_gen_level(Map *map, int width, int height)
             glm_vec3_copy((vec3) { 0.1f, 0.1f, 0.1f }, map->fg_col[i]);
             glm_vec3_copy((vec3) { 0.5f, 0.5f, 0.5f }, map->bg_col[i]);
             map->blocked[i] = true;
+            map->opaque[i] = true;
         }
         else if (walls[i] == 8) // window outside
         {
@@ -364,6 +362,7 @@ void map_gen_level(Map *map, int width, int height)
             glm_vec3_copy((vec3) { 0.5f, 0.6f, 0.8f }, map->fg_col[i]);
             glm_vec3_copy((vec3) { 0.7f, 0.7f, 0.7f }, map->bg_col[i]);
             map->blocked[i] = true;
+            map->opaque[i] = true;
         }
         else if (walls[i] == 9) // Screen
         {
@@ -378,6 +377,7 @@ void map_gen_level(Map *map, int width, int height)
             glm_vec3_copy((vec3) { 0.5f, 0.5f, 0.5f }, map->fg_col[i]);
             glm_vec3_copy(lobby_bg, map->bg_col[i]);
             map->blocked[i] = true;
+            map->opaque[i] = true;
         }
         else if (walls[i] == 11) // Music box
         {

@@ -9,7 +9,7 @@ typedef struct Entity
     bool alive;
 } Entity;
 
-bool entity_check_pos_within_fov(const bool *collisions, int map_width, int map_height, 
+bool entity_check_pos_within_fov(const bool *opaque, int map_width, int map_height, 
     Point pos, Point goal)
 {
     if (!util_check_p_within_rad(pos, ENEMY_FOV, goal))
@@ -25,7 +25,7 @@ bool entity_check_pos_within_fov(const bool *collisions, int map_width, int map_
     );
 
     bool *blocked = malloc(map_width * map_height * sizeof(bool));
-    memcpy(blocked, collisions, map_width * map_height * sizeof(bool));
+    memcpy(blocked, opaque, map_width * map_height * sizeof(bool));
     blocked[util_p_to_i(goal, map_width)] = false; // HACKY
 
     bool is_blocked = false;
@@ -54,7 +54,7 @@ bool entity_check_pos_within_fov(const bool *collisions, int map_width, int map_
     return !is_blocked;
 }
 
-void entity_calc_player_fov(const bool *collisions, int map_width , int map_height,
+void entity_calc_player_fov(const bool *opaque, int map_width , int map_height,
     Point pos, bool *fov)
 {
     for (int i = 0; i < map_width * map_height; i++)
@@ -75,7 +75,7 @@ void entity_calc_player_fov(const bool *collisions, int map_width , int map_heig
             if (util_check_p_within_rad(pos, PLAYER_FOV, p))
             {
                 if (entity_check_pos_within_fov(
-                    collisions, map_width, map_height,
+                    opaque, map_width, map_height,
                     pos, p
                 ))
                 {
