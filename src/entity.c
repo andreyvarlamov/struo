@@ -55,7 +55,7 @@ bool entity_check_pos_within_fov(const bool *opaque, int map_width, int map_heig
 }
 
 void entity_calc_player_fov(const bool *opaque, int map_width , int map_height,
-    Point pos, bool *fov)
+    Point pos, bool *fov, bool *map_mem)
 {
     for (int i = 0; i < map_width * map_height; i++)
     {
@@ -80,6 +80,7 @@ void entity_calc_player_fov(const bool *opaque, int map_width , int map_height,
                 ))
                 {
                     fov[util_p_to_i(p, map_width)] = true;
+                    map_mem[util_p_to_i(p, map_width)] = true;
                 }
             }
         }

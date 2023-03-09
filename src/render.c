@@ -127,7 +127,8 @@ void render_prepare_render()
 
 void render_render_tile(
     vec2 screen_offset,
-    Glyph glyph, vec3 fg_color, vec3 bg_color
+    Glyph glyph, vec3 fg_color, vec3 bg_color,
+    bool grayscale
 )
 {
     vec2 atlas_offset = {
@@ -153,6 +154,11 @@ void render_render_tile(
     glUniform3fv(
         glGetUniformLocation(_render_data.shader, "bg_color"),
         1, bg_color
+    );
+
+    glUniform1i(
+        glGetUniformLocation(_render_data.shader, "grayscale"),
+        (int) grayscale
     );
 
     glDrawArrays(GL_TRIANGLES, 0, 6);

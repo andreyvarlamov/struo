@@ -55,9 +55,8 @@ Speed
 * [x] Enemey LOS
 * [x] Player FOV
 * [x] Opaque/transparent
-* [ ] Map memory
+* [x] Map memory
 * [ ] Combat
-* [ ] Try to build on diff machines, on windows. spend a couple hrs to see if possible
 * [ ] ---> Iter 1 (single room level w/ combat)
 * [ ] Map procgen - Cellular automata algorithm to make some rooms destroyed
 * [ ] Basic UI

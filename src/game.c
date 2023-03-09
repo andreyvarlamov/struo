@@ -14,6 +14,7 @@ typedef struct GameState
     Entity enemies[ENEMY_NUM];
     Entity player;
     bool player_fov[SCREEN_COLS * SCREEN_ROWS];
+    bool player_map_mem[SCREEN_COLS * SCREEN_ROWS];
     size_t enemy_num;
     RunState run_state;
 } GameState;
@@ -133,7 +134,7 @@ void game_update(float dt, int *_new_key)
             game_update_collisions();
             entity_calc_player_fov(
                 _game_state.map.opaque, SCREEN_COLS, SCREEN_COLS,
-                _game_state.player.pos, _game_state.player_fov
+                _game_state.player.pos, _game_state.player_fov, _game_state.player_map_mem
             );
 
             // Init enemies
@@ -248,7 +249,7 @@ void game_update(float dt, int *_new_key)
             {
                 entity_calc_player_fov(
                     _game_state.map.opaque, SCREEN_COLS, SCREEN_ROWS,
-                    _game_state.player.pos, _game_state.player_fov
+                    _game_state.player.pos, _game_state.player_fov, _game_state.player_map_mem
                 );
                 game_update_collisions();
                 _game_state.run_state = COMP_TURN;
@@ -364,7 +365,7 @@ void game_render(float dt)
     // ----------
     for (size_t i = 0; i < SCREEN_COLS * SCREEN_ROWS; i++)
     {
-        if (_game_state.player_fov[i])
+        if (_game_state.player_map_mem[i] || _game_state.player_fov[i])
         {
             vec2 screen_offset ={
                 (i % SCREEN_COLS) * SCREEN_TILE_WIDTH,
@@ -374,7 +375,8 @@ void game_render(float dt)
             render_render_tile(
                 screen_offset,
                 _game_state.map.glyphs[i],
-                _game_state.map.fg_col[i], _game_state.map.bg_col[i]
+                _game_state.map.fg_col[i], _game_state.map.bg_col[i],
+                !_game_state.player_fov[i] && _game_state.player_map_mem[i]
             );
         }
     }
@@ -393,7 +395,8 @@ void game_render(float dt)
                         _game_state.enemies[i].pos.y * SCREEN_TILE_WIDTH
                     },
                     _game_state.enemies[i].glyph,
-                    _game_state.enemies[i].fg, _game_state.enemies[i].bg
+                    _game_state.enemies[i].fg, _game_state.enemies[i].bg,
+                    false
                 );
             }
         }
@@ -409,7 +412,8 @@ void game_render(float dt)
                 _game_state.player.pos.y * SCREEN_TILE_WIDTH
             },
             _game_state.player.glyph,
-            _game_state.player.fg, _game_state.player.bg
+            _game_state.player.fg, _game_state.player.bg,
+            false
         );
     }
 }
