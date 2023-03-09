@@ -57,11 +57,11 @@ Speed
 * [x] Opaque/transparent
 * [x] Map memory
 * [ ] Combat
+* [ ] Timing system
 * [ ] ---> Iter 1 (single room level w/ combat)
-* [ ] Map procgen - Cellular automata algorithm to make some rooms destroyed
 * [ ] Basic UI
-* [ ] Multiple levels
 * [ ] Item pickups
+* [ ] Multiple levels
 * [ ] Progression
 * [ ] ---> Iter 2 (single building branch w/ progression and items)
 * [ ] Base location; persistent
@@ -74,6 +74,7 @@ Speed
 * [ ] More input refactoring, key repeat, diagonal movement (maybe?)
 * [ ] Better AI (follow to last known location)
 * [ ] Game over (won or lost)
+* [ ] Map procgen - Cellular automata algorithm to make some rooms destroyed
 * [ ] ---> Iter 4 (shippable)
 * [ ] Map procgen - More prefabs
 * [ ] Mechanics Improvements

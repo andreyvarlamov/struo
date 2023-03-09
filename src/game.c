@@ -83,8 +83,13 @@ bool game_try_move_entity_xy(Point *pos, Point new, int map_width)
     }
     else if (util_p_cmp(_game_state.player.pos, new))
     {
-        printf("Attacking player.\n");
-        // TODO: Attack player
+        // printf("Attacking player.\n");
+
+        Stats att = { .name = "Rat", .health = 100, .max_health = 100, .accuracy = 5, .evasion = 5, .damage = 50, .defense = 30, .speed = 1};
+        Stats def = { .name = "Player", .health = 100, .max_health = 100, .accuracy = 5, .evasion = 5, .damage = 50, .defense = 30, .speed = 1};
+
+        combat_attack(&att, &def);
+
         did_move = true;
     }
 
