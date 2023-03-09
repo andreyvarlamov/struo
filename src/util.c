@@ -82,6 +82,11 @@ int util_calc_sqr_distance(int x1, int y1, int x2, int y2)
     return d_x * d_x + d_y * d_y;
 }
 
+bool util_check_p_in_bounds(Point p, int map_width, int map_height)
+{
+    return p.x >= 0 && p.y >= 0 && p.x < map_width && p.y < map_height;
+}
+
 bool util_check_rect_in_bounds(Rect rect, int map_width, int map_height)
 {
     return rect.x >= 0 && rect.y >= 0
