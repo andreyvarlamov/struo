@@ -51,7 +51,9 @@ Speed
 * [x] Map procgen - Populate BSP rooms with prefabs
 * [x] BFS Pathfinding
 * [x] Better follow player AI
-* [ ] FOV
+* [x] Clean up and refactoring
+* [x] Enemey LOS
+* [ ] Player FOV
 * [ ] Transparent blocks
 * [ ] Combat
 * [ ] Try to build on diff machines, on windows. spend a couple hrs to see if possible

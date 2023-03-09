@@ -134,7 +134,7 @@ void game_update(float dt, int *_new_key)
             // Init enemies
             // ------------
             _game_state.enemy_num = ENEMY_NUM;
-            for (size_t i = 0; i < 50; i++)
+            for (size_t i = 0; i < 10; i++)
             {
                 Point p;
 
@@ -313,24 +313,32 @@ void game_update(float dt, int *_new_key)
                         }
                     }
 #elif 1
-                    Point next = pathfinding_bfs(
-                        _game_state.collisions, SCREEN_COLS, SCREEN_ROWS,
-                        _game_state.enemies[i].pos, _game_state.player.pos);
-
-                    bool did_move = false;
-
-                    if (next.x != -1 && next.y != -1)
+                    if (entity_check_pos_within_fov(
+                        _game_state.collisions,
+                        SCREEN_COLS, SCREEN_ROWS,
+                        _game_state.enemies[i].pos,
+                        _game_state.player.pos
+                    ))
                     {
-                        did_move = game_try_move_entity_xy(
-                            &_game_state.enemies[i].pos,
-                            next,
-                            SCREEN_COLS
-                        );
-                    }
+                        Point next = pathfinding_bfs(
+                            _game_state.collisions, SCREEN_COLS, SCREEN_ROWS,
+                            _game_state.enemies[i].pos, _game_state.player.pos);
 
-                    if (did_move)
-                    {
-                        game_update_collisions();
+                        bool did_move = false;
+
+                        if (next.x != -1 && next.y != -1)
+                        {
+                            did_move = game_try_move_entity_xy(
+                                &_game_state.enemies[i].pos,
+                                next,
+                                SCREEN_COLS
+                            );
+                        }
+
+                        if (did_move)
+                        {
+                            game_update_collisions();
+                        }
                     }
 #endif
                 }

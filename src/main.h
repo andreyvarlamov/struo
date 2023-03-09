@@ -25,6 +25,8 @@
 
 #define ENEMY_NUM 50
 
+#define ENEMY_FOV 15
+
 typedef GLuint TexID;
 typedef GLuint ShaderID;
 typedef GLuint VaoID;
