@@ -11,15 +11,13 @@ Point pathfinding_bfs(
     bool old_blocked = blocked[util_xy_to_i(g.x, g.y, map_width)];
     blocked[util_xy_to_i(g.x, g.y, map_width)] = false;
 
-    Point *visited = calloc(1, map_width * map_height * sizeof(Point));
+    bool *visited = calloc(1, map_width * map_height * sizeof(bool));
+
     Point *queue = calloc(1, map_width * map_height * sizeof(Point));
-    int v_i = 0;
     int q_s = 0;
     int q_e = 0;
 
-    visited[v_i].x = s.x;
-    visited[v_i].y = s.y;
-    v_i++;
+    visited[util_xy_to_i(s.x, s.y, map_width)] = true;
     queue[q_e].x = s.x;
     queue[q_e].y = s.y;
     q_e++;
@@ -54,22 +52,13 @@ Point pathfinding_bfs(
                 && !blocked[util_xy_to_i(nbr.x, nbr.y, map_width)])
             {
                 // Check it has not been visited
-                bool vis = false;
-                for (int i = 0; i < v_i; i++)
-                {
-                    if(visited[i].x == nbr.x && visited[i].y == nbr.y)
-                    {
-                        vis = true;
-                        break;
-                    }
-                }
-
-                if (!vis)
+                if (!visited[util_xy_to_i(nbr.x, nbr.y, map_width)])
                 {
                     // Remember parent node
                     path[util_xy_to_i(nbr.x, nbr.y, map_width)].x = curr.x;
                     path[util_xy_to_i(nbr.x, nbr.y, map_width)].y = curr.y;
 
+                    // If this node is the goal, we're done
                     if (nbr.x == g.x && nbr.x && nbr.y == g.y)
                     {
                         found = true;
@@ -78,14 +67,13 @@ Point pathfinding_bfs(
                         break;
                     }
 
-                    // Add to visited
-                    visited[v_i].x = nbr.x;
-                    visited[v_i].y = nbr.y;
-                    v_i++;
-
+                    // Add to the end of the queue
                     queue[q_e].x = nbr.x;
                     queue[q_e].y = nbr.y;
                     q_e++;
+
+                    // Add to visited
+                    visited[util_xy_to_i(nbr.x, nbr.y, map_width)] = true;
                 }
             }
         }
@@ -110,7 +98,6 @@ Point pathfinding_bfs(
         }
         // printf("Next step: %d, %d", prev.x, prev.y);
     }
-
 
     blocked[util_xy_to_i(g.x, g.y, map_width)] = old_blocked;
 
