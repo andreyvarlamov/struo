@@ -3,13 +3,13 @@
 // blocked, map_width, map_height - from map data
 // path from s to g
 Point pathfinding_bfs(
-    bool *blocked, int map_width, int map_height,
+    const bool *collisions, int map_width, int map_height,
     Point s, Point g
 )
 {
-    // HACKY: Don't count goal as blocked while calculating. Set back in the end of func
-    bool old_blocked = blocked[util_p_to_i(g, map_width)];
-    blocked[util_p_to_i(g, map_width)] = false;
+    bool *blocked = malloc(map_width * map_height * sizeof(bool));
+    memcpy(blocked, collisions, map_width * map_height * sizeof(bool));
+    blocked[util_p_to_i(g, map_width)] = false; // HACKY
 
     bool *visited = calloc(1, map_width * map_height * sizeof(bool));
 
@@ -88,11 +88,10 @@ Point pathfinding_bfs(
         }
     }
 
-    blocked[util_p_to_i(g, map_width)] = old_blocked;
-
     free(visited);
     free(queue);
     free(path);
+    free(blocked);
 
     return prev;
 }

@@ -53,8 +53,9 @@ Speed
 * [x] Better follow player AI
 * [x] Clean up and refactoring
 * [x] Enemey LOS
-* [ ] Player FOV
-* [ ] Transparent blocks
+* [x] Player FOV
+* [ ] Opaque/transparent
+* [ ] Map memory
 * [ ] Combat
 * [ ] Try to build on diff machines, on windows. spend a couple hrs to see if possible
 * [ ] ---> Iter 1 (single room level w/ combat)
@@ -72,6 +73,7 @@ Speed
 * [ ] More game flow
 * [ ] Loose ends
 * [ ] More input refactoring, key repeat, diagonal movement (maybe?)
+* [ ] Better AI (follow to last known location)
 * [ ] Game over (won or lost)
 * [ ] ---> Iter 4 (shippable)
 * [ ] Map procgen - More prefabs
