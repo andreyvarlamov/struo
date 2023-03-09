@@ -23,7 +23,7 @@
 // NOTE: Assumes square font in a square atlas
 #define ATLAS_COLS 16.0f
 
-#define ENEMY_NUM 32
+#define ENEMY_NUM 50
 
 typedef GLuint TexID;
 typedef GLuint ShaderID;

@@ -52,6 +52,7 @@ Speed
 * [x] BFS Pathfinding
 * [x] Better follow player AI
 * [ ] FOV
+* [ ] Transparent blocks
 * [ ] Combat
 * [ ] Try to build on diff machines, on windows. spend a couple hrs to see if possible
 * [ ] ---> Iter 1 (single room level w/ combat)

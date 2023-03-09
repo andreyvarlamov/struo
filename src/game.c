@@ -19,31 +19,27 @@ typedef struct GameState
 
 global_variable GameState _game_state;
 
-bool game_check_move_entity(
-    int x, int y, int *new_x_out, int *new_y_out, Direction dir,
-    int map_width
-)
+bool game_check_move_entity(Point pos, Point *new_out, Direction dir, int map_width)
 {
-    *new_x_out = x;
-    *new_y_out = y;
+    *new_out = pos;
 
     switch (dir)
     {
         case DIR_NORTH:
         {
-            (*new_y_out)--;
+            new_out->y--;
         } break;
         case DIR_EAST:
         {
-            (*new_x_out)++;
+            new_out->x++;
         } break;
         case DIR_SOUTH:
         {
-            (*new_y_out)++;
+            new_out->y++;
         } break;
         case DIR_WEST:
         {
-            (*new_x_out)--;
+            new_out->x--;
         } break;
         default:
         {
@@ -51,28 +47,22 @@ bool game_check_move_entity(
         } break;
     }
 
-    return !_game_state.collisions[
-        util_xy_to_i(*new_x_out, *new_y_out, map_width)
-    ];
+    return !_game_state.collisions[util_p_to_i(*new_out, map_width)];
 }
 
-bool game_try_move_entity(int *x, int *y, Direction dir, int map_width)
+bool game_try_move_entity(Point *pos, Direction dir, int map_width)
 {
-    int new_x = *x;
-    int new_y = *y;
+    Point new = *pos;
 
     bool did_move = false;
-    if (game_check_move_entity(
-        *x, *y, &new_x, &new_y, dir, map_width
-    ))
+    if (game_check_move_entity(*pos, &new, dir, map_width))
     {
-        *x = new_x;
-        *y = new_y;
+        *pos = new;
         did_move = true;
     }
-    else if (_game_state.player.x == new_x
-        && _game_state.player.y == new_y)
+    else if (util_p_cmp(_game_state.player.pos, new))
     {
+        printf("Attacking player.\n");
         // TODO: Attack player
         did_move = true;
     }
@@ -80,19 +70,18 @@ bool game_try_move_entity(int *x, int *y, Direction dir, int map_width)
     return did_move;
 }
 
-bool game_try_move_entity_xy(int *x, int *y, int new_x, int new_y, int map_width)
+bool game_try_move_entity_xy(Point *pos, Point new, int map_width)
 {
     bool did_move = false;
-    if (!_game_state.collisions[util_xy_to_i(new_x, new_y, map_width)])
+    if (!_game_state.collisions[util_p_to_i(new, map_width)])
     {
-        *x = new_x;
-        *y = new_y;
+        pos->x = new.x;
+        pos->y = new.y;
         did_move = true;
     }
-    else if (_game_state.player.x == new_x
-        && _game_state.player.y == new_y)
+    else if (util_p_cmp(_game_state.player.pos, new))
     {
-        // printf("Attacking player.\n");
+        printf("Attacking player.\n");
         // TODO: Attack player
         did_move = true;
     }
@@ -111,9 +100,7 @@ void game_update_collisions()
 
     // Update based on player's position
     // ---------------------------------
-    _game_state.collisions[
-        util_xy_to_i(_game_state.player.x, _game_state.player.y, SCREEN_COLS)
-    ] = true;
+    _game_state.collisions[util_p_to_i(_game_state.player.pos, SCREEN_COLS)] = true;
 
     // Update based enemies' positions
     // --------------------------------
@@ -121,13 +108,7 @@ void game_update_collisions()
     {
         if ( _game_state.enemies[i].alive)
         {
-            _game_state.collisions[
-                util_xy_to_i(
-                    _game_state.enemies[i].x,
-                    _game_state.enemies[i].y,
-                    SCREEN_COLS
-                )
-            ] = true;
+            _game_state.collisions[util_p_to_i(_game_state.enemies[i].pos, SCREEN_COLS)] = true;
         }
     }
 }
@@ -142,8 +123,7 @@ void game_update(float dt, int *_new_key)
 
             // Init player
             // -----------
-            _game_state.player.x = 3;
-            _game_state.player.y = 30;
+            _game_state.player.pos = util_xy_to_p(3, 30);
             _game_state.player.glyph = 0x02;
             _game_state.player.alive = true;
             glm_vec3_copy((vec3) { 1.0f, 1.0f, 0.5f }, _game_state.player.fg);
@@ -154,23 +134,24 @@ void game_update(float dt, int *_new_key)
             // Init enemies
             // ------------
             _game_state.enemy_num = ENEMY_NUM;
-            for (size_t i = 0; i < 20; i++)
+            for (size_t i = 0; i < 50; i++)
             {
-                int x = -1;
-                int y = -1;
+                Point p;
+
+                bool found = false;
                 int attempts = 20;
                 do
                 {
-                    x = rand() % SCREEN_COLS;
-                    y = rand() % SCREEN_ROWS;
+                    p.x = rand() % SCREEN_COLS;
+                    p.y = rand() % SCREEN_ROWS;
+                    found = !_game_state.collisions[util_p_to_i(p, SCREEN_COLS)];
                     attempts--;
                 }
-                while (_game_state.collisions[util_xy_to_i(x, y, SCREEN_COLS)] && attempts >= 0);
+                while (!found && attempts >= 0);
 
-                if (x != -1 && y != -1)
+                if (found)
                 {
-                    _game_state.enemies[i].x = x;
-                    _game_state.enemies[i].y = y;
+                    _game_state.enemies[i].pos = p;
                     _game_state.enemies[i].glyph = 'r';
                     _game_state.enemies[i].alive = true;
                     glm_vec3_copy((vec3) { 1.0f, 0.5f, 0.05f }, _game_state.enemies[i].fg);
@@ -194,8 +175,7 @@ void game_update(float dt, int *_new_key)
                     case GLFW_KEY_H:
                     {
                         did_move = game_try_move_entity(
-                            &_game_state.player.x,
-                            &_game_state.player.y,
+                            &_game_state.player.pos,
                             DIR_WEST,
                             SCREEN_COLS
                         );
@@ -204,8 +184,7 @@ void game_update(float dt, int *_new_key)
                     case GLFW_KEY_J:
                     {
                         did_move = game_try_move_entity(
-                            &_game_state.player.x,
-                            &_game_state.player.y,
+                            &_game_state.player.pos,
                             DIR_SOUTH,
                             SCREEN_COLS
                         );
@@ -214,8 +193,7 @@ void game_update(float dt, int *_new_key)
                     case GLFW_KEY_K:
                     {
                         did_move = game_try_move_entity(
-                            &_game_state.player.x,
-                            &_game_state.player.y,
+                            &_game_state.player.pos,
                             DIR_NORTH,
                             SCREEN_COLS
                         );
@@ -224,8 +202,7 @@ void game_update(float dt, int *_new_key)
                     case GLFW_KEY_L:
                     {
                         did_move = game_try_move_entity(
-                            &_game_state.player.x,
-                            &_game_state.player.y,
+                            &_game_state.player.pos,
                             DIR_EAST,
                             SCREEN_COLS
                         );
@@ -233,21 +210,22 @@ void game_update(float dt, int *_new_key)
 
                     case GLFW_KEY_COMMA:
                     {
-                        int x = -1;
-                        int y = -1;
+                        Point p;
+
                         int attempts = 20;
+                        bool found = true;
                         do
                         {
-                            x = rand() % SCREEN_COLS;
-                            y = rand() % SCREEN_ROWS;
+                            p.x = rand() % SCREEN_COLS;
+                            p.y = rand() % SCREEN_ROWS;
+                            found = !_game_state.collisions[util_p_to_i(p, SCREEN_COLS)];
                             attempts--;
                         }
-                        while (_game_state.collisions[util_xy_to_i(x, y, SCREEN_COLS)] && attempts >= 0);
+                        while (!found && attempts >= 0);
 
-                        if (x != -1 && y != -1)
+                        if (found)
                         {
-                            _game_state.player.x = x;
-                            _game_state.player.y = y;
+                            _game_state.player.pos = p;
                             did_move = true;
                         }
                     } break;
@@ -335,18 +313,17 @@ void game_update(float dt, int *_new_key)
                         }
                     }
 #elif 1
-                    Point enemy_pos = { _game_state.enemies[i].x, _game_state.enemies[i].y };
-                    Point player_pos = { _game_state.player.x, _game_state.player.y };
-                    Point next = pathfinding_bfs(_game_state.collisions, SCREEN_COLS, SCREEN_ROWS, enemy_pos, player_pos);
+                    Point next = pathfinding_bfs(
+                        _game_state.collisions, SCREEN_COLS, SCREEN_ROWS,
+                        _game_state.enemies[i].pos, _game_state.player.pos);
+
                     bool did_move = false;
 
                     if (next.x != -1 && next.y != -1)
                     {
                         did_move = game_try_move_entity_xy(
-                            &_game_state.enemies[i].x,
-                            &_game_state.enemies[i].y,
-                            next.x,
-                            next.y,
+                            &_game_state.enemies[i].pos,
+                            next,
                             SCREEN_COLS
                         );
                     }
@@ -390,8 +367,8 @@ void game_render(float dt)
         {
             render_render_tile(
                 (vec2) {
-                    _game_state.enemies[i].x * SCREEN_TILE_WIDTH,
-                    _game_state.enemies[i].y * SCREEN_TILE_WIDTH
+                    _game_state.enemies[i].pos.x * SCREEN_TILE_WIDTH,
+                    _game_state.enemies[i].pos.y * SCREEN_TILE_WIDTH
                 },
                 _game_state.enemies[i].glyph,
                 _game_state.enemies[i].fg, _game_state.enemies[i].bg
@@ -405,8 +382,8 @@ void game_render(float dt)
     {
         render_render_tile(
             (vec2) {
-                _game_state.player.x * SCREEN_TILE_WIDTH,
-                _game_state.player.y * SCREEN_TILE_WIDTH
+                _game_state.player.pos.x * SCREEN_TILE_WIDTH,
+                _game_state.player.pos.y * SCREEN_TILE_WIDTH
             },
             _game_state.player.glyph,
             _game_state.player.fg, _game_state.player.bg
