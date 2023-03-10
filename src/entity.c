@@ -2,12 +2,40 @@
 
 typedef struct Entity
 {
+    size_t id;
     Point pos;
     vec3 bg;
     vec3 fg; 
     Glyph glyph;
     bool alive;
 } Entity;
+
+global_variable size_t next_id = 0;
+
+Entity entity_ctor(Point pos, vec3 bg, vec3 fg, Glyph glyph, bool alive)
+{
+    if (next_id >= ENTITY_NUM)
+    {
+        printf("entity_ctor: ERROR: creating more entities than allowed");
+    }
+
+    Entity e;
+    e.id = next_id;
+    next_id++;
+
+    e.pos = pos;
+    glm_vec3_copy(bg, e.bg);
+    glm_vec3_copy(fg, e.fg);
+    e.glyph = glyph;
+    e.alive = alive;
+
+    return e;
+}
+
+size_t entity_get_count()
+{
+    return next_id;
+}
 
 bool entity_check_pos_within_fov(const bool *opaque, int map_width, int map_height, 
     Point pos, Point goal)
