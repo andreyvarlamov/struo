@@ -17,6 +17,7 @@ typedef struct GameState
     bool player_fov[MAP_COLS * MAP_ROWS];
     bool player_map_mem[MAP_COLS * MAP_ROWS];
     Map map;
+    Glyph ui[UI_COLS * SCREEN_ROWS];
     RunState run_state;
 } GameState;
 
@@ -121,6 +122,9 @@ void game_update(float dt, int *_new_key)
                     game_update_collisions();
                 }
             }
+
+            Point p = { 38, 64 };
+            ui_printf(_gs.ui, UI_COLS, SCREEN_ROWS, p, "%c %c struo", 0xE0, 0xEA);
 
             _gs.run_state = AWAITING_INPUT;
         } break;
@@ -398,6 +402,13 @@ void game_render(float dt)
         {
             glyph = 0xC4;
         }
+
+        Glyph glyph_in_pos = _gs.ui[i];
+        if (glyph_in_pos)
+        {
+            glyph = glyph_in_pos;
+        }
+
         render_render_tile(
                     (vec2) {
                         (p.x + MAP_COLS) * SCREEN_TILE_WIDTH,

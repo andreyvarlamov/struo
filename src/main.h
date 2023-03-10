@@ -1,6 +1,7 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <time.h>
@@ -47,6 +48,7 @@ typedef unsigned char Glyph;
 #include "map.c"
 #include "entity.c"
 #include "combat.c"
+#include "ui.c"
 #include "game.c"
 
 #endif
