@@ -35,6 +35,7 @@
 #define PLAYER_FOV 15
 
 #define LOG_LINES 16
+#define UI_STATS_ROW 4
 
 typedef GLuint TexID;
 typedef GLuint ShaderID;

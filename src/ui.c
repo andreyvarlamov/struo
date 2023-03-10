@@ -2,6 +2,7 @@
 
 global_variable int log_cursor = 0;
 global_variable Point log_origin = { 1, SCREEN_ROWS - LOG_LINES - 1 };
+global_variable Point stats_origin = { 1, UI_STATS_ROW };
 
 void ui_print(Glyph *ui, int ui_width, int ui_height, Point pos,
               const char *to_print)
@@ -72,4 +73,34 @@ void ui_add_log_line(Glyph *ui, int ui_width,  int ui_height,
     strcpy(log_lines[log_cursor], buffer);
 
     ui_draw_log(ui, ui_width, ui_height, log_lines);
+}
+
+void ui_draw_player_stats(Glyph *ui, int ui_width, int ui_height, Stats stats)
+{
+    for (int i = 0; i < 7 * UI_COLS; i++)
+    {
+        Point offset_p = util_i_to_p(i, ui_width);
+        Point char_p = { stats_origin.x + offset_p.x, stats_origin.y + offset_p.y };
+        ui[util_p_to_i(char_p, ui_width)] = 0;
+    }
+
+    ui_printf(ui, ui_width, ui_height, stats_origin, " STATS ");
+
+    Point health_pos = { stats_origin.x, stats_origin.y + 2 };
+    ui_printf(ui, ui_width, ui_height, health_pos, "HP:   %d/%d", stats.health, stats.max_health);
+
+    Point damage_pos = { stats_origin.x, stats_origin.y + 3 };
+    ui_printf(ui, ui_width, ui_height, damage_pos, "DMG:  %d", stats.damage);
+
+    Point defense_pos = { stats_origin.x, stats_origin.y + 4 };
+    ui_printf(ui, ui_width, ui_height, defense_pos, "DEF:  %d\%", stats.defense);
+
+    Point accuracy_pos = { stats_origin.x, stats_origin.y + 5 };
+    ui_printf(ui, ui_width, ui_height, accuracy_pos, "ACC:  %d/10", stats.accuracy);
+
+    Point evasion_pos = { stats_origin.x, stats_origin.y + 6 };
+    ui_printf(ui, ui_width, ui_height, evasion_pos, "EVAS: %d/10", stats.evasion);
+
+    Point speed_pos = { stats_origin.x, stats_origin.y + 7 };
+    ui_printf(ui, ui_width, ui_height, speed_pos, "SPD:  %d", stats.speed);
 }

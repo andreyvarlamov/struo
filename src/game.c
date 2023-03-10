@@ -51,6 +51,12 @@ bool game_try_move_entity_p(size_t entity_id, Point *pos, Point new, int map_wid
                         "%s died.", def->name);
         }
 
+        // If player was attacked, update ui with their stats
+        if (target_id == 1)
+        {
+            ui_draw_player_stats(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.stats[1]);
+        }
+
         did_move = true;
     }
 
@@ -131,7 +137,7 @@ void game_update(float dt, int *_new_key)
 
             // Init UI
             // -------
-            Point p = { 1, 1 };
+            Point p = { 15, 2 };
             ui_printf(_gs.ui, UI_COLS, SCREEN_ROWS, p, "%c %c struo", 0xE0, 0xEA);
 
             for (int i = 0; i < LOG_LINES; i++)
@@ -143,6 +149,8 @@ void game_update(float dt, int *_new_key)
 
             ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
                             "Hello, player %c", 0x01);
+
+            ui_draw_player_stats(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.stats[1]);
 
             _gs.run_state = AWAITING_INPUT;
         } break;
@@ -422,11 +430,22 @@ void game_render(float dt)
         {
             glyph = 0xB4;
         }
+        else if (p.x == 0 && p.y == UI_STATS_ROW)
+        {
+            glyph = 0xC3;
+        }
+        else if (p.x == UI_COLS - 1 && p.y == UI_STATS_ROW)
+        {
+            glyph = 0xB4;
+        }
         else if (p.x == 0 || p.x == UI_COLS - 1)
         {
             glyph = 0xB3;
         }
-        else if (p.y == 0 || p.y == SCREEN_ROWS - LOG_LINES - 3 || p.y == SCREEN_ROWS - 1)
+        else if (p.y == 0 
+              || p.y == SCREEN_ROWS - LOG_LINES - 3
+              || p.y == UI_STATS_ROW
+              || p.y == SCREEN_ROWS - 1)
         {
             glyph = 0xC4;
         }
