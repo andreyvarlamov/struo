@@ -60,7 +60,7 @@ Speed
 * [x] ---> Iter 1 (single room level w/ combat)
 * [x] Basic UI
 * [x] Log
-* [ ] Player stat HUD
+* [x] Player stat HUD
 * [ ] Item pickups
 * [ ] Multiple levels
 * [ ] Progression
@@ -69,15 +69,13 @@ Speed
 * [ ] Machine entities
 * [ ] Tie up with items
 * [ ] Game flow: base location<->branches
-* [ ] ---> Iter 3
-* [ ] More game flow
-* [ ] Loose ends
-* [ ] More input refactoring, key repeat, diagonal movement (maybe?)
-* [ ] Better AI (follow to last known location)
 * [ ] Game over (won or lost)
+* [ ] Loose ends
+* [ ] ---> Iter 3 (shippable)
 * [ ] Map procgen - Cellular automata algorithm to make some rooms destroyed
-* [ ] ---> Iter 4 (shippable)
 * [ ] Timing system
+* [ ] Better AI (follow to last known location)
+* [ ] More input refactoring, key repeat, diagonal movement (maybe?)
 * [ ] Map procgen - More prefabs
 * [ ] Mechanics Improvements
 * [ ] Extension to have a more interesting plot/twist
