@@ -18,6 +18,7 @@ typedef struct GameState
     bool player_map_mem[MAP_COLS * MAP_ROWS];
     Map map;
     Glyph ui[UI_COLS * SCREEN_ROWS];
+    char *log_lines[LOG_LINES]; // TODO: clean up if stop showing log at some point
     RunState run_state;
 } GameState;
 
@@ -37,12 +38,17 @@ bool game_try_move_entity_p(size_t entity_id, Point *pos, Point new, int map_wid
     {
         Stats *att = &_gs.stats[entity_id];
         Stats *def = &_gs.stats[target_id];
-        combat_attack(att, def);
+        AttackResult ar = combat_attack(att, def);
+
+        ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
+                        "%s>%s - %s-%dhp.",
+                        att->name, def->name, ar.hit_type, ar.end_dmg);
 
         if (def->health <= 0)
         {
             _gs.ent[target_id].alive = false;
-            printf("%s died.\n", def->name);
+            ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
+                        "%s died.", def->name);
         }
 
         did_move = true;
@@ -123,8 +129,20 @@ void game_update(float dt, int *_new_key)
                 }
             }
 
-            Point p = { 38, 64 };
+            // Init UI
+            // -------
+            Point p = { 1, 1 };
             ui_printf(_gs.ui, UI_COLS, SCREEN_ROWS, p, "%c %c struo", 0xE0, 0xEA);
+
+            for (int i = 0; i < LOG_LINES; i++)
+            {
+                _gs.log_lines[i] = calloc(1, UI_COLS * sizeof(char));
+            }
+
+            ui_draw_log(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines);
+
+            ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
+                            "Hello, player %c", 0x01);
 
             _gs.run_state = AWAITING_INPUT;
         } break;
@@ -312,7 +330,9 @@ void game_update(float dt, int *_new_key)
             if (!_gs.ent[1].alive)
             {
                 _gs.run_state = GAME_OVER;
-                printf("GAME OVER\n");
+
+                ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, "");
+                ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, "GAME OVER.");
             }
             else
             {
@@ -394,11 +414,19 @@ void game_render(float dt)
         {
             glyph = 0xC0;
         }
+        else if (p.x == 0 && p.y == SCREEN_ROWS - LOG_LINES - 3)
+        {
+            glyph = 0xC3;
+        }
+        else if (p.x == UI_COLS - 1 && p.y == SCREEN_ROWS - LOG_LINES - 3)
+        {
+            glyph = 0xB4;
+        }
         else if (p.x == 0 || p.x == UI_COLS - 1)
         {
             glyph = 0xB3;
         }
-        else if (p.y == 0 || p.y == SCREEN_ROWS - 1)
+        else if (p.y == 0 || p.y == SCREEN_ROWS - LOG_LINES - 3 || p.y == SCREEN_ROWS - 1)
         {
             glyph = 0xC4;
         }

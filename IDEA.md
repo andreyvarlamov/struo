@@ -58,7 +58,9 @@ Speed
 * [x] Map memory
 * [x] Combat
 * [x] ---> Iter 1 (single room level w/ combat)
-* [ ] Basic UI
+* [x] Basic UI
+* [x] Log
+* [ ] Player stat HUD
 * [ ] Item pickups
 * [ ] Multiple levels
 * [ ] Progression

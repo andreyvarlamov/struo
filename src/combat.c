@@ -16,6 +16,12 @@ typedef struct Stats
     int speed;
 } Stats;
 
+typedef struct AttackResult
+{
+    char hit_type[16];
+    int end_dmg;
+} AttackResult;
+
 Stats combat_stats_ctor(const char name[24],
                         int max_health,
                         int accuracy, int evasion,
@@ -36,7 +42,7 @@ Stats combat_stats_ctor(const char name[24],
     return stats;
 }
 
-void combat_attack(Stats *att, Stats *def)
+AttackResult combat_attack(Stats *att, Stats *def)
 {
     int hit = rand() % 100;
 
@@ -44,7 +50,7 @@ void combat_attack(Stats *att, Stats *def)
 
     float dam_coef;
 
-    char *hit_type = malloc(16 * sizeof(char));
+    char hit_type[16] = {0};
 
     if (hit > (98 - chance_d))
     {
@@ -76,9 +82,11 @@ void combat_attack(Stats *att, Stats *def)
     int end_dmg = (int) (dam_coef * (randomized_dmg * def_modifier * 0.01f));
     def->health -= end_dmg;
 
-    printf("%s attacks %s. It's a %s for %d.\n", att->name, def->name, hit_type, end_dmg);
+    AttackResult ar;
+    strcpy(ar.hit_type, hit_type);
+    ar.end_dmg = end_dmg;
 
-    free(hit_type);
+    return ar;
 }
 
 /*
