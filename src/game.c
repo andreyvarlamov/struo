@@ -12,83 +12,30 @@ typedef struct GameState
     Map map;
     bool collisions[SCREEN_COLS * SCREEN_ROWS];
     Entity enemies[ENEMY_NUM];
-    Entity player;
     bool player_fov[SCREEN_COLS * SCREEN_ROWS];
     bool player_map_mem[SCREEN_COLS * SCREEN_ROWS];
+    Stats enemy_stats[ENEMY_NUM];
+    Entity player;
+    Stats player_stats;
     size_t enemy_num;
     RunState run_state;
 } GameState;
 
 global_variable GameState _game_state;
 
-bool game_check_move_entity(Point pos, Point *new_out, Direction dir, int map_width)
+bool game_try_move_entity_p(Point *pos, Point new, int map_width)
 {
-    *new_out = pos;
-
-    switch (dir)
-    {
-        case DIR_NORTH:
-        {
-            new_out->y--;
-        } break;
-        case DIR_EAST:
-        {
-            new_out->x++;
-        } break;
-        case DIR_SOUTH:
-        {
-            new_out->y++;
-        } break;
-        case DIR_WEST:
-        {
-            new_out->x--;
-        } break;
-        default:
-        {
-            return false;
-        } break;
-    }
-
-    return !_game_state.collisions[util_p_to_i(*new_out, map_width)];
-}
-
-bool game_try_move_entity(Point *pos, Direction dir, int map_width)
-{
-    Point new = *pos;
-
     bool did_move = false;
-    if (game_check_move_entity(*pos, &new, dir, map_width))
+    if (!_game_state.collisions[util_p_to_i(new, map_width)])
     {
         *pos = new;
         did_move = true;
     }
     else if (util_p_cmp(_game_state.player.pos, new))
     {
-        printf("Attacking player.\n");
-        // TODO: Attack player
-        did_move = true;
-    }
-
-    return did_move;
-}
-
-bool game_try_move_entity_xy(Point *pos, Point new, int map_width)
-{
-    bool did_move = false;
-    if (!_game_state.collisions[util_p_to_i(new, map_width)])
-    {
-        pos->x = new.x;
-        pos->y = new.y;
-        did_move = true;
-    }
-    else if (util_p_cmp(_game_state.player.pos, new))
-    {
         // printf("Attacking player.\n");
 
-        Stats att = { .name = "Rat", .health = 100, .max_health = 100, .accuracy = 5, .evasion = 5, .damage = 50, .defense = 30, .speed = 1};
-        Stats def = { .name = "Player", .health = 100, .max_health = 100, .accuracy = 5, .evasion = 5, .damage = 50, .defense = 30, .speed = 1};
-
-        combat_attack(&att, &def);
+        // combat_attack(&_game_state.enemy_stats[util_p_to_i(*pos, map_width)], &_game_state.player_stats);
 
         did_move = true;
     }
@@ -136,6 +83,8 @@ void game_update(float dt, int *_new_key)
             glm_vec3_copy((vec3) { 1.0f, 1.0f, 0.5f }, _game_state.player.fg);
             glm_vec3_copy(GLM_VEC3_ZERO, _game_state.player.bg);
 
+            _game_state.player_stats = combat_stats_ctor("Player", 100, 100, 5, 5, 50, 30, 1);
+
             game_update_collisions();
             entity_calc_player_fov(
                 _game_state.map.opaque, SCREEN_COLS, SCREEN_COLS,
@@ -168,6 +117,8 @@ void game_update(float dt, int *_new_key)
                     glm_vec3_copy((vec3) { 1.0f, 0.5f, 0.05f }, _game_state.enemies[i].fg);
                     glm_vec3_copy((vec3) { 0.5f, 0.15f, 0.15f }, _game_state.enemies[i].bg);
 
+                    _game_state.enemy_stats[i] = combat_stats_ctor("Rat", 100, 100, 5, 5, 50, 30, 1);
+
                     game_update_collisions();
                 }
             }
@@ -177,7 +128,9 @@ void game_update(float dt, int *_new_key)
 
         case AWAITING_INPUT:
         {
-            bool did_move = false;
+            bool skip_turn = false;
+
+            Point move_to = { -1, -1 };
 
             if (*_new_key != GLFW_KEY_UNKNOWN)
             {
@@ -185,38 +138,26 @@ void game_update(float dt, int *_new_key)
                 {
                     case GLFW_KEY_H:
                     {
-                        did_move = game_try_move_entity(
-                            &_game_state.player.pos,
-                            DIR_WEST,
-                            SCREEN_COLS
-                        );
+                        move_to = util_xy_to_p(_game_state.player.pos.x - 1,
+                                               _game_state.player.pos.y);
                     } break;
 
                     case GLFW_KEY_J:
                     {
-                        did_move = game_try_move_entity(
-                            &_game_state.player.pos,
-                            DIR_SOUTH,
-                            SCREEN_COLS
-                        );
+                        move_to = util_xy_to_p(_game_state.player.pos.x,
+                                               _game_state.player.pos.y + 1);
                     } break;
 
                     case GLFW_KEY_K:
                     {
-                        did_move = game_try_move_entity(
-                            &_game_state.player.pos,
-                            DIR_NORTH,
-                            SCREEN_COLS
-                        );
+                        move_to = util_xy_to_p(_game_state.player.pos.x,
+                                               _game_state.player.pos.y - 1);
                     } break;
-                    
+
                     case GLFW_KEY_L:
                     {
-                        did_move = game_try_move_entity(
-                            &_game_state.player.pos,
-                            DIR_EAST,
-                            SCREEN_COLS
-                        );
+                        move_to = util_xy_to_p(_game_state.player.pos.x + 1,
+                                               _game_state.player.pos.y);
                     } break;
 
                     case GLFW_KEY_COMMA:
@@ -227,8 +168,7 @@ void game_update(float dt, int *_new_key)
                         bool found = true;
                         do
                         {
-                            p.x = rand() % SCREEN_COLS;
-                            p.y = rand() % SCREEN_ROWS;
+                            p = util_xy_to_p(rand() % SCREEN_COLS, rand() % SCREEN_ROWS);
                             found = !_game_state.collisions[util_p_to_i(p, SCREEN_COLS)];
                             attempts--;
                         }
@@ -236,21 +176,27 @@ void game_update(float dt, int *_new_key)
 
                         if (found)
                         {
-                            _game_state.player.pos = p;
-                            did_move = true;
+                            move_to = p;
                         }
                     } break;
 
                     case GLFW_KEY_PERIOD:
                     {
-                        did_move = true;
+                        skip_turn = true;
                     } break;
                 }
 
                 *_new_key = GLFW_KEY_UNKNOWN;
             }
 
-            if (did_move)
+            bool did_move = false;
+
+            if (move_to.x != -1 && move_to.y != -1)
+            {
+                did_move = game_try_move_entity_p(&_game_state.player.pos, move_to, SCREEN_COLS);
+            }
+
+            if (did_move || skip_turn)
             {
                 entity_calc_player_fov(
                     _game_state.map.opaque, SCREEN_COLS, SCREEN_ROWS,
@@ -343,7 +289,7 @@ void game_update(float dt, int *_new_key)
 
                         if (next.x != -1 && next.y != -1)
                         {
-                            did_move = game_try_move_entity_xy(
+                            did_move = game_try_move_entity_p(
                                 &_game_state.enemies[i].pos,
                                 next,
                                 SCREEN_COLS

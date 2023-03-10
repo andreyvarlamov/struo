@@ -16,6 +16,26 @@ typedef struct Stats
     int speed;
 } Stats;
 
+Stats combat_stats_ctor(const char name[24],
+                        int health, int max_health,
+                        int accuracy, int evasion,
+                        int damage, int defense,
+                        int speed)
+{
+    Stats stats;
+
+    strcpy(stats.name, name);
+    stats.health = health;
+    stats.max_health = max_health;
+    stats.accuracy = accuracy;
+    stats.evasion = evasion;
+    stats.damage = damage;
+    stats.defense = defense;
+    stats.speed = speed;
+
+    return stats;
+}
+
 void combat_attack(Stats *att, Stats *def)
 {
     int hit = rand() % 100;
@@ -54,7 +74,6 @@ void combat_attack(Stats *att, Stats *def)
 
     // TODO: handle death
 }
-
 
 /*
     damage - what kind of weapon
