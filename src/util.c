@@ -57,10 +57,14 @@ size_t util_p_to_i(Point p, int width)
     return (size_t) (p.y * width + p.x);
 }
 
-void util_i_to_xy(size_t i, int width, int *x_out, int *y_out)
+Point util_i_to_p(size_t i, int width)
 {
-    *x_out = (int) i % width;
-    *y_out = (int) i / width;
+    Point p;
+
+    p.x = (int) i % width;
+    p.y = (int) i / width;
+
+    return p;
 }
 
 bool util_p_cmp(Point p1, Point p2)

@@ -2,11 +2,11 @@
 
 typedef struct Map
 {
-    vec3 fg_col [SCREEN_COLS * SCREEN_ROWS];
-    vec3 bg_col [SCREEN_COLS * SCREEN_ROWS];
-    Glyph glyphs[SCREEN_COLS * SCREEN_ROWS];
-    bool blocked[SCREEN_COLS * SCREEN_ROWS];
-    bool opaque [SCREEN_COLS * SCREEN_ROWS];
+    vec3 fg_col [MAP_COLS * MAP_ROWS];
+    vec3 bg_col [MAP_COLS * MAP_ROWS];
+    Glyph glyphs[MAP_COLS * MAP_ROWS];
+    bool blocked[MAP_COLS * MAP_ROWS];
+    bool opaque [MAP_COLS * MAP_ROWS];
 } Map;
 
 // to_fill should come preallocated and initialized

@@ -12,10 +12,10 @@ typedef struct GameState
 {
     Entity ent[ENTITY_NUM];
     Stats stats[ENTITY_NUM];
-    size_t ent_by_pos[SCREEN_COLS * SCREEN_ROWS];
-    bool collisions[SCREEN_COLS * SCREEN_ROWS];
-    bool player_fov[SCREEN_COLS * SCREEN_ROWS];
-    bool player_map_mem[SCREEN_COLS * SCREEN_ROWS];
+    size_t ent_by_pos[MAP_COLS * MAP_ROWS];
+    bool collisions[MAP_COLS * MAP_ROWS];
+    bool player_fov[MAP_COLS * MAP_ROWS];
+    bool player_map_mem[MAP_COLS * MAP_ROWS];
     Map map;
     RunState run_state;
 } GameState;
@@ -55,18 +55,18 @@ void game_update_collisions()
     memcpy(
         &_gs.collisions,
         &_gs.map.blocked,
-        SCREEN_COLS * SCREEN_ROWS * sizeof(bool)
+        MAP_COLS * MAP_ROWS * sizeof(bool)
     );
 
-    memset(_gs.ent_by_pos, 0, SCREEN_COLS * SCREEN_ROWS * sizeof(size_t));
+    memset(_gs.ent_by_pos, 0, MAP_COLS * MAP_ROWS * sizeof(size_t));
 
     for (size_t i = 1; i < entity_get_count(); i++)
     {
         Entity e = _gs.ent[i];
         if ( _gs.ent[i].alive)
         {
-            _gs.collisions[util_p_to_i(e.pos, SCREEN_COLS)] = true;
-            _gs.ent_by_pos[util_p_to_i(e.pos, SCREEN_COLS)] = e.id;
+            _gs.collisions[util_p_to_i(e.pos, MAP_COLS)] = true;
+            _gs.ent_by_pos[util_p_to_i(e.pos, MAP_COLS)] = e.id;
         }
     }
 }
@@ -77,7 +77,7 @@ void game_update(float dt, int *_new_key)
     {
         case INIT:
         {
-            map_gen_level(&_gs.map, SCREEN_COLS, SCREEN_ROWS);
+            map_gen_level(&_gs.map, MAP_COLS, MAP_ROWS);
 
             // Init player
             // -----------
@@ -90,7 +90,7 @@ void game_update(float dt, int *_new_key)
 
                 game_update_collisions();
                 entity_calc_player_fov(
-                    _gs.map.opaque, SCREEN_COLS, SCREEN_COLS,
+                    _gs.map.opaque, MAP_COLS, MAP_COLS,
                     _gs.ent[1].pos, _gs.player_fov, _gs.player_map_mem
                 );
             }
@@ -105,9 +105,9 @@ void game_update(float dt, int *_new_key)
                 int attempts = 20;
                 do
                 {
-                    pos.x = rand() % SCREEN_COLS;
-                    pos.y = rand() % SCREEN_ROWS;
-                    found = !_gs.collisions[util_p_to_i(pos, SCREEN_COLS)];
+                    pos.x = rand() % MAP_COLS;
+                    pos.y = rand() % MAP_ROWS;
+                    found = !_gs.collisions[util_p_to_i(pos, MAP_COLS)];
                     attempts--;
                 }
                 while (!found && attempts >= 0);
@@ -167,8 +167,8 @@ void game_update(float dt, int *_new_key)
                         bool found = true;
                         do
                         {
-                            p = util_xy_to_p(rand() % SCREEN_COLS, rand() % SCREEN_ROWS);
-                            found = !_gs.collisions[util_p_to_i(p, SCREEN_COLS)];
+                            p = util_xy_to_p(rand() % MAP_COLS, rand() % MAP_ROWS);
+                            found = !_gs.collisions[util_p_to_i(p, MAP_COLS)];
                             attempts--;
                         }
                         while (!found && attempts >= 0);
@@ -192,13 +192,13 @@ void game_update(float dt, int *_new_key)
 
             if (move_to.x != -1 && move_to.y != -1)
             {
-                did_move = game_try_move_entity_p(1, &_gs.ent[1].pos, move_to, SCREEN_COLS);
+                did_move = game_try_move_entity_p(1, &_gs.ent[1].pos, move_to, MAP_COLS);
             }
 
             if (did_move || skip_turn)
             {
                 entity_calc_player_fov(
-                    _gs.map.opaque, SCREEN_COLS, SCREEN_ROWS,
+                    _gs.map.opaque, MAP_COLS, MAP_ROWS,
                     _gs.ent[1].pos, _gs.player_fov, _gs.player_map_mem
                 );
                 game_update_collisions();
@@ -225,7 +225,7 @@ void game_update(float dt, int *_new_key)
                                 &_gs.ent[i].x,
                                 &_gs.ent[i].y,
                                 dir,
-                                SCREEN_COLS
+                                MAP_COLS
                             );
                         }
                         while (!did_move);
@@ -243,7 +243,7 @@ void game_update(float dt, int *_new_key)
                             _gs.ent[i].pos.y,
                             &new_x, &new_y,
                             (Direction) dir_iter,
-                            SCREEN_COLS
+                            MAP_COLS
                         );
 
                         int dist = util_calc_sqr_distance(
@@ -264,7 +264,7 @@ void game_update(float dt, int *_new_key)
                             &_gs.ent[i].pos.x,
                             &_gs.ent[i].pos.y,
                             dir,
-                            SCREEN_COLS
+                            MAP_COLS
                         );
 
                         if (did_move)
@@ -275,13 +275,13 @@ void game_update(float dt, int *_new_key)
 #elif 1
                     if (entity_check_pos_within_fov(
                         _gs.map.opaque,
-                        SCREEN_COLS, SCREEN_ROWS,
+                        MAP_COLS, MAP_ROWS,
                         _gs.ent[i].pos,
                         _gs.ent[1].pos
                     ))
                     {
                         Point next = pathfinding_bfs(
-                            _gs.collisions, SCREEN_COLS, SCREEN_ROWS,
+                            _gs.collisions, MAP_COLS, MAP_ROWS,
                             _gs.ent[i].pos, _gs.ent[1].pos);
 
                         bool did_move = false;
@@ -292,7 +292,7 @@ void game_update(float dt, int *_new_key)
                                 i,
                                 &_gs.ent[i].pos,
                                 next,
-                                SCREEN_COLS
+                                MAP_COLS
                             );
                         }
 
@@ -328,13 +328,13 @@ void game_render(float dt)
 {
     // Render map
     // ----------
-    for (size_t i = 0; i < SCREEN_COLS * SCREEN_ROWS; i++)
+    for (size_t i = 0; i < MAP_COLS * MAP_ROWS; i++)
     {
         if (_gs.player_map_mem[i] || _gs.player_fov[i])
         {
             vec2 screen_offset ={
-                (i % SCREEN_COLS) * SCREEN_TILE_WIDTH,
-                (i / SCREEN_COLS) * SCREEN_TILE_WIDTH
+                (i % MAP_COLS) * SCREEN_TILE_WIDTH,
+                (i / MAP_COLS) * SCREEN_TILE_WIDTH
             };
 
             render_render_tile(
@@ -352,7 +352,7 @@ void game_render(float dt)
     {
         if (_gs.ent[i].alive)
         {
-            if (_gs.player_fov[util_p_to_i(_gs.ent[i].pos, SCREEN_COLS)])
+            if (_gs.player_fov[util_p_to_i(_gs.ent[i].pos, MAP_COLS)])
             {
                 render_render_tile(
                     (vec2) {
@@ -365,5 +365,47 @@ void game_render(float dt)
                 );
             }
         }
+    }
+
+    // Render UI
+    // ---------
+    for (int i = 0; i <  UI_COLS * SCREEN_ROWS; i++)
+    {
+        Point p = util_i_to_p(i, UI_COLS);
+        Glyph glyph = ' ';
+        
+        if (p.x == 0 && p.y == 0)
+        {
+            glyph = 0xDA;
+        }
+        else if (p.x == UI_COLS - 1 && p.y == 0)
+        {
+            glyph = 0xBF;
+        }
+        else if (p.x == UI_COLS - 1 && p.y == SCREEN_ROWS - 1)
+        {
+            glyph = 0xD9;
+        }
+        else if (p.x == 0 && p.y == SCREEN_ROWS - 1)
+        {
+            glyph = 0xC0;
+        }
+        else if (p.x == 0 || p.x == UI_COLS - 1)
+        {
+            glyph = 0xB3;
+        }
+        else if (p.y == 0 || p.y == SCREEN_ROWS - 1)
+        {
+            glyph = 0xC4;
+        }
+        render_render_tile(
+                    (vec2) {
+                        (p.x + MAP_COLS) * SCREEN_TILE_WIDTH,
+                        p.y * SCREEN_TILE_WIDTH
+                    },
+                    glyph,
+                    GLM_VEC3_ONE, GLM_VEC3_ZERO,
+                    false
+        );
     }
 }
