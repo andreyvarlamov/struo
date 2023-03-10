@@ -10,18 +10,19 @@ typedef struct Entity
     bool alive;
 } Entity;
 
-global_variable size_t next_id = 1;
+global_variable size_t next_char_id = 1;
+global_variable size_t next_nc_id = ENTITY_NC_OFFSET;
 
-Entity entity_ctor(Point pos, vec3 bg, vec3 fg, Glyph glyph, bool alive)
+Entity entity_char_ctor(Point pos, vec3 bg, vec3 fg, Glyph glyph, bool alive)
 {
-    if (next_id >= ENTITY_NUM)
+    if (next_char_id >= ENTITY_NC_OFFSET)
     {
-        printf("entity_ctor: ERROR: creating more entities than allowed");
+        printf("entity_char_ctor: ERROR: creating more entities than allowed");
     }
 
     Entity e;
-    e.id = next_id;
-    next_id++;
+    e.id = next_char_id;
+    next_char_id++;
 
     e.pos = pos;
     glm_vec3_copy(bg, e.bg);
@@ -32,9 +33,34 @@ Entity entity_ctor(Point pos, vec3 bg, vec3 fg, Glyph glyph, bool alive)
     return e;
 }
 
-size_t entity_get_count()
+Entity entity_nc_ctor(Point pos, vec3 bg, vec3 fg, Glyph glyph, bool alive)
 {
-    return next_id;
+    if (next_char_id >= ENTITY_NUM)
+    {
+        printf("entity_nc_ctor: ERROR: creating more entities than allowed");
+    }
+
+    Entity e;
+    e.id = next_nc_id;
+    next_nc_id++;
+
+    e.pos = pos;
+    glm_vec3_copy(bg, e.bg);
+    glm_vec3_copy(fg, e.fg);
+    e.glyph = glyph;
+    e.alive = alive;
+
+    return e;
+}
+
+size_t entity_char_get_count()
+{
+    return next_char_id;
+}
+
+size_t entity_nc_get_count()
+{
+    return next_nc_id - ENTITY_NC_OFFSET;
 }
 
 bool entity_check_pos_within_fov(const bool *opaque, int map_width, int map_height, 

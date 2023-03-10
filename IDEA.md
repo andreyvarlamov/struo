@@ -61,6 +61,7 @@ Speed
 * [x] Basic UI
 * [x] Log
 * [x] Player stat HUD
+* [x] Non-character entities
 * [ ] Item pickups
 * [ ] Multiple levels
 * [ ] Progression

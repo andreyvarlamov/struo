@@ -73,7 +73,7 @@ void game_update_collisions()
 
     memset(_gs.ent_by_pos, 0, MAP_COLS * MAP_ROWS * sizeof(size_t));
 
-    for (size_t i = 1; i < entity_get_count(); i++)
+    for (size_t i = 1; i < entity_char_get_count(); i++)
     {
         Entity e = _gs.ent[i];
         if ( _gs.ent[i].alive)
@@ -95,7 +95,7 @@ void game_update(float dt, int *_new_key)
             // Init player
             // -----------
             {
-                Entity p = entity_ctor(util_xy_to_p(3, 30),
+                Entity p = entity_char_ctor(util_xy_to_p(3, 30),
                                     GLM_VEC3_ZERO, (vec3) {1.0f, 1.0f, 0.5f },
                                     0x02, true);
                 _gs.ent[p.id] = p;
@@ -127,12 +127,24 @@ void game_update(float dt, int *_new_key)
 
                 if (found)
                 {
-                    Entity e = entity_ctor(pos, (vec3) { 0.5f, 0.15f, 0.15f }, (vec3) { 1.0f, 0.5f, 0.05f }, 'r', true);
+                    Entity e = entity_char_ctor(pos, (vec3) { 0.5f, 0.15f, 0.15f }, (vec3) { 1.0f, 0.5f, 0.05f }, 'r', true);
                     _gs.ent[e.id] = e;
                     _gs.stats[e.id] = combat_stats_ctor("Rat", 30, 1, 5, 7, 2, 1);
 
                     game_update_collisions();
                 }
+            }
+
+            // Init items
+            // ----------
+            for (size_t i = 0; i < 1; i++)
+            {
+                Entity e = entity_nc_ctor(util_xy_to_p(5, 30),
+                                          (vec3) { 0.1f, 0.6f, 0.1f },
+                                          GLM_VEC3_ONE,
+                                          '+',
+                                          true);
+                _gs.ent[e.id] = e;
             }
 
             // Init UI
@@ -238,7 +250,7 @@ void game_update(float dt, int *_new_key)
 
         case COMP_TURN:
         {
-            for (size_t i = 1; i < entity_get_count(); i++)
+            for (size_t i = 1; i < entity_char_get_count(); i++)
             {
                 if (_gs.ent[i].alive)
                 {
@@ -378,9 +390,9 @@ void game_render(float dt)
         }
     }
 
-    // Render entities
+    // Render char entities
     // --------------
-    for (size_t i = 1; i < entity_get_count(); i++)
+    for (size_t i = 1; i < entity_char_get_count(); i++)
     {
         if (_gs.ent[i].alive)
         {
@@ -393,6 +405,28 @@ void game_render(float dt)
                     },
                     _gs.ent[i].glyph,
                     _gs.ent[i].fg, _gs.ent[i].bg,
+                    false
+                );
+            }
+        }
+    }
+
+    // Render char entities
+    // --------------
+    for (size_t i = 0; i < entity_nc_get_count(); i++)
+    {
+        size_t offset_i = i + ENTITY_NC_OFFSET;
+        if (_gs.ent[offset_i].alive)
+        {
+            if (_gs.player_fov[util_p_to_i(_gs.ent[offset_i].pos, MAP_COLS)])
+            {
+                render_render_tile(
+                    (vec2) {
+                        _gs.ent[offset_i].pos.x * SCREEN_TILE_WIDTH,
+                        _gs.ent[offset_i].pos.y * SCREEN_TILE_WIDTH
+                    },
+                    _gs.ent[offset_i].glyph,
+                    _gs.ent[offset_i].fg, _gs.ent[offset_i].bg,
                     false
                 );
             }

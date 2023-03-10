@@ -29,7 +29,8 @@
 // NOTE: Assumes square font in a square atlas
 #define ATLAS_COLS 16.0f
 
-#define ENTITY_NUM 50
+#define ENTITY_NUM 200
+#define ENTITY_NC_OFFSET 100
 
 #define ENEMY_FOV 15
 #define PLAYER_FOV 15
