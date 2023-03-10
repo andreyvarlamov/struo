@@ -10,7 +10,7 @@ typedef struct Entity
     bool alive;
 } Entity;
 
-global_variable size_t next_id = 0;
+global_variable size_t next_id = 1;
 
 Entity entity_ctor(Point pos, vec3 bg, vec3 fg, Glyph glyph, bool alive)
 {

@@ -11,6 +11,7 @@ typedef struct GameState
 {
     Entity ent[ENTITY_NUM];
     Stats stats[ENTITY_NUM];
+    size_t ent_by_pos[SCREEN_COLS * SCREEN_ROWS];
     bool collisions[SCREEN_COLS * SCREEN_ROWS];
     bool player_fov[SCREEN_COLS * SCREEN_ROWS];
     bool player_map_mem[SCREEN_COLS * SCREEN_ROWS];
@@ -28,7 +29,7 @@ bool game_try_move_entity_p(Point *pos, Point new, int map_width)
         *pos = new;
         did_move = true;
     }
-    else if (util_p_cmp(_gs.ent[0].pos, new))
+    else if (util_p_cmp(_gs.ent[1].pos, new))
     {
         // printf("Attacking player.\n");
 
@@ -42,24 +43,21 @@ bool game_try_move_entity_p(Point *pos, Point new, int map_width)
 
 void game_update_collisions()
 {
-    // Refresh collisions based on underlying map
     memcpy(
         &_gs.collisions,
         &_gs.map.blocked,
         SCREEN_COLS * SCREEN_ROWS * sizeof(bool)
     );
 
-    // Update based on player's position
-    // ---------------------------------
-    _gs.collisions[util_p_to_i(_gs.ent[0].pos, SCREEN_COLS)] = true;
+    memset(_gs.ent_by_pos, 0, SCREEN_COLS * SCREEN_ROWS * sizeof(size_t));
 
-    // Update based enemies' positions
-    // --------------------------------
     for (size_t i = 1; i < entity_get_count(); i++)
     {
+        Entity e = _gs.ent[i];
         if ( _gs.ent[i].alive)
         {
-            _gs.collisions[util_p_to_i(_gs.ent[i].pos, SCREEN_COLS)] = true;
+            _gs.collisions[util_p_to_i(e.pos, SCREEN_COLS)] = true;
+            _gs.ent_by_pos[util_p_to_i(e.pos, SCREEN_COLS)] = e.id;
         }
     }
 }
@@ -74,21 +72,23 @@ void game_update(float dt, int *_new_key)
 
             // Init player
             // -----------
-            Entity p = entity_ctor(util_xy_to_p(3, 30),
-                                   GLM_VEC3_ZERO, (vec3) {1.0f, 1.0f, 0.5f },
-                                   0x02, true);
-            _gs.ent[p.id] = p;
-            _gs.stats[p.id] = combat_stats_ctor("Player", 100, 100, 5, 5, 50, 30, 1);
+            {
+                Entity p = entity_ctor(util_xy_to_p(3, 30),
+                                    GLM_VEC3_ZERO, (vec3) {1.0f, 1.0f, 0.5f },
+                                    0x02, true);
+                _gs.ent[p.id] = p;
+                _gs.stats[p.id] = combat_stats_ctor("Player", 100, 100, 5, 5, 50, 30, 1);
 
-            game_update_collisions();
-            entity_calc_player_fov(
-                _gs.map.opaque, SCREEN_COLS, SCREEN_COLS,
-                _gs.ent[0].pos, _gs.player_fov, _gs.player_map_mem
-            );
+                game_update_collisions();
+                entity_calc_player_fov(
+                    _gs.map.opaque, SCREEN_COLS, SCREEN_COLS,
+                    _gs.ent[1].pos, _gs.player_fov, _gs.player_map_mem
+                );
+            }
 
             // Init enemies
             // ------------
-            for (size_t i = 0; i < 10; i++)
+            for (size_t i = 0; i < 30; i++)
             {
                 Point pos;
 
@@ -105,9 +105,9 @@ void game_update(float dt, int *_new_key)
 
                 if (found)
                 {
-                    Entity e = entity_ctor(pos, (vec3) { 1.0f, 0.5f, 0.05f }, (vec3) { 0.5f, 0.15f, 0.15f }, 'r', true);
+                    Entity e = entity_ctor(pos, (vec3) { 0.5f, 0.15f, 0.15f }, (vec3) { 1.0f, 0.5f, 0.05f }, 'r', true);
                     _gs.ent[e.id] = e;
-                    _gs.stats[i] = combat_stats_ctor("Rat", 100, 100, 5, 5, 50, 30, 1);
+                    _gs.stats[e.id] = combat_stats_ctor("Rat", 100, 100, 5, 5, 50, 30, 1);
 
                     game_update_collisions();
                 }
@@ -128,26 +128,26 @@ void game_update(float dt, int *_new_key)
                 {
                     case GLFW_KEY_H:
                     {
-                        move_to = util_xy_to_p(_gs.ent[0].pos.x - 1,
-                                               _gs.ent[0].pos.y);
+                        move_to = util_xy_to_p(_gs.ent[1].pos.x - 1,
+                                               _gs.ent[1].pos.y);
                     } break;
 
                     case GLFW_KEY_J:
                     {
-                        move_to = util_xy_to_p(_gs.ent[0].pos.x,
-                                               _gs.ent[0].pos.y + 1);
+                        move_to = util_xy_to_p(_gs.ent[1].pos.x,
+                                               _gs.ent[1].pos.y + 1);
                     } break;
 
                     case GLFW_KEY_K:
                     {
-                        move_to = util_xy_to_p(_gs.ent[0].pos.x,
-                                               _gs.ent[0].pos.y - 1);
+                        move_to = util_xy_to_p(_gs.ent[1].pos.x,
+                                               _gs.ent[1].pos.y - 1);
                     } break;
 
                     case GLFW_KEY_L:
                     {
-                        move_to = util_xy_to_p(_gs.ent[0].pos.x + 1,
-                                               _gs.ent[0].pos.y);
+                        move_to = util_xy_to_p(_gs.ent[1].pos.x + 1,
+                                               _gs.ent[1].pos.y);
                     } break;
 
                     case GLFW_KEY_COMMA:
@@ -183,14 +183,14 @@ void game_update(float dt, int *_new_key)
 
             if (move_to.x != -1 && move_to.y != -1)
             {
-                did_move = game_try_move_entity_p(&_gs.ent[0].pos, move_to, SCREEN_COLS);
+                did_move = game_try_move_entity_p(&_gs.ent[1].pos, move_to, SCREEN_COLS);
             }
 
             if (did_move || skip_turn)
             {
                 entity_calc_player_fov(
                     _gs.map.opaque, SCREEN_COLS, SCREEN_ROWS,
-                    _gs.ent[0].pos, _gs.player_fov, _gs.player_map_mem
+                    _gs.ent[1].pos, _gs.player_fov, _gs.player_map_mem
                 );
                 game_update_collisions();
                 _gs.run_state = COMP_TURN;
@@ -239,7 +239,7 @@ void game_update(float dt, int *_new_key)
 
                         int dist = util_calc_sqr_distance(
                             new_x, new_y,
-                            _gs.ent[0].pos.x, _gs.ent[0].pos.y
+                            _gs.ent[1].pos.x, _gs.ent[1].pos.y
                         );
 
                         if (dist < min_dist)
@@ -268,12 +268,12 @@ void game_update(float dt, int *_new_key)
                         _gs.map.opaque,
                         SCREEN_COLS, SCREEN_ROWS,
                         _gs.ent[i].pos,
-                        _gs.ent[0].pos
+                        _gs.ent[1].pos
                     ))
                     {
                         Point next = pathfinding_bfs(
                             _gs.collisions, SCREEN_COLS, SCREEN_ROWS,
-                            _gs.ent[i].pos, _gs.ent[0].pos);
+                            _gs.ent[i].pos, _gs.ent[1].pos);
 
                         bool did_move = false;
 
@@ -322,7 +322,7 @@ void game_render(float dt)
         }
     }
 
-    // Render enemies
+    // Render entities
     // --------------
     for (size_t i = 1; i < entity_get_count(); i++)
     {
@@ -341,20 +341,5 @@ void game_render(float dt)
                 );
             }
         }
-    }
-
-    // Render player
-    // -------------
-    if (_gs.ent[0].alive)
-    {
-        render_render_tile(
-            (vec2) {
-                _gs.ent[0].pos.x * SCREEN_TILE_WIDTH,
-                _gs.ent[0].pos.y * SCREEN_TILE_WIDTH
-            },
-            _gs.ent[0].glyph,
-            _gs.ent[0].fg, _gs.ent[0].bg,
-            false
-        );
     }
 }
