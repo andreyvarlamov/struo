@@ -56,9 +56,8 @@ Speed
 * [x] Player FOV
 * [x] Opaque/transparent
 * [x] Map memory
-* [ ] Combat
-* [ ] Timing system
-* [ ] ---> Iter 1 (single room level w/ combat)
+* [x] Combat
+* [x] ---> Iter 1 (single room level w/ combat)
 * [ ] Basic UI
 * [ ] Item pickups
 * [ ] Multiple levels
@@ -76,6 +75,7 @@ Speed
 * [ ] Game over (won or lost)
 * [ ] Map procgen - Cellular automata algorithm to make some rooms destroyed
 * [ ] ---> Iter 4 (shippable)
+* [ ] Timing system
 * [ ] Map procgen - More prefabs
 * [ ] Mechanics Improvements
 * [ ] Extension to have a more interesting plot/twist

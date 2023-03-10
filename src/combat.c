@@ -17,7 +17,7 @@ typedef struct Stats
 } Stats;
 
 Stats combat_stats_ctor(const char name[24],
-                        int health, int max_health,
+                        int max_health,
                         int accuracy, int evasion,
                         int damage, int defense,
                         int speed)
@@ -25,7 +25,7 @@ Stats combat_stats_ctor(const char name[24],
     Stats stats;
 
     strcpy(stats.name, name);
-    stats.health = health;
+    stats.health = max_health;
     stats.max_health = max_health;
     stats.accuracy = accuracy;
     stats.evasion = evasion;
@@ -65,14 +65,20 @@ void combat_attack(Stats *att, Stats *def)
         strcpy(hit_type, "miss");
     }
 
-    int end_dmg = (int) (dam_coef * (att->damage - def->defense));
+    int def_modifier = 100 - def->defense;
+    if (def_modifier < 5)
+    {
+        def_modifier = 5;
+    }
+
+    int randomized_dmg = rand() % (att->damage / 3) - att->damage / 6 + att->damage;
+
+    int end_dmg = (int) (dam_coef * (randomized_dmg * def_modifier * 0.01f));
     def->health -= end_dmg;
 
     printf("%s attacks %s. It's a %s for %d.\n", att->name, def->name, hit_type, end_dmg);
 
     free(hit_type);
-
-    // TODO: handle death
 }
 
 /*

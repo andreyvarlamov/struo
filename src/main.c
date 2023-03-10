@@ -52,7 +52,7 @@ int main()
 
         if (frame_count <= 0)
         {
-            printf(" `````````````````````````````` Avg delay: %f ms\n", delta_sum / 30.0f * 1000.0f);
+            if (0) printf(" `````````````````````````````` Avg delay: %f ms\n", delta_sum / 30.0f * 1000.0f);
             delta_sum = 0.0f;
             frame_count = 30;
         }

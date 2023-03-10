@@ -5,6 +5,7 @@ typedef enum RunState
     INIT,
     AWAITING_INPUT,
     COMP_TURN,
+    GAME_OVER
 } RunState;
 
 typedef struct GameState
@@ -21,19 +22,27 @@ typedef struct GameState
 
 global_variable GameState _gs;
 
-bool game_try_move_entity_p(Point *pos, Point new, int map_width)
+bool game_try_move_entity_p(size_t entity_id, Point *pos, Point new, int map_width)
 {
+    size_t target_id = _gs.ent_by_pos[util_p_to_i(new, map_width)];
+
     bool did_move = false;
     if (!_gs.collisions[util_p_to_i(new, map_width)])
     {
         *pos = new;
         did_move = true;
     }
-    else if (util_p_cmp(_gs.ent[1].pos, new))
+    else if (target_id)
     {
-        // printf("Attacking player.\n");
+        Stats *att = &_gs.stats[entity_id];
+        Stats *def = &_gs.stats[target_id];
+        combat_attack(att, def);
 
-        // combat_attack(&_gs.enemy_stats[util_p_to_i(*pos, map_width)], &_gs.player_stats);
+        if (def->health <= 0)
+        {
+            _gs.ent[target_id].alive = false;
+            printf("%s died.\n", def->name);
+        }
 
         did_move = true;
     }
@@ -77,7 +86,7 @@ void game_update(float dt, int *_new_key)
                                     GLM_VEC3_ZERO, (vec3) {1.0f, 1.0f, 0.5f },
                                     0x02, true);
                 _gs.ent[p.id] = p;
-                _gs.stats[p.id] = combat_stats_ctor("Player", 100, 100, 5, 5, 50, 30, 1);
+                _gs.stats[p.id] = combat_stats_ctor("Player", 100, 5, 5, 20, 2, 1);
 
                 game_update_collisions();
                 entity_calc_player_fov(
@@ -107,7 +116,7 @@ void game_update(float dt, int *_new_key)
                 {
                     Entity e = entity_ctor(pos, (vec3) { 0.5f, 0.15f, 0.15f }, (vec3) { 1.0f, 0.5f, 0.05f }, 'r', true);
                     _gs.ent[e.id] = e;
-                    _gs.stats[e.id] = combat_stats_ctor("Rat", 100, 100, 5, 5, 50, 30, 1);
+                    _gs.stats[e.id] = combat_stats_ctor("Rat", 30, 1, 5, 7, 2, 1);
 
                     game_update_collisions();
                 }
@@ -183,7 +192,7 @@ void game_update(float dt, int *_new_key)
 
             if (move_to.x != -1 && move_to.y != -1)
             {
-                did_move = game_try_move_entity_p(&_gs.ent[1].pos, move_to, SCREEN_COLS);
+                did_move = game_try_move_entity_p(1, &_gs.ent[1].pos, move_to, SCREEN_COLS);
             }
 
             if (did_move || skip_turn)
@@ -280,6 +289,7 @@ void game_update(float dt, int *_new_key)
                         if (next.x != -1 && next.y != -1)
                         {
                             did_move = game_try_move_entity_p(
+                                i,
                                 &_gs.ent[i].pos,
                                 next,
                                 SCREEN_COLS
@@ -295,7 +305,21 @@ void game_update(float dt, int *_new_key)
                 }
             }
 
-            _gs.run_state = AWAITING_INPUT;
+            if (!_gs.ent[1].alive)
+            {
+                _gs.run_state = GAME_OVER;
+                printf("GAME OVER\n");
+            }
+            else
+            {
+                _gs.run_state = AWAITING_INPUT;
+            }
+
+        } break;
+
+        case GAME_OVER:
+        {
+
         } break;
     }
 }
