@@ -133,7 +133,12 @@ void game_update(float dt, int *_new_key)
                                     GLM_VEC3_ZERO, (vec3) {1.0f, 1.0f, 0.5f },
                                     0x02, true);
                 _gs.ent[p.id] = p;
-                _gs.stats[p.id] = combat_stats_ctor("Player", 100, 5, 5, 20, 2, 1);
+                _gs.stats[p.id] = combat_stats_ctor("Player", 
+                                                    100,
+                                                    7, 7,
+                                                    20, 2,
+                                                    1,
+                                                    ARMOR_COMBAT, GUN_NONE);
 
                 game_update_collisions();
                 entity_calc_player_fov(
@@ -163,7 +168,12 @@ void game_update(float dt, int *_new_key)
                 {
                     Entity e = entity_char_ctor(pos, (vec3) { 0.5f, 0.15f, 0.15f }, (vec3) { 1.0f, 0.5f, 0.05f }, 'r', true);
                     _gs.ent[e.id] = e;
-                    _gs.stats[e.id] = combat_stats_ctor("Rat", 30, 1, 5, 7, 2, 1);
+                    _gs.stats[e.id] = combat_stats_ctor("Rat",
+                                                        30,
+                                                        9, 4,
+                                                        7, 2,
+                                                        1,
+                                                        ARMOR_NONE, GUN_NONE);
 
                     game_update_collisions();
                 }
