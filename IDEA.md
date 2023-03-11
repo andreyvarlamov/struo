@@ -89,7 +89,7 @@ Speed
 * [x] Generate building and scavenge
 * [x] Start splash screen
 * [x] Test frame items
-* [ ] Map procgen - lobby prefab only on floor 1
+* [x] Map procgen - lobby prefab only on floor 1
 * [ ] Map procgen - prefab translation and BSP flip
 * [ ] Adjust base machine colors
 * [ ] ---> Iter 3 (shippable)

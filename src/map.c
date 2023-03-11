@@ -259,7 +259,7 @@ void map_gen_test(Map *map, int width, int height)
     free(walls);
 }
 
-void map_gen_level(Map *map, int width, int height)
+void map_gen_level(Map *map, int width, int height, int current_level)
 {
     for (int i = 0; i <  width * height; i++)
     {
@@ -292,8 +292,15 @@ void map_gen_level(Map *map, int width, int height)
         to_split = rooms[1];
         dir = (dir + 1) % DIR_NONE;
     }
-    
-    _map_gen_from_prefab(walls, width, height, rooms_to_draw[0], "res/prefabs/lobby.txt");
+
+    if (current_level == 1)
+    {
+        _map_gen_from_prefab(walls, width, height, rooms_to_draw[0], "res/prefabs/lobby.txt");
+    }
+    else
+    {
+        _map_gen_from_prefab(walls, width, height, rooms_to_draw[0], "res/prefabs/office_large.txt");
+    }
     _map_gen_from_prefab(walls, width, height, rooms_to_draw[1], "res/prefabs/office.txt");
     _map_gen_from_prefab(walls, width, height, rooms_to_draw[2], "res/prefabs/cafe.txt");
     _map_gen_from_prefab(walls, width, height, rooms_to_draw[3], "res/prefabs/lounge.txt");

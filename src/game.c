@@ -862,7 +862,7 @@ void game_clean()
 
 void game_init_level()
 {
-    map_gen_level(&_gs.map, MAP_COLS, MAP_ROWS);
+    map_gen_level(&_gs.map, MAP_COLS, MAP_ROWS, _gs.current_level);
 
     // Randomize exit
     // --------------
@@ -870,7 +870,7 @@ void game_init_level()
 
     // Init player
     // -----------
-    Point player_pos = { 3, 30 };
+    Point player_pos = { 3, 32 };
     game_spawn_player(player_pos);
 
     // Init enemies
