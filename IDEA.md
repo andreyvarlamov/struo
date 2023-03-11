@@ -83,10 +83,10 @@ Speed
 * [x] Built machines interactions and UI
 * [x] Craft computer
 * [x] Game over (won)
-* [ ] Game start
-* [ ] Base location persistency
+* [x] Do something about cheats
+* [x] Game start
+* [ ] Base location persistency & work with other levels
 * [ ] Generate building and scavenge
-* [ ] Do something about cheats
 * [ ] Start splash screen
 * [ ] ---> Iter 3 (shippable)
 * [ ] Auto explore

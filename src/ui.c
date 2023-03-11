@@ -92,7 +92,7 @@ void ui_draw_log(Glyph *ui, int ui_width, int ui_height, char **log_lines)
 
         if (log_lines[cursor])
         {
-            Point line_pos = { log_origin.x, log_origin.y + i};
+            Point line_pos = { log_origin.x, ui_height - 2 - i};
             // ui_printf(ui, ui_width, ui_height, line_pos, "%d. %s", cursor, log_lines[cursor]);
             ui_printf(ui, ui_width, ui_height, line_pos, log_lines[cursor]);
         }

@@ -47,6 +47,7 @@ typedef struct GameState
 global_variable GameState _gs;
 global_variable bool _skip_resetting_player_stats;
 global_variable bool _skip_gen_new_building_number;
+global_variable bool _skip_new_game;
 
 MachineType game_check_player_over_machine_plan(Point pos)
 {
@@ -1038,8 +1039,42 @@ void game_update(float dt, int *_new_key)
 
             ui_draw_log(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines);
 
-            ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
-                            "Hello, player %c! hjkl-move .-skip", 0x01);
+            if (!_skip_new_game)
+            {
+                ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
+                                "Hello, player %c! hjkl-move .-skip", 0x01);
+
+                ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
+                                "");
+
+                ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
+                                "This world seems out of whack.");
+
+                ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
+                                "");
+
+                ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
+                                "I will rectify that.");
+
+                ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
+                                "");
+
+                ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
+                                "I need to build a computer...");
+
+                ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
+                                "");
+
+                _skip_new_game = true;
+            }
+            else
+            {
+                ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
+                                "hjkl - move; . - skip turn");
+
+                ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
+                                "");
+            }
 
             ui_draw_player_stats(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.stats[1]);
 
@@ -1080,26 +1115,6 @@ void game_update(float dt, int *_new_key)
                     {
                         move_to = util_xy_to_p(_gs.ent[1].pos.x + 1,
                                                _gs.ent[1].pos.y);
-                    } break;
-
-                    case GLFW_KEY_COMMA:
-                    {
-                        Point p;
-
-                        int attempts = 20;
-                        bool found = true;
-                        do
-                        {
-                            p = util_xy_to_p(rand() % MAP_COLS, rand() % MAP_ROWS);
-                            found = !_gs.collisions[util_p_to_i(p, MAP_COLS)];
-                            attempts--;
-                        }
-                        while (!found && attempts >= 0);
-
-                        if (found)
-                        {
-                            move_to = p;
-                        }
                     } break;
 
                     case GLFW_KEY_PERIOD:
@@ -1227,10 +1242,42 @@ void game_update(float dt, int *_new_key)
                         }
                     } break;
 
+                    // TODO: Comment out
                     case GLFW_KEY_BACKSPACE:
                     {
                         _gs.current_level++;
                         _gs.run_state = INIT;
+                    } break;
+
+                    case GLFW_KEY_EQUAL:
+                    {
+                        ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines,
+                                        "Cheat code :(");
+                        _gs.stats[1].health = _gs.stats[1].max_health;
+                        ui_draw_player_stats(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.stats[1]);
+                    } break;
+
+
+                    case GLFW_KEY_COMMA:
+                    {
+                        Point p;
+
+                        int attempts = 20;
+                        bool found = true;
+                        do
+                        {
+                            p = util_xy_to_p(rand() % MAP_COLS, rand() % MAP_ROWS);
+                            found = !_gs.collisions[util_p_to_i(p, MAP_COLS)];
+                            attempts--;
+                        }
+                        while (!found && attempts >= 0);
+
+                        if (found)
+                        {
+                            ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines,
+                                        "Cheat code :(");
+                            move_to = p;
+                        }
                     } break;
                 }
 
