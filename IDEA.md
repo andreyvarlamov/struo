@@ -88,18 +88,19 @@ Speed
 * [x] Base location persistency & work with other levels
 * [x] Generate building and scavenge
 * [x] Start splash screen
-* [ ] Test frame items
-* [ ] ---> Iter 3 (shippable)
-* [ ] Adjust base machine colors
-* [ ] Auto explore
-* [ ] Test and tweak the whole game flow
+* [x] Test frame items
 * [ ] Map procgen - lobby prefab only on floor 1
 * [ ] Map procgen - prefab translation and BSP flip
-* [ ] Extension to have a more interesting plot/twist
-* [ ] Map procgen - Cellular automata algorithm to make some rooms destroyed
+* [ ] Adjust base machine colors
+* [ ] ---> Iter 3 (shippable)
+* [ ] Auto explore
+* [ ] Test and tweak the whole game flow
+* [ ] ---> Iter 4 (polished)
+
 
 NO WAY:
-
+* [ ] Extension to have a more interesting plot/twist
+* [ ] Map procgen - Cellular automata algorithm to make some rooms destroyed
 * [ ] Timing system
 * [ ] More input refactoring, key repeat, diagonal movement (maybe?)
 * [ ] Better AI (follow to last known location)

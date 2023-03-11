@@ -2,8 +2,8 @@
 
 typedef enum RunState
 {
-    SPLASH_SCREEN,
     INIT,
+    SPLASH_SCREEN,
     AWAITING_INPUT,
     COMP_TURN,
     GAME_OVER
@@ -748,24 +748,23 @@ void game_spawn_player(Point pos)
                                             1,
                                             ARMOR_NONE, GUN_NONE);
 
-        // TODO: Comment out
-        _gs.player_items[ITEM_MECH_COMP] = 50;
-        _gs.player_items[ITEM_ELEC_COMP] = 50;
-        _gs.player_items[ITEM_JUNK] = 50;
+        // _gs.player_items[ITEM_MECH_COMP] = 50;
+        // _gs.player_items[ITEM_ELEC_COMP] = 50;
+        // _gs.player_items[ITEM_JUNK] = 50;
 
-        _gs.player_items[ITEM_CPU_AUTOMAT_FRAME] = 1;
-        _gs.player_items[ITEM_MOBO_AUTOMAT_FRAME] = 1;
-        _gs.player_items[ITEM_GPU_AUTOMAT_FRAME] = 1;
-        _gs.player_items[ITEM_MEM_AUTOMAT_FRAME] = 1;
-        _gs.player_items[ITEM_ASSEMBLER_FRAME] = 1;
+        // _gs.player_items[ITEM_CPU_AUTOMAT_FRAME] = 1;
+        // _gs.player_items[ITEM_MOBO_AUTOMAT_FRAME] = 1;
+        // _gs.player_items[ITEM_GPU_AUTOMAT_FRAME] = 1;
+        // _gs.player_items[ITEM_MEM_AUTOMAT_FRAME] = 1;
+        // _gs.player_items[ITEM_ASSEMBLER_FRAME] = 1;
 
-        _gs.player_items[ITEM_CPU] = 1;
-        _gs.player_items[ITEM_MOBO] = 1;
-        _gs.player_items[ITEM_GPU] = 1;
-        _gs.player_items[ITEM_MEM] = 1;
+        // _gs.player_items[ITEM_CPU] = 1;
+        // _gs.player_items[ITEM_MOBO] = 1;
+        // _gs.player_items[ITEM_GPU] = 1;
+        // _gs.player_items[ITEM_MEM] = 1;
+        // _gs.player_items[ITEM_COMPUTER] = 1;
     }
 
-    _gs.player_items[ITEM_COMPUTER] = 1;
 
     game_update_collisions();
     entity_calc_player_fov(
