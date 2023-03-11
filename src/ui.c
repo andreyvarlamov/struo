@@ -66,6 +66,10 @@ void ui_draw_location(Glyph *ui, int ui_width, int ui_height, int current_level,
         ui_printf(ui, ui_width, ui_height, p, "???");
 
     }
+    else if (current_level == 0)
+    {
+        ui_printf(ui, ui_width, ui_height, p, "Computer Altar");
+    }
     else
     {
         ui_printf(ui, ui_width, ui_height, p, "Building %04d. Floor %d", current_building, current_level);
@@ -173,7 +177,21 @@ void ui_draw_interact_item(Glyph *ui, int ui_width, int ui_height, ItemType item
 void ui_draw_interact_exit(Glyph *ui, int ui_width, int ui_height, int to_level)
 {
     ui_clean_interact(ui, ui_width, ui_height);
-    ui_printf(ui, ui_width, ui_height, interact_origin, "G - exit to floor %d.", to_level);
+    if (to_level == 1)
+    {
+        ui_printf(ui, ui_width, ui_height, interact_origin,
+                  "G - scavenge for computer parts.");
+    }
+    else if (to_level == 0)
+    {
+        ui_printf(ui, ui_width, ui_height, interact_origin,
+                  "G - back to the computer altar.");
+    }
+    else
+    {
+        ui_printf(ui, ui_width, ui_height, interact_origin,
+                  "G - exit to floor %d.", to_level);
+    }
 }
 
 void ui_draw_interact_machine_plan(Glyph *ui, int ui_width, int ui_height, MachineType machine_type)

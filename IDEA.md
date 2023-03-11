@@ -85,8 +85,8 @@ Speed
 * [x] Game over (won)
 * [x] Do something about cheats
 * [x] Game start
-* [ ] Base location persistency & work with other levels
-* [ ] Generate building and scavenge
+* [x] Base location persistency & work with other levels
+* [x] Generate building and scavenge
 * [ ] Start splash screen
 * [ ] ---> Iter 3 (shippable)
 * [ ] Auto explore
