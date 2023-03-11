@@ -72,12 +72,10 @@ Stats combat_stats_ctor(const char name[24],
     return stats;
 }
 
-AttackResult combat_attack(Stats *att, Stats *def)
+Stats combat_get_modified_stats(Stats stats)
 {
-    // ATTACKER STATS
-    // --------------
     int gun_damage = 0;
-    switch(att->gun)
+    switch(stats.gun)
     {
         case GUN_PISTOL:
         {
@@ -97,21 +95,17 @@ AttackResult combat_attack(Stats *att, Stats *def)
         } break;
     }
 
-
-    int att_acc = att->accuracy;
-
-    int att_damage = att->damage + gun_damage;
-    if (att_damage > 100)
+    int mod_dmg = stats.damage + gun_damage;
+    if (mod_dmg > 100)
     {
-        att_damage = 100;
+        mod_dmg = 100;
     }
 
-    // DEFENDER STATS
-    // --------------
+    stats.damage = mod_dmg;
 
     int armor_defense = 0;
     int armor_evasion = 0;
-    switch(def->armor)
+    switch(stats.armor)
     {
         case ARMOR_LEATHER:
         {
@@ -135,24 +129,40 @@ AttackResult combat_attack(Stats *att, Stats *def)
         } break;
     }
 
-    int def_defense = def->armor + armor_defense;
-    if (def_defense > 100)
+    int mod_def = stats.armor + armor_defense;
+    if (mod_def > 100)
     {
-        def_defense = 100;
+        mod_def = 100;
     }
 
-    int def_evasion = def->evasion - armor_evasion;
-    if (def_evasion < 1)
+    stats.defense = mod_def;
+
+    int mod_evasion = stats.evasion - armor_evasion;
+    if (mod_evasion < 1)
     {
-        def_evasion = 1;
+        mod_evasion = 1;
     }
+
+    stats.evasion = mod_evasion;
+
+    return stats;
+}
+
+AttackResult combat_attack(Stats *att, Stats *def)
+{
+    // ATTACKER STATS
+    // --------------
+    Stats mod_att = combat_get_modified_stats(*att);
+
+    // DEFENDER STATS
+    // --------------
+    Stats mod_def = combat_get_modified_stats(*def);
 
     // CHANCE TO HIT CALC
     // ------------------
-
     int hit = rand() % 100;
 
-    int chance_d = att_acc - def_evasion;
+    int chance_d = mod_att.accuracy - mod_def.evasion;
 
     float dam_coef;
 
@@ -180,13 +190,13 @@ AttackResult combat_attack(Stats *att, Stats *def)
     // DAMAGE APPLICATION
     // ------------------
 
-    int def_modifier = 100 - def_defense;
+    int def_modifier = 100 - mod_def.defense;
     if (def_modifier < 5)
     {
         def_modifier = 5;
     }
 
-    int randomized_dmg = rand() % (att_damage / 3) - att_damage / 6 + att_damage;
+    int randomized_dmg = rand() % (mod_att.damage / 3) - mod_att.damage / 6 + mod_att.damage;
 
     int end_dmg = (int) (dam_coef * (randomized_dmg * def_modifier * 0.01f));
     def->health -= end_dmg;
