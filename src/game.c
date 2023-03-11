@@ -2,8 +2,8 @@
 
 typedef enum RunState
 {
-    INIT,
     SPLASH_SCREEN,
+    INIT,
     AWAITING_INPUT,
     COMP_TURN,
     GAME_OVER
@@ -1036,20 +1036,23 @@ void game_init_base_level()
     }
 }
 
-bool game_check_entities_in_player_fov(bool initial_check)
+bool game_check_entities_in_player_fov(bool initial_check, bool only_chars)
 {
-    for (size_t i = 0; i < entity_nc_get_count(); i++)
+    if (!only_chars)
     {
-        size_t offset_i = i + ENTITY_NC_OFFSET;
-        if (_gs.ent[offset_i].alive)
+        for (size_t i = 0; i < entity_nc_get_count(); i++)
         {
-            if (_gs.player_fov[util_p_to_i(_gs.ent[offset_i].pos, MAP_COLS)]
-             && !_gs.autoexplore_mem[util_p_to_i(_gs.ent[offset_i].pos, MAP_COLS)])
+            size_t offset_i = i + ENTITY_NC_OFFSET;
+            if (_gs.ent[offset_i].alive)
             {
-                _gs.autoexplore_mem[util_p_to_i(_gs.ent[offset_i].pos, MAP_COLS)] = true;
-                if (!initial_check)
+                if (_gs.player_fov[util_p_to_i(_gs.ent[offset_i].pos, MAP_COLS)]
+                && !_gs.autoexplore_mem[util_p_to_i(_gs.ent[offset_i].pos, MAP_COLS)])
                 {
-                    return true;
+                    _gs.autoexplore_mem[util_p_to_i(_gs.ent[offset_i].pos, MAP_COLS)] = true;
+                    if (!initial_check)
+                    {
+                        return true;
+                    }
                 }
             }
         }
@@ -1066,13 +1069,16 @@ bool game_check_entities_in_player_fov(bool initial_check)
         }
     }
 
-    if (_gs.player_fov[util_p_to_i(_gs.level_exit, MAP_COLS)]
-     && !_gs.autoexplore_mem[util_p_to_i(_gs.level_exit, MAP_COLS)])
+    if (!only_chars)
     {
-        _gs.autoexplore_mem[util_p_to_i(_gs.level_exit, MAP_COLS)] = true;
-        if (!initial_check)
+        if (_gs.player_fov[util_p_to_i(_gs.level_exit, MAP_COLS)]
+        && !_gs.autoexplore_mem[util_p_to_i(_gs.level_exit, MAP_COLS)])
         {
-            return true;
+            _gs.autoexplore_mem[util_p_to_i(_gs.level_exit, MAP_COLS)] = true;
+            if (!initial_check)
+            {
+                return true;
+            }
         }
     }
 
@@ -1462,7 +1468,7 @@ void game_update(float dt, int *_new_key)
                     {
                         if (!_gs.level_explored)
                         {
-                            bool any_entities = game_check_entities_in_player_fov(true);
+                            bool any_entities = game_check_entities_in_player_fov(true, false);
                             if (!any_entities)
                             {
                                 Point p = game_next_unvisited_location();
@@ -1479,7 +1485,7 @@ void game_update(float dt, int *_new_key)
                                         entity_calc_player_fov(_gs.map.opaque, MAP_COLS, MAP_ROWS,
                                                                _gs.ent[1].pos, _gs.player_fov, _gs.player_map_mem);
 
-                                        if (game_check_entities_in_player_fov(false))
+                                        if (game_check_entities_in_player_fov(false, false))
                                         {
                                             break;
                                         }
@@ -1496,6 +1502,48 @@ void game_update(float dt, int *_new_key)
                         if (_gs.level_explored)
                         {
                             ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, "Fully explored.");
+                        }
+                    } break;
+
+                    case GLFW_KEY_U: // Go to exit
+                    {
+                        if (_gs.player_map_mem[util_p_to_i(_gs.level_exit, MAP_COLS)])
+                        {
+                            bool any_char_entities = game_check_entities_in_player_fov(false, true);
+                            if (!any_char_entities)
+                            {
+                                Point next; 
+                                do
+                                {
+                                    next = pathfinding_bfs(_gs.collisions, MAP_COLS, MAP_ROWS,
+                                                            _gs.ent[1].pos, _gs.level_exit);
+
+                                    _gs.ent[1].pos = next;
+
+                                    entity_calc_player_fov(_gs.map.opaque, MAP_COLS, MAP_ROWS,
+                                                            _gs.ent[1].pos, _gs.player_fov, _gs.player_map_mem);
+
+                                    if (game_check_entities_in_player_fov(false, true))
+                                    {
+                                        break;
+                                    }
+                                }
+                                while(!util_p_cmp(next, _gs.level_exit));
+                                if (util_p_cmp(next, _gs.level_exit))
+                                {
+                                    _gs.player_state = PSTATE_OVER_EXIT;
+                                    int next_level = _gs.current_level + 1;
+                                    if (next_level > 5)
+                                    {
+                                        next_level = 0;
+                                    }
+                                    ui_draw_interact_exit(_gs.ui, UI_COLS, SCREEN_ROWS, next_level);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, "Haven't found map exit yet.");
                         }
                     } break;
 

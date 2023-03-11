@@ -94,9 +94,9 @@ Speed
 * [x] Adjust base machine colors
 * [x] ---> Iter 3 (shippable)
 * [x] Auto explore
-* [ ] Go to exit
+* [x] Go to exit
+* [x] TURN ON SPLASH SCREEN
 * [ ] Test and tweak the whole game flow
-* [ ] TURN ON SPLASH SCREEN
 * [ ] ---> Iter 4 (polished)
 
 
