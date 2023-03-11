@@ -71,7 +71,7 @@ Speed
 * [x] Item RNG
 * [x] Multiple levels
 * [x] Level exits
-* [ ] Level UI
+* [x] Level UI
 * [ ] Progression
 * [ ] ---> Iter 2 (single building branch w/ progression and items)
 * [ ] Base location; persistent

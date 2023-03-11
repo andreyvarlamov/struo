@@ -448,29 +448,15 @@ void game_spawn_level_items()
     }
 }
 
-void game_spawn_enemies()
+void game_spawn_enemy(Point pos, EnemyType enemy_type)
 {
-    for (size_t i = 0; i < 30; i++)
+    switch (enemy_type)
     {
-        Point pos;
-
-        bool found = false;
-        int attempts = 20;
-        do
-        {
-            pos.x = rand() % MAP_COLS;
-            pos.y = rand() % MAP_ROWS;
-            found = !_gs.collisions[util_p_to_i(pos, MAP_COLS)];
-            found &= !util_p_cmp(pos, _gs.level_exit); // TODO: Didn't test this.
-            attempts--;
-        }
-        while (!found && attempts >= 0);
-
-        if (found)
+        case ENEMY_RAT:
         {
             Entity e = entity_char_ctor(pos,
-                                        (vec3) { 0.5f, 0.15f, 0.15f },
-                                        (vec3) { 1.0f, 0.5f, 0.05f },
+                                        (vec3) { 0.3f, 0.15f, 0.15f },
+                                        (vec3) { 1.0f, 0.3f, 0.05f },
                                         'r',
                                         true);
             _gs.ent[e.id] = e;
@@ -480,11 +466,87 @@ void game_spawn_enemies()
                                                 7, 2,
                                                 1,
                                                 ARMOR_NONE, GUN_NONE);
+        } break;
 
-            game_update_collisions();
-        }
+        case ENEMY_ZOMBIE:
+        {
+            Entity e = entity_char_ctor(pos,
+                                        (vec3) { 0.5f, 0.15f, 0.15f },
+                                        (vec3) { 1.0f, 0.5f, 0.05f },
+                                        'z',
+                                        true);
+            _gs.ent[e.id] = e;
+            _gs.stats[e.id] = combat_stats_ctor("Zombie",
+                                                50,
+                                                3, 3,
+                                                20, 2,
+                                                1,
+                                                ARMOR_NONE, GUN_NONE);
+        } break;
+
+        case ENEMY_SAVAGE:
+        {
+            Entity e = entity_char_ctor(pos,
+                                        (vec3) { 0.7f, 0.15f, 0.15f },
+                                        (vec3) { 1.0f, 0.7f, 0.05f },
+                                        'S',
+                                        true);
+            _gs.ent[e.id] = e;
+            _gs.stats[e.id] = combat_stats_ctor("Savage",
+                                                80,
+                                                7, 6,
+                                                21, 20,
+                                                1,
+                                                ARMOR_NONE, GUN_NONE);
+        } break;
+
+        case ENEMY_ROBOT:
+        {
+            Entity e = entity_char_ctor(pos,
+                                        (vec3) { 1.0f, 0.15f, 0.15f },
+                                        (vec3) { 1.0f, 1.0f, 0.05f },
+                                        'R',
+                                        true);
+            _gs.ent[e.id] = e;
+            _gs.stats[e.id] = combat_stats_ctor("Robot",
+                                                150,
+                                                9, 2,
+                                                25, 39,
+                                                1,
+                                                ARMOR_NONE, GUN_NONE);
+        } break;
+
+        default:
+        {
+
+        } break;
     }
 }
+
+// void game_spawn_enemies_randomly(int count, Glyph glyph, )
+// {
+//     for (size_t i = 0; i < 30; i++)
+//     {
+//         Point pos;
+
+//         bool found = false;
+//         int attempts = 20;
+//         do
+//         {
+//             pos.x = rand() % MAP_COLS;
+//             pos.y = rand() % MAP_ROWS;
+//             found = !_gs.collisions[util_p_to_i(pos, MAP_COLS)];
+//             found &= !util_p_cmp(pos, _gs.level_exit); // TODO: Didn't test this.
+//             attempts--;
+//         }
+//         while (!found && attempts >= 0);
+
+//         if (found)
+//         {
+//             game_update_collisions();
+//         }
+//     }
+// }
 
 void game_spawn_player(Point pos)
 {
@@ -622,11 +684,22 @@ void game_update(float dt, int *_new_key)
 
             // Init enemies
             // ------------
-            game_spawn_enemies();
+            // game_spawn_level_enemies();
+            Point rat_pos = { 5, 30 };
+            // game_spawn_enemy(rat_pos, ENEMY_RAT);
+
+            Point zombie_pos = { 5, 30 };
+            // game_spawn_enemy(zombie_pos, ENEMY_ZOMBIE);
+
+            Point savage_pos = { 5, 30 };
+            // game_spawn_enemy(savage_pos, ENEMY_SAVAGE);
+
+            Point robot_pos = { 5, 30 };
+            game_spawn_enemy(robot_pos, ENEMY_ROBOT);
 
             // Init items
             // ----------
-            game_spawn_level_items();
+            // game_spawn_level_items();
 
             // Init UI
             // -------

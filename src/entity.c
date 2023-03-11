@@ -10,6 +10,18 @@ typedef struct Entity
     bool alive;
 } Entity;
 
+typedef enum EnemyType
+{
+    ENEMY_NONE,
+
+    ENEMY_RAT,
+    ENEMY_ZOMBIE,
+    ENEMY_SAVAGE,
+    ENEMY_ROBOT,
+
+    ENEMY_MAX
+} EnemyType;
+
 global_variable size_t next_char_id = 1;
 global_variable size_t next_nc_id = ENTITY_NC_OFFSET;
 
