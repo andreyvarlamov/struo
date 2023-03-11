@@ -91,8 +91,8 @@ Speed
 * [x] Test frame items
 * [x] Map procgen - lobby prefab only on floor 1
 * [x] Player random location
-* [ ] Adjust base machine colors
-* [ ] ---> Iter 3 (shippable)
+* [x] Adjust base machine colors
+* [x] ---> Iter 3 (shippable)
 * [ ] Auto explore
 * [ ] Test and tweak the whole game flow
 * [ ] ---> Iter 4 (polished)
