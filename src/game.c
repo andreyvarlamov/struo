@@ -753,12 +753,12 @@ void game_spawn_player(Point pos)
     _gs.player_items[ITEM_MEM_AUTOMAT_FRAME] = 1;
     _gs.player_items[ITEM_ASSEMBLER_FRAME] = 1;
 
-    // _gs.player_items[ITEM_CPU] = 1;
-    // _gs.player_items[ITEM_MOBO] = 1;
-    // _gs.player_items[ITEM_GPU] = 1;
-    // _gs.player_items[ITEM_MEM] = 1;
+    _gs.player_items[ITEM_CPU] = 1;
+    _gs.player_items[ITEM_MOBO] = 1;
+    _gs.player_items[ITEM_GPU] = 1;
+    _gs.player_items[ITEM_MEM] = 1;
 
-    // _gs.player_items[ITEM_COMPUTER] = 1;
+    _gs.player_items[ITEM_COMPUTER] = 1;
 
     game_update_collisions();
     entity_calc_player_fov(
@@ -1196,6 +1196,26 @@ void game_update(float dt, int *_new_key)
                                         }
 
                                         skip_turn = true;
+                                    }
+
+                                    if (type == MACHINE_COMPUTER)
+                                    {
+                                        memset(&_gs.map, 0, sizeof(Map));
+                                        memset(&_gs.base_machines, 0, MACHINE_MAX * sizeof(MachineEntity));
+                                        memset(&_gs.level_exit, 0, sizeof(Point));
+                                        _gs.ent[1].pos = util_xy_to_p(32, 32);
+                                        glm_vec3_copy((vec3) { 1.0f, 0.0f, 0.0f }, _gs.ent[1].fg);
+
+                                        ui_clean_interact(_gs.ui, UI_COLS, SCREEN_ROWS);
+                                        ui_clean_machine(_gs.ui, UI_COLS, SCREEN_ROWS);
+                                        ui_draw_location(_gs.ui, UI_COLS, SCREEN_ROWS, 999, 0);
+
+                                        ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, "");
+                                        ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, "What was that?");
+                                        ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, "");
+                                        ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, "GAME OVER.");
+
+                                        _gs.run_state = GAME_OVER;
                                     }
                                 }
                             } break;

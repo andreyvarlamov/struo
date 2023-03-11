@@ -82,7 +82,7 @@ Speed
 * [x] Built machines UI
 * [x] Built machines interactions and UI
 * [x] Craft computer
-* [ ] Game over (won)
+* [x] Game over (won)
 * [ ] Game start
 * [ ] Base location persistency
 * [ ] Generate building and scavenge

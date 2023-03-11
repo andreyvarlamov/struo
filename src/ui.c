@@ -51,10 +51,25 @@ void ui_draw_header(Glyph *ui, int ui_width, int ui_height)
 
 void ui_draw_location(Glyph *ui, int ui_width, int ui_height, int current_level, int current_building)
 {
+    for (int i = 0; i < UI_COLS - 2; i++)
+    {
+        Point offset_p = { i, 2 };
+        Point char_p = { location_origin.x + offset_p.x, location_origin.y + offset_p.y };
+        ui[util_p_to_i(char_p, ui_width)] = 0;
+    }
+
     ui_printf(ui, ui_width, ui_height, location_origin, " LOCATION ");
 
     Point p = { location_origin.x, location_origin.y + 2 };
-    ui_printf(ui, ui_width, ui_height, p, "Building %04d. Floor %d", current_building, current_level);
+    if (current_level == 999)
+    {
+        ui_printf(ui, ui_width, ui_height, p, "???");
+
+    }
+    else
+    {
+        ui_printf(ui, ui_width, ui_height, p, "Building %04d. Floor %d", current_building, current_level);
+    }
 }
 
 void ui_draw_log(Glyph *ui, int ui_width, int ui_height, char **log_lines)
