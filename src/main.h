@@ -39,6 +39,7 @@
 #define UI_LOCATION_ROW 4
 #define UI_STATS_ROW 8
 #define UI_ITEMS_ROW 20
+#define UI_MACHINE_ROW 36
 
 typedef GLuint TexID;
 typedef GLuint ShaderID;

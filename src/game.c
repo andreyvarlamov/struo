@@ -18,7 +18,9 @@ typedef enum PlayerState
 {
     PSTATE_NONE,
     PSTATE_OVER_ITEM,
-    PSTATE_OVER_EXIT
+    PSTATE_OVER_EXIT,
+    PSTATE_OVER_MACHINE_PLAN,
+    PSTATE_NEXT_TO_BUILT_MACHINE
 } PlayerState;
 
 typedef struct GameState
@@ -57,7 +59,7 @@ bool game_try_move_entity_p(size_t entity_id, Point *pos, Point new, int map_wid
         did_move = true;
 
         // Item pickup logic
-        // If player stepped over an item pickup entity ...
+        // If player is stepping over an item pickup entity ...
         if (entity_id == 1 && target.ent_nc >= ENTITY_NC_OFFSET)
         {
             _gs.player_state = PSTATE_OVER_ITEM;
@@ -69,6 +71,8 @@ bool game_try_move_entity_p(size_t entity_id, Point *pos, Point new, int map_wid
             ui_clean_interact(_gs.ui, UI_COLS, SCREEN_ROWS);
         }
 
+        // Level exit logic
+        // If player is stepping over a level exit
         if (entity_id == 1 && util_p_cmp(_gs.level_exit, new))
         {
             _gs.player_state = PSTATE_OVER_EXIT;
@@ -80,6 +84,34 @@ bool game_try_move_entity_p(size_t entity_id, Point *pos, Point new, int map_wid
             ui_clean_interact(_gs.ui, UI_COLS, SCREEN_ROWS);
         }
 
+        // Machine plan logic
+        // If player is stepping over a machine plan
+        // TODO: Only in base level
+        if (entity_id == 1)
+        {
+            bool found_machine = false;
+            for (MachineType type = MACHINE_CPU_AUTOMATON; type < MACHINE_MAX; type++)
+            {
+                if (util_p_cmp(_gs.base_machines[type].e_plan.pos, new))
+                {
+                    _gs.player_state = PSTATE_OVER_MACHINE_PLAN;
+                    ui_draw_machine(_gs.ui, UI_COLS, SCREEN_ROWS, type, _gs.player_items);
+                    if (item_can_craft(type, ITEM_NONE, _gs.player_items))
+                    {
+                        ui_draw_interact_machine_plan(_gs.ui, UI_COLS, SCREEN_ROWS, type);
+                    }
+
+                    found_machine = true;
+                }
+            }
+
+            if(!found_machine && _gs.player_state == PSTATE_OVER_MACHINE_PLAN)
+            {
+                _gs.player_state = PSTATE_NONE;
+                ui_clean_machine(_gs.ui, UI_COLS, SCREEN_ROWS);
+                ui_clean_interact(_gs.ui, UI_COLS, SCREEN_ROWS);
+            }
+        }
     }
     else if (target.ent_char)
     {
@@ -640,6 +672,23 @@ void game_spawn_player(Point pos)
 
         _skip_resetting_player_stats = true;
     }
+
+    _gs.player_items[ITEM_MECH_COMP] = 50;
+    _gs.player_items[ITEM_ELEC_COMP] = 50;
+    _gs.player_items[ITEM_JUNK] = 50;
+
+    _gs.player_items[ITEM_CPU_AUTOMAT_FRAME] = 1;
+    _gs.player_items[ITEM_MOBO_AUTOMAT_FRAME] = 1;
+    _gs.player_items[ITEM_GPU_AUTOMAT_FRAME] = 1;
+    _gs.player_items[ITEM_MEM_AUTOMAT_FRAME] = 1;
+    _gs.player_items[ITEM_ASSEMBLER_FRAME] = 1;
+
+    _gs.player_items[ITEM_CPU] = 1;
+    _gs.player_items[ITEM_MOBO] = 1;
+    _gs.player_items[ITEM_GPU] = 1;
+    _gs.player_items[ITEM_MEM] = 1;
+
+    _gs.player_items[ITEM_COMPUTER] = 1;
 
     game_update_collisions();
     entity_calc_player_fov(
@@ -1237,6 +1286,7 @@ void game_render(float dt)
 
     // Render base level machines
     // --------------------------
+    // TODO: Only if in base location
     for (MachineType type = MACHINE_CPU_AUTOMATON; type < MACHINE_MAX; type++)
     {
         Entity entity_to_render;

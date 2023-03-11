@@ -5,6 +5,7 @@ global_variable int log_cursor = 0;
 global_variable Point location_origin = { 1, UI_LOCATION_ROW };
 global_variable Point stats_origin = { 1, UI_STATS_ROW };
 global_variable Point items_origin = { 1, UI_ITEMS_ROW };
+global_variable Point machine_origin = { 1, UI_MACHINE_ROW };
 global_variable Point interact_origin = { 1, SCREEN_ROWS - LOG_LINES - 5 };
 global_variable Point log_origin = { 1, SCREEN_ROWS - LOG_LINES - 1 };
 
@@ -101,7 +102,7 @@ void ui_add_log_line(Glyph *ui, int ui_width,  int ui_height,
 void ui_draw_player_stats(Glyph *ui, int ui_width, int ui_height, Stats stats)
 {
     Stats mod_stats = combat_get_modified_stats(stats);
-    for (int i = 0; i < 11 * UI_COLS; i++)
+    for (int i = 0; i < 11 * ui_width; i++)
     {
         Point offset_p = util_i_to_p(i, ui_width);
         Point char_p = { stats_origin.x + offset_p.x, stats_origin.y + offset_p.y };
@@ -160,12 +161,19 @@ void ui_draw_interact_exit(Glyph *ui, int ui_width, int ui_height, int to_level)
     ui_printf(ui, ui_width, ui_height, interact_origin, "G - exit to floor %d.", to_level);
 }
 
+void ui_draw_interact_machine_plan(Glyph *ui, int ui_width, int ui_height, MachineType machine_type)
+{
+    ui_clean_interact(ui, ui_width, ui_height);
+    AString name = entity_get_machine_name(machine_type);
+    ui_printf(ui, ui_width, ui_height, interact_origin, "G - assemble %s.", name.str);
+}
+
 void ui_draw_player_items(Glyph *ui, int ui_width, int ui_height, int *item_counts)
 {
     int rows = ITEM_MAX - ITEM_MECH_COMP;
     int row_i = 0;
 
-    for (int i = 0; i < rows; i++)
+    for (int i = 0; i < rows * ui_width; i++)
     {
         Point offset_p = util_i_to_p(i, ui_width);
         Point char_p = { items_origin.x + offset_p.x, items_origin.y + offset_p.y };
@@ -183,5 +191,65 @@ void ui_draw_player_items(Glyph *ui, int ui_width, int ui_height, int *item_coun
             ui_printf(ui, ui_width, ui_height, pos, "%d - %s", item_counts[i], item_name.str);
             row_i++;
         }
+    }
+}
+
+void ui_clean_machine(Glyph *ui, int ui_width, int ui_height)
+{
+    for (int i = 0; i < 5 * ui_width; i++)
+    {
+        Point offset_p = util_i_to_p(i, ui_width);
+        Point char_p = { machine_origin.x + offset_p.x - 1, machine_origin.y + offset_p.y };
+        ui[util_p_to_i(char_p, ui_width)] = 0;
+    }
+}
+
+void ui_draw_machine(Glyph *ui, int ui_width, int ui_height, MachineType machine_type, int *item_counts)
+{
+    ui_clean_machine(ui, ui_width, ui_height);
+
+    for (int i = 0; i < ui_width; i++)
+    {
+        ui[util_xy_to_i(i, machine_origin.y, ui_width)] = 0xC4;
+    }
+    ui[util_xy_to_i(0, machine_origin.y, ui_width)] = 0xC3;
+    ui[util_xy_to_i(ui_width - 1, machine_origin.y, ui_width)] = 0xB4;
+    ui_printf(ui, ui_width, ui_height, machine_origin, " MACHINE: %s ", entity_get_machine_name(machine_type).str);
+
+    switch (machine_type)
+    {
+        case MACHINE_CPU_AUTOMATON:
+        case MACHINE_MOBO_AUTOMATON:
+        case MACHINE_GPU_AUTOMATON:
+        case MACHINE_MEM_AUTOMATON:
+        case MACHINE_ASSEMBLER:
+        {
+            Point mech_pos = { machine_origin.x, machine_origin.y + 2 };
+            AString item_name = item_get_item_name(ITEM_MECH_COMP);
+            int item_req = item_get_comp_req(machine_type, ITEM_NONE, ITEM_MECH_COMP);
+            ui_printf(ui, ui_width, ui_height, mech_pos, "%02d/%02d - %s", item_counts[ITEM_MECH_COMP], item_req, item_name.str);
+
+            Point elec_pos = { machine_origin.x, machine_origin.y + 3 };
+            item_name = item_get_item_name(ITEM_ELEC_COMP);
+            item_req = item_get_comp_req(machine_type, ITEM_NONE, ITEM_ELEC_COMP);
+            ui_printf(ui, ui_width, ui_height, elec_pos, "%02d/%02d - %s", item_counts[ITEM_ELEC_COMP], item_req, item_name.str);
+
+            Point junk_pos = { machine_origin.x, machine_origin.y + 4 };
+            item_name = item_get_item_name(ITEM_JUNK);
+            item_req = item_get_comp_req(machine_type, ITEM_NONE, ITEM_JUNK);
+            ui_printf(ui, ui_width, ui_height, junk_pos, "%02d/%02d - %s", item_counts[ITEM_JUNK], item_req, item_name.str);
+        } break;
+
+        case MACHINE_COMPUTER:
+        {
+            Point mech_pos = { machine_origin.x, machine_origin.y + 2 };
+            AString item_name = item_get_item_name(ITEM_COMPUTER);
+            ui_printf(ui, ui_width, ui_height, mech_pos, "%d/%d - %s", item_counts[ITEM_COMPUTER], 1, item_name.str);
+        }
+
+        default:
+        {
+
+        } break;
     }
 }

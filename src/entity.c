@@ -192,3 +192,48 @@ void entity_calc_player_fov(const bool *opaque, int map_width , int map_height,
         }
     } 
 }
+
+AString entity_get_machine_name(MachineType machine_type)
+{
+    AString name = {0};
+
+    switch(machine_type)
+    {
+        case MACHINE_CPU_AUTOMATON:
+        {
+            strcpy(name.str, "CPU Automaton");
+        } break;
+
+        case MACHINE_MOBO_AUTOMATON:
+        {
+            strcpy(name.str, "Motherboard Automaton");
+        } break;
+
+        case MACHINE_GPU_AUTOMATON:
+        {
+            strcpy(name.str, "GPU Automaton");
+        } break;
+
+        case MACHINE_MEM_AUTOMATON:
+        {
+            strcpy(name.str, "Memory Automaton");
+        } break;
+
+        case MACHINE_ASSEMBLER:
+        {
+            strcpy(name.str, "Computer Assembler");
+        } break;
+
+        case MACHINE_COMPUTER:
+        {
+            strcpy(name.str, "Computer");
+        } break;
+
+        default:
+        {
+
+        } break;
+    }
+
+    return name;
+}
