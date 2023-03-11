@@ -64,7 +64,8 @@ Speed
 * [x] Non-character entities
 * [x] Item pickups
 * [x] Item pickup UI
-* [ ] Equipment
+* [x] Equipment in combat
+* [x] Equipment UI
 * [ ] Implement actual item game logic
 * [ ] Story items
 * [ ] Multiple levels

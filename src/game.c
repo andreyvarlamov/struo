@@ -138,7 +138,7 @@ void game_update(float dt, int *_new_key)
                                                     7, 7,
                                                     20, 2,
                                                     1,
-                                                    ARMOR_NONE, GUN_NONE);
+                                                    ARMOR_COMBAT, GUN_ROCKET);
 
                 game_update_collisions();
                 entity_calc_player_fov(

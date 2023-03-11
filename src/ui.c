@@ -79,6 +79,7 @@ void ui_add_log_line(Glyph *ui, int ui_width,  int ui_height,
 
 void ui_draw_player_stats(Glyph *ui, int ui_width, int ui_height, Stats stats)
 {
+    Stats mod_stats = combat_get_modified_stats(stats);
     for (int i = 0; i < 7 * UI_COLS; i++)
     {
         Point offset_p = util_i_to_p(i, ui_width);
@@ -89,22 +90,74 @@ void ui_draw_player_stats(Glyph *ui, int ui_width, int ui_height, Stats stats)
     ui_printf(ui, ui_width, ui_height, stats_origin, " STATS ");
 
     Point health_pos = { stats_origin.x, stats_origin.y + 2 };
-    ui_printf(ui, ui_width, ui_height, health_pos, "HP:   %d/%d", stats.health, stats.max_health);
+    ui_printf(ui, ui_width, ui_height, health_pos, "HP:   %d/%d", mod_stats.health, mod_stats.max_health);
 
     Point damage_pos = { stats_origin.x, stats_origin.y + 3 };
-    ui_printf(ui, ui_width, ui_height, damage_pos, "DMG:  %d", stats.damage);
+    ui_printf(ui, ui_width, ui_height, damage_pos, "DMG:  %d", mod_stats.damage);
 
     Point defense_pos = { stats_origin.x, stats_origin.y + 4 };
-    ui_printf(ui, ui_width, ui_height, defense_pos, "DEF:  %d\%", stats.defense);
+    ui_printf(ui, ui_width, ui_height, defense_pos, "DEF:  %d%%", mod_stats.defense);
 
     Point accuracy_pos = { stats_origin.x, stats_origin.y + 5 };
-    ui_printf(ui, ui_width, ui_height, accuracy_pos, "ACC:  %d/10", stats.accuracy);
+    ui_printf(ui, ui_width, ui_height, accuracy_pos, "ACC:  %d/10", mod_stats.accuracy);
 
     Point evasion_pos = { stats_origin.x, stats_origin.y + 6 };
-    ui_printf(ui, ui_width, ui_height, evasion_pos, "EVAS: %d/10", stats.evasion);
+    ui_printf(ui, ui_width, ui_height, evasion_pos, "EVAS: %d/10", mod_stats.evasion);
 
     Point speed_pos = { stats_origin.x, stats_origin.y + 7 };
-    ui_printf(ui, ui_width, ui_height, speed_pos, "SPD:  %d", stats.speed);
+    ui_printf(ui, ui_width, ui_height, speed_pos, "SPD:  %d", mod_stats.speed);
+
+    Point armor_pos = { stats_origin.x, stats_origin.y + 9 };
+    char armor_name[16] = {0};
+    switch (stats.armor)
+    {
+        case ARMOR_LEATHER:
+        {
+            strcpy(armor_name, "Leather");
+        } break;
+
+        case ARMOR_METAL:
+        {
+            strcpy(armor_name, "Metal");
+        } break;
+
+        case ARMOR_COMBAT:
+        {
+            strcpy(armor_name, "Combat");
+        } break;
+
+        default:
+        {
+            strcpy(armor_name, "None");
+        } break;
+    }
+    ui_printf(ui, ui_width, ui_height, armor_pos, "ARMOR: %s", armor_name);
+
+    Point gun_pos = { stats_origin.x, stats_origin.y + 10 };
+    char gun_name[16] = {0};
+    switch (stats.gun)
+    {
+        case GUN_PISTOL:
+        {
+            strcpy(gun_name, "Pistol");
+        } break;
+
+        case GUN_RIFLE:
+        {
+            strcpy(gun_name, "Assault Rifle");
+        } break;
+
+        case GUN_ROCKET:
+        {
+            strcpy(gun_name, "Rocket Launcher");
+        } break;
+
+        default:
+        {
+            strcpy(gun_name, "None");
+        } break;
+    }
+    ui_printf(ui, ui_width, ui_height, gun_pos, "WEAPN: %s", gun_name);
 }
 
 void ui_draw_pickup_item(Glyph *ui, int ui_width, int ui_height, ItemType item_type)

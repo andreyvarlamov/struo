@@ -129,7 +129,7 @@ Stats combat_get_modified_stats(Stats stats)
         } break;
     }
 
-    int mod_def = stats.armor + armor_defense;
+    int mod_def = stats.defense + armor_defense;
     if (mod_def > 100)
     {
         mod_def = 100;
