@@ -44,6 +44,7 @@ typedef struct GameState
     int current_level;
     int current_building;
     Point level_exit;
+    bool level_explored;
 } GameState;
 
 global_variable GameState _gs;
@@ -850,6 +851,10 @@ void game_clean()
     // ----------------------
     _gs.player_state = PSTATE_NONE;
 
+    // Reset level explored
+    // --------------------
+    _gs.level_explored = false;
+
     // Reset log lines
     // ---------------
     for (int i = 0; i < LOG_LINES; i++)
@@ -1056,8 +1061,21 @@ bool game_check_entities_in_player_fov()
 
 bool _game_check_valid_unvisited_location(Point pos)
 {
-    return !_gs.player_map_mem[util_p_to_i(pos, MAP_COLS)]
-        && !_gs.map.blocked[util_p_to_i(pos, MAP_COLS)];
+    bool map_valid = !_gs.player_map_mem[util_p_to_i(pos, MAP_COLS)]
+                  && !_gs.map.blocked[util_p_to_i(pos, MAP_COLS)];
+
+    if (map_valid)
+    {
+        Point next = pathfinding_bfs(_gs.collisions, MAP_COLS, MAP_ROWS,
+                                     _gs.ent[1].pos, pos);
+
+        if (next.x != -1 && next.y != -1)
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 Point game_next_unvisited_location()
@@ -1422,11 +1440,26 @@ void game_update(float dt, int *_new_key)
 
                     case GLFW_KEY_O: // Auto-explore
                     {
-                        bool any_entities = game_check_entities_in_player_fov();
-                        if (!any_entities)
+                        if (!_gs.level_explored)
                         {
-                            Point p = game_next_unvisited_location();
-                            move_to = p;
+                            bool any_entities = game_check_entities_in_player_fov();
+                            if (!any_entities)
+                            {
+                                Point p = game_next_unvisited_location();
+                                if (p.x != -1 && p.y != -1)
+                                {
+                                    move_to = p;
+                                }
+                                else
+                                {
+                                    _gs.level_explored = true;
+                                }
+                            }
+                        }
+
+                        if (_gs.level_explored)
+                        {
+                            ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, "Fully explored.");
                         }
                     } break;
 
