@@ -108,56 +108,12 @@ void ui_draw_player_stats(Glyph *ui, int ui_width, int ui_height, Stats stats)
     ui_printf(ui, ui_width, ui_height, speed_pos, "SPD:  %d", mod_stats.speed);
 
     Point armor_pos = { stats_origin.x, stats_origin.y + 9 };
-    char armor_name[16] = {0};
-    switch (stats.armor)
-    {
-        case ARMOR_LEATHER:
-        {
-            strcpy(armor_name, "Leather");
-        } break;
-
-        case ARMOR_METAL:
-        {
-            strcpy(armor_name, "Metal");
-        } break;
-
-        case ARMOR_COMBAT:
-        {
-            strcpy(armor_name, "Combat");
-        } break;
-
-        default:
-        {
-            strcpy(armor_name, "None");
-        } break;
-    }
-    ui_printf(ui, ui_width, ui_height, armor_pos, "ARMOR: %s", armor_name);
+    AString armor_name = item_get_armor_name(stats.armor);
+    ui_printf(ui, ui_width, ui_height, armor_pos, "ARMOR: %s", armor_name.str);
 
     Point gun_pos = { stats_origin.x, stats_origin.y + 10 };
-    char gun_name[16] = {0};
-    switch (stats.gun)
-    {
-        case GUN_PISTOL:
-        {
-            strcpy(gun_name, "Pistol");
-        } break;
-
-        case GUN_RIFLE:
-        {
-            strcpy(gun_name, "Assault Rifle");
-        } break;
-
-        case GUN_ROCKET:
-        {
-            strcpy(gun_name, "Rocket Launcher");
-        } break;
-
-        default:
-        {
-            strcpy(gun_name, "None");
-        } break;
-    }
-    ui_printf(ui, ui_width, ui_height, gun_pos, "WEAPN: %s", gun_name);
+    AString gun_name = item_get_gun_name(stats.gun);
+    ui_printf(ui, ui_width, ui_height, gun_pos, "WEAPN: %s", gun_name.str);
 }
 
 void ui_draw_pickup_item(Glyph *ui, int ui_width, int ui_height, ItemType item_type)

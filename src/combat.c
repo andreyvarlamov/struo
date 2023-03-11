@@ -1,27 +1,5 @@
 #include "main.h"
 
-typedef enum ArmorType
-{
-    ARMOR_NONE,
-
-    ARMOR_LEATHER,
-    ARMOR_METAL,
-    ARMOR_COMBAT,
-
-    ARMOR_MAX
-} ArmorType;
-
-typedef enum GunType
-{
-    GUN_NONE,
-
-    GUN_PISTOL,
-    GUN_RIFLE,
-    GUN_ROCKET,
-
-    GUN_MAX
-} GunType;
-
 typedef struct Stats
 {
     char name[24];

@@ -51,8 +51,8 @@ typedef unsigned char Glyph;
 #include "pathfinding.c"
 #include "map.c"
 #include "entity.c"
-#include "combat.c"
 #include "item.c"
+#include "combat.c"
 #include "ui.c"
 #include "game.c"
 

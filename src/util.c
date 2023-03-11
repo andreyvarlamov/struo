@@ -104,3 +104,8 @@ bool util_check_rect_in_bounds(Rect rect, int map_width, int map_height)
         && rect.x + rect.width-1 < map_width
         && rect.y + rect.height-1 < map_height;
 }
+
+typedef struct AString
+{
+    char str[32];
+} AString;
