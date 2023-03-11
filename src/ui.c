@@ -7,6 +7,11 @@ global_variable Point stats_origin = { 1, UI_STATS_ROW };
 global_variable Point items_origin = { 1, UI_ITEMS_ROW };
 global_variable Point pickup_origin = { 1, SCREEN_ROWS - LOG_LINES - 5 };
 
+void ui_reset_log_cursor()
+{
+    log_cursor = 0;
+}
+
 void ui_print(Glyph *ui, int ui_width, int ui_height, Point pos,
               const char *to_print)
 {

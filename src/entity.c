@@ -13,6 +13,12 @@ typedef struct Entity
 global_variable size_t next_char_id = 1;
 global_variable size_t next_nc_id = ENTITY_NC_OFFSET;
 
+void entity_reset()
+{
+    next_char_id = 1;
+    next_nc_id = ENTITY_NC_OFFSET;
+}
+
 Entity entity_char_ctor(Point pos, vec3 bg, vec3 fg, Glyph glyph, bool alive)
 {
     if (next_char_id >= ENTITY_NC_OFFSET)

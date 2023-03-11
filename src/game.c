@@ -29,9 +29,11 @@ typedef struct GameState
     char *log_lines[LOG_LINES];
     bool player_over_item;
     RunState run_state;
+    int current_level;
 } GameState;
 
 global_variable GameState _gs;
+global_variable bool _skip_resetting_player_stats;
 
 bool game_try_move_entity_p(size_t entity_id, Point *pos, Point new, int map_width)
 {
@@ -380,13 +382,13 @@ void game_spawn_item_randomly(ItemType item_type)
     game_spawn_item(pos, item_type);
 }
 
-void game_spawn_level_items(int level)
+void game_spawn_level_items()
 {
     size_t num[ITEM_MAX] = {0};
 
-    switch (level)
+    switch (_gs.current_level)
     {
-        case 0:
+        default:
         {
             num[ITEM_HEALTH]             = 10;
 
@@ -409,10 +411,10 @@ void game_spawn_level_items(int level)
             num[ITEM_ASSEMBLER_FRAME]    = 1;
         } break;
 
-        default:
-        {
+        // default:
+        // {
 
-        } break;
+        // } break;
     }
 
     for (int type = ITEM_HEALTH; type < ITEM_MAX; type++)
@@ -425,9 +427,9 @@ void game_spawn_level_items(int level)
     }
 }
 
-void game_spawn_enemies(int level)
+void game_spawn_enemies()
 {
-    for (size_t i = 0; i < 0; i++)
+    for (size_t i = 0; i < 1; i++)
     {
         Point pos;
 
@@ -469,12 +471,18 @@ void game_spawn_player(Point pos)
                                 (vec3) {1.0f, 1.0f, 0.5f },
                                 0x02, true);
     _gs.ent[p.id] = p;
-    _gs.stats[p.id] = combat_stats_ctor("Player", 
-                                        100,
-                                        7, 7,
-                                        20, 2,
-                                        1,
-                                        ARMOR_NONE, GUN_NONE);
+
+    if (!_skip_resetting_player_stats)
+    {
+        _gs.stats[p.id] = combat_stats_ctor("Player", 
+                                            100,
+                                            7, 7,
+                                            20, 2,
+                                            1,
+                                            ARMOR_NONE, GUN_NONE);
+
+        _skip_resetting_player_stats = true;
+    }
 
     game_update_collisions();
     entity_calc_player_fov(
@@ -488,10 +496,11 @@ void game_clean()
     // Reset entities
     // -------------
     memset(_gs.ent, 0, ENTITY_NUM * sizeof(Entity));
+    entity_reset();
 
     // Reset entity stats
     // ------------------
-    memset(_gs.stats + 2, 0, (ENTITY_NUM - 1) * sizeof(Entity));
+    memset(_gs.stats + 2, 0, (ENTITY_NUM - 2) * sizeof(Entity));
 
     // Reset item pickups
     // ------------------
@@ -532,6 +541,7 @@ void game_clean()
         free(_gs.log_lines[i]);
         _gs.log_lines[i] = NULL;
     }
+    ui_reset_log_cursor();
 }
 
 void game_update(float dt, int *_new_key)
@@ -540,6 +550,8 @@ void game_update(float dt, int *_new_key)
     {
         case INIT:
         {
+            printf("Loading %d level...\n", _gs.current_level);
+
             game_clean();
 
             map_gen_level(&_gs.map, MAP_COLS, MAP_ROWS);
@@ -551,11 +563,11 @@ void game_update(float dt, int *_new_key)
 
             // Init enemies
             // ------------
-            game_spawn_enemies(0);
+            game_spawn_enemies();
 
             // Init items
             // ----------
-            game_spawn_level_items(0);
+            game_spawn_level_items();
 
             // Init UI
             // -------
@@ -664,6 +676,12 @@ void game_update(float dt, int *_new_key)
 
                             skip_turn = true;
                         }
+                    } break;
+
+                    case GLFW_KEY_BACKSPACE:
+                    {
+                        _gs.current_level++;
+                        _gs.run_state = INIT;
                     } break;
                 }
 
