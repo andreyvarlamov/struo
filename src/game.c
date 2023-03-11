@@ -410,35 +410,62 @@ void game_spawn_level_items()
 {
     size_t num[ITEM_MAX] = {0};
 
-    switch (_gs.current_level)
+    num[ITEM_HEALTH]             = 5 + (rand() % 5); // 5-10
+    num[ITEM_MECH_COMP]          = 1 + (rand() % 4); // 1-4
+    num[ITEM_ELEC_COMP]          = 1 + (rand() % 4); // 1-4
+    num[ITEM_JUNK]               = 1 + (rand() % 4); // 1-4
+
+    num[ITEM_CPU_AUTOMAT_FRAME]  = 0;
+    num[ITEM_MOBO_AUTOMAT_FRAME] = 0;
+    num[ITEM_GPU_AUTOMAT_FRAME]  = 0;
+    num[ITEM_MEM_AUTOMAT_FRAME]  = 0;
+    num[ITEM_ASSEMBLER_FRAME]    = 0;
+
+    if (_gs.current_level == 4)
     {
-        default:
+
+        if (   _gs.player_items[ITEM_CPU_AUTOMAT_FRAME]  == 0
+            || _gs.player_items[ITEM_MOBO_AUTOMAT_FRAME] == 0
+            || _gs.player_items[ITEM_GPU_AUTOMAT_FRAME]  == 0
+            || _gs.player_items[ITEM_MEM_AUTOMAT_FRAME]  == 0
+            || _gs.player_items[ITEM_ASSEMBLER_FRAME]    == 0)
         {
-            num[ITEM_HEALTH]             = 10;
+            ItemType item_type;
 
-            num[ITEM_ARMOR_LEATHER]      = 1;
-            num[ITEM_ARMOR_METAL]        = 1;
-            num[ITEM_ARMOR_COMBAT]       = 1;
+            do
+            {
+                item_type = ITEM_CPU_AUTOMAT_FRAME + (rand() % 5);
+            }
+            while (_gs.player_items[item_type] > 0);
 
-            num[ITEM_GUN_PISTOL]         = 1;
-            num[ITEM_GUN_RIFLE]          = 1;
-            num[ITEM_GUN_ROCKET]         = 1;
+            num[item_type] = 1;
+        }
+    }
 
-            num[ITEM_MECH_COMP]          = 1;
-            num[ITEM_ELEC_COMP]          = 1;
-            num[ITEM_JUNK]               = 1;
+    if      (_gs.stats[1].armor == ARMOR_NONE)
+    {
+        num[ITEM_ARMOR_LEATHER] = ((rand() % 3) == 0) ? 1 : 0;
+    }
+    else if (_gs.stats[1].armor == ARMOR_LEATHER)
+    {
+        num[ITEM_ARMOR_METAL]   = ((rand() % 3) == 0) ? 1 : 0;
+    }
+    else if (_gs.stats[1].armor == ARMOR_METAL)
+    {
+        num[ITEM_ARMOR_COMBAT]  = ((rand() % 3) == 0) ? 1 : 0;
+    }
 
-            num[ITEM_CPU_AUTOMAT_FRAME]  = 1;
-            num[ITEM_MOBO_AUTOMAT_FRAME] = 1;
-            num[ITEM_GPU_AUTOMAT_FRAME]  = 1;
-            num[ITEM_MEM_AUTOMAT_FRAME]  = 1;
-            num[ITEM_ASSEMBLER_FRAME]    = 1;
-        } break;
-
-        // default:
-        // {
-
-        // } break;
+    if      (_gs.stats[1].gun   == GUN_NONE)
+    {
+        num[ITEM_GUN_PISTOL]    = ((rand() % 3) == 0) ? 1 : 0;
+    }
+    else if (_gs.stats[1].gun   == GUN_PISTOL)
+    {
+        num[ITEM_GUN_RIFLE]     = ((rand() % 3) == 0) ? 1 : 0;
+    }
+    else if (_gs.stats[1].gun   == GUN_RIFLE)
+    {
+        num[ITEM_GUN_ROCKET]    = ((rand() % 3) == 0) ? 1 : 0;
     }
 
     for (int type = ITEM_HEALTH; type < ITEM_MAX; type++)
@@ -741,11 +768,12 @@ void game_update(float dt, int *_new_key)
 
             // Point robot_pos = { 5, 30 };
             //game_spawn_enemy(robot_pos, ENEMY_ROBOT);
+
             game_spawn_level_enemies();
 
             // Init items
             // ----------
-            // game_spawn_level_items();
+            game_spawn_level_items();
 
             // Init UI
             // -------
