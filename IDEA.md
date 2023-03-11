@@ -62,7 +62,10 @@ Speed
 * [x] Log
 * [x] Player stat HUD
 * [x] Non-character entities
-* [ ] Item pickups
+* [x] Item pickups
+* [ ] Item pickup UI
+* [ ] Equipment
+* [ ] Story items
 * [ ] Multiple levels
 * [ ] Progression
 * [ ] ---> Iter 2 (single building branch w/ progression and items)

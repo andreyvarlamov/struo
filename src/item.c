@@ -1,0 +1,26 @@
+#include "main.h"
+
+typedef enum ItemType
+{
+    ITEM_NONE,
+
+    ITEM_HEALTH,
+    ITEM_ARMOR1,
+    ITEM_ARMOR2,
+    ITEM_ARMOR3,
+    ITEM_PISTOL,
+    ITEM_RIFLE,
+    ITEM_RPG,
+
+    ITEM_MECH_COMP,
+    ITEM_ELEC_COMP,
+    ITEM_JUNK,
+
+    ITEM_CPU_AUTOMAT_FRAME,
+    ITEM_MOBO_AUTOMAT_FRAME,
+    ITEM_GPU_AUTOMAT_FRAME,
+    ITEM_MEM_AUTOMAT_FRAME,
+    ITEM_ASSEMBLER_FRAME,
+
+    ITEM_MAX
+} ItemType;

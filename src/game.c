@@ -8,17 +8,26 @@ typedef enum RunState
     GAME_OVER
 } RunState;
 
+typedef struct EntIdBag
+{
+    size_t ent_char;
+    size_t ent_nc;
+} EntIdBag;
+
 typedef struct GameState
 {
     Entity ent[ENTITY_NUM];
     Stats stats[ENTITY_NUM];
-    size_t ent_by_pos[MAP_COLS * MAP_ROWS];
+    ItemType item_pickup[ENTITY_NUM];
+    EntIdBag ent_by_pos[MAP_COLS * MAP_ROWS];
     bool collisions[MAP_COLS * MAP_ROWS];
     bool player_fov[MAP_COLS * MAP_ROWS];
     bool player_map_mem[MAP_COLS * MAP_ROWS];
+    int player_items[ITEM_NONE];
     Map map;
     Glyph ui[UI_COLS * SCREEN_ROWS];
     char *log_lines[LOG_LINES]; // TODO: clean up if stop showing log at some point
+    bool player_over_item;
     RunState run_state;
 } GameState;
 
@@ -26,18 +35,33 @@ global_variable GameState _gs;
 
 bool game_try_move_entity_p(size_t entity_id, Point *pos, Point new, int map_width)
 {
-    size_t target_id = _gs.ent_by_pos[util_p_to_i(new, map_width)];
+    EntIdBag target = _gs.ent_by_pos[util_p_to_i(new, map_width)];
 
     bool did_move = false;
     if (!_gs.collisions[util_p_to_i(new, map_width)])
     {
         *pos = new;
         did_move = true;
+
+        // Item pickup logic
+        // If player stepped over an item pickup entity ...
+        if (entity_id == 1 && target.ent_nc >= ENTITY_NC_OFFSET)
+        {
+            _gs.player_over_item = true;
+            // TODO: Draw UI
+
+        }
+        else if(entity_id == 1 && _gs.player_over_item)
+        {
+            _gs.player_over_item = false;
+            // TODO: Clear UI
+        }
+
     }
-    else if (target_id)
+    else if (target.ent_char)
     {
         Stats *att = &_gs.stats[entity_id];
-        Stats *def = &_gs.stats[target_id];
+        Stats *def = &_gs.stats[target.ent_char];
         AttackResult ar = combat_attack(att, def);
 
         ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
@@ -46,13 +70,13 @@ bool game_try_move_entity_p(size_t entity_id, Point *pos, Point new, int map_wid
 
         if (def->health <= 0)
         {
-            _gs.ent[target_id].alive = false;
+            _gs.ent[target.ent_char].alive = false;
             ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
                         "%s died.", def->name);
         }
 
         // If player was attacked, update ui with their stats
-        if (target_id == 1)
+        if (target.ent_char == 1)
         {
             ui_draw_player_stats(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.stats[1]);
         }
@@ -73,13 +97,24 @@ void game_update_collisions()
 
     memset(_gs.ent_by_pos, 0, MAP_COLS * MAP_ROWS * sizeof(size_t));
 
+    for (size_t i = 0; i < entity_nc_get_count(); i++)
+    {
+        int offset_i = i + ENTITY_NC_OFFSET;
+
+        Entity e = _gs.ent[offset_i];
+        if (e.alive)
+        {
+            _gs.ent_by_pos[util_p_to_i(e.pos, MAP_COLS)].ent_nc = e.id;
+        }
+    }
+
     for (size_t i = 1; i < entity_char_get_count(); i++)
     {
         Entity e = _gs.ent[i];
-        if ( _gs.ent[i].alive)
+        if (e.alive)
         {
             _gs.collisions[util_p_to_i(e.pos, MAP_COLS)] = true;
-            _gs.ent_by_pos[util_p_to_i(e.pos, MAP_COLS)] = e.id;
+            _gs.ent_by_pos[util_p_to_i(e.pos, MAP_COLS)].ent_char = e.id;
         }
     }
 }
@@ -145,6 +180,9 @@ void game_update(float dt, int *_new_key)
                                           '+',
                                           true);
                 _gs.ent[e.id] = e;
+                _gs.item_pickup[e.id] = ITEM_HEALTH;
+
+                game_update_collisions();
             }
 
             // Init UI
@@ -224,6 +262,22 @@ void game_update(float dt, int *_new_key)
                     case GLFW_KEY_PERIOD:
                     {
                         skip_turn = true;
+                    } break;
+
+                    case GLFW_KEY_G:
+                    {
+                        if (_gs.player_over_item)
+                        {
+                            size_t e_id = 
+                                _gs.ent_by_pos[util_p_to_i(_gs.ent[1].pos, MAP_COLS)].ent_nc;
+
+                            _gs.ent[e_id].alive = false;
+                            // ItemType item_type = _gs.item_pickup[e_id];
+
+                            printf("Item %zu picked up.\n", e_id);
+
+                            skip_turn = true;
+                        }
                     } break;
                 }
 
@@ -390,28 +444,7 @@ void game_render(float dt)
         }
     }
 
-    // Render char entities
-    // --------------
-    for (size_t i = 1; i < entity_char_get_count(); i++)
-    {
-        if (_gs.ent[i].alive)
-        {
-            if (_gs.player_fov[util_p_to_i(_gs.ent[i].pos, MAP_COLS)])
-            {
-                render_render_tile(
-                    (vec2) {
-                        _gs.ent[i].pos.x * SCREEN_TILE_WIDTH,
-                        _gs.ent[i].pos.y * SCREEN_TILE_WIDTH
-                    },
-                    _gs.ent[i].glyph,
-                    _gs.ent[i].fg, _gs.ent[i].bg,
-                    false
-                );
-            }
-        }
-    }
-
-    // Render char entities
+    // Render non-char entities
     // --------------
     for (size_t i = 0; i < entity_nc_get_count(); i++)
     {
@@ -432,6 +465,42 @@ void game_render(float dt)
             }
         }
     }
+
+    // Render char entities
+    // --------------
+    for (size_t i = 2; i < entity_char_get_count(); i++)
+    {
+        if (_gs.ent[i].alive)
+        {
+            if (_gs.player_fov[util_p_to_i(_gs.ent[i].pos, MAP_COLS)])
+            {
+                render_render_tile(
+                    (vec2) {
+                        _gs.ent[i].pos.x * SCREEN_TILE_WIDTH,
+                        _gs.ent[i].pos.y * SCREEN_TILE_WIDTH
+                    },
+                    _gs.ent[i].glyph,
+                    _gs.ent[i].fg, _gs.ent[i].bg,
+                    false
+                );
+            }
+        }
+    }
+
+    // Render player entity
+    // --------------
+        if (_gs.ent[1].alive)
+        {
+            render_render_tile(
+                (vec2) {
+                    _gs.ent[1].pos.x * SCREEN_TILE_WIDTH,
+                    _gs.ent[1].pos.y * SCREEN_TILE_WIDTH
+                },
+                _gs.ent[1].glyph,
+                _gs.ent[1].fg, _gs.ent[1].bg,
+                false
+            );
+        }
 
     // Render UI
     // ---------
