@@ -557,28 +557,28 @@ void game_spawn_level_items()
 
     if      (_gs.stats[1].armor == ARMOR_NONE)
     {
-        num[ITEM_ARMOR_LEATHER] = ((rand() % 3) == 0) ? 1 : 0;
+        num[ITEM_ARMOR_LEATHER] = ((rand() % 2) == 0) ? 1 : 0;
     }
     else if (_gs.stats[1].armor == ARMOR_LEATHER)
     {
-        num[ITEM_ARMOR_METAL]   = ((rand() % 3) == 0) ? 1 : 0;
+        num[ITEM_ARMOR_METAL]   = ((rand() % 2) == 0) ? 1 : 0;
     }
     else if (_gs.stats[1].armor == ARMOR_METAL)
     {
-        num[ITEM_ARMOR_COMBAT]  = ((rand() % 3) == 0) ? 1 : 0;
+        num[ITEM_ARMOR_COMBAT]  = ((rand() % 2) == 0) ? 1 : 0;
     }
 
     if      (_gs.stats[1].gun   == GUN_NONE)
     {
-        num[ITEM_GUN_PISTOL]    = ((rand() % 3) == 0) ? 1 : 0;
+        num[ITEM_GUN_PISTOL]    = ((rand() % 2) == 0) ? 1 : 0;
     }
     else if (_gs.stats[1].gun   == GUN_PISTOL)
     {
-        num[ITEM_GUN_RIFLE]     = ((rand() % 3) == 0) ? 1 : 0;
+        num[ITEM_GUN_RIFLE]     = ((rand() % 2) == 0) ? 1 : 0;
     }
     else if (_gs.stats[1].gun   == GUN_RIFLE)
     {
-        num[ITEM_GUN_ROCKET]    = ((rand() % 3) == 0) ? 1 : 0;
+        num[ITEM_GUN_ROCKET]    = ((rand() % 2) == 0) ? 1 : 0;
     }
 
     for (int type = ITEM_HEALTH; type < ITEM_MAX; type++)
@@ -1243,26 +1243,27 @@ void game_update(float dt, int *_new_key)
             if (!_skip_new_game)
             {
                 ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
-                                "Hello, player %c! hjkl-move .-skip", 0x01);
-
+                                "Hello, player %c! Controls:", 0x01);
                 ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
                                 "");
-
+                ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
+                                "hjkl - move; period - skip turn");
+                ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
+                                "o - autoexplore. Stop on items, etc.");
+                ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
+                                "u - go to exit. It has to be explored.");
+                ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
+                                "");
                 ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
                                 "This world seems out of whack.");
-
                 ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
                                 "");
-
                 ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
                                 "I will rectify that.");
-
                 ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
                                 "");
-
                 ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
                                 "I need to build a computer...");
-
                 ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
                                 "");
 
