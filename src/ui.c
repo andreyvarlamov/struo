@@ -170,7 +170,7 @@ void ui_draw_interact_machine_plan(Glyph *ui, int ui_width, int ui_height, Machi
 
 void ui_draw_player_items(Glyph *ui, int ui_width, int ui_height, int *item_counts)
 {
-    int rows = ITEM_MAX - ITEM_MECH_COMP;
+    int rows = ITEM_MAX - ITEM_MECH_COMP + 2;
     int row_i = 0;
 
     for (int i = 0; i < rows * ui_width; i++)

@@ -48,6 +48,19 @@ global_variable GameState _gs;
 global_variable bool _skip_resetting_player_stats;
 global_variable bool _skip_gen_new_building_number;
 
+MachineType game_check_player_over_machine_plan(Point pos)
+{
+    for (MachineType type = MACHINE_CPU_AUTOMATON; type < MACHINE_MAX; type++)
+    {
+        if (util_p_cmp(_gs.base_machines[type].e_plan.pos, pos))
+        {
+            return type;
+        }
+    }
+
+    return MACHINE_NONE;
+}
+
 bool game_try_move_entity_p(size_t entity_id, Point *pos, Point new, int map_width)
 {
     EntIdBag target = _gs.ent_by_pos[util_p_to_i(new, map_width)];
@@ -89,23 +102,18 @@ bool game_try_move_entity_p(size_t entity_id, Point *pos, Point new, int map_wid
         // TODO: Only in base level
         if (entity_id == 1)
         {
-            bool found_machine = false;
-            for (MachineType type = MACHINE_CPU_AUTOMATON; type < MACHINE_MAX; type++)
-            {
-                if (util_p_cmp(_gs.base_machines[type].e_plan.pos, new))
-                {
-                    _gs.player_state = PSTATE_OVER_MACHINE_PLAN;
-                    ui_draw_machine(_gs.ui, UI_COLS, SCREEN_ROWS, type, _gs.player_items);
-                    if (item_can_craft(type, ITEM_NONE, _gs.player_items))
-                    {
-                        ui_draw_interact_machine_plan(_gs.ui, UI_COLS, SCREEN_ROWS, type);
-                    }
+            MachineType type = game_check_player_over_machine_plan(new);
 
-                    found_machine = true;
+            if (type > MACHINE_NONE && type < MACHINE_MAX)
+            {
+                _gs.player_state = PSTATE_OVER_MACHINE_PLAN;
+                ui_draw_machine(_gs.ui, UI_COLS, SCREEN_ROWS, type, _gs.player_items);
+                if (item_can_craft(type, ITEM_NONE, _gs.player_items).yes)
+                {
+                    ui_draw_interact_machine_plan(_gs.ui, UI_COLS, SCREEN_ROWS, type);
                 }
             }
-
-            if(!found_machine && _gs.player_state == PSTATE_OVER_MACHINE_PLAN)
+            else if(_gs.player_state == PSTATE_OVER_MACHINE_PLAN)
             {
                 _gs.player_state = PSTATE_NONE;
                 ui_clean_machine(_gs.ui, UI_COLS, SCREEN_ROWS);
@@ -170,6 +178,16 @@ void game_update_collisions()
         {
             _gs.collisions[util_p_to_i(e.pos, MAP_COLS)] = true;
             _gs.ent_by_pos[util_p_to_i(e.pos, MAP_COLS)].ent_char = e.id;
+        }
+    }
+
+    // TODO: Only when on base level
+    for (MachineType type = MACHINE_CPU_AUTOMATON; type < MACHINE_MAX; type++)
+    {
+        MachineEntity machine_e = _gs.base_machines[type];
+        if (machine_e.built)
+        {
+            _gs.collisions[util_p_to_i(machine_e.e_built.pos, MAP_COLS)] = true;
         }
     }
 }
@@ -1068,6 +1086,32 @@ void game_update(float dt, int *_new_key)
                             {
                                 _gs.current_level++;
                                 _gs.run_state = INIT;
+                            } break;
+
+                            case PSTATE_OVER_MACHINE_PLAN:
+                            {
+                                MachineType type = game_check_player_over_machine_plan(_gs.ent[1].pos);
+
+                                if (type > MACHINE_NONE && type < MACHINE_MAX)
+                                {
+                                    CanCraftResult ccr = item_can_craft(type, ITEM_NONE, _gs.player_items);
+                                    if (ccr.yes)
+                                    {
+                                        for (ItemType type = ITEM_MECH_COMP; type < ITEM_MAX; type++)
+                                        {
+                                            _gs.player_items[type] -= ccr.need_items[type];
+                                        }
+
+                                        ui_draw_player_items(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.player_items);
+
+                                        _gs.base_machines[type].built = true;
+                                        _gs.ent[1].pos = util_xy_to_p(32, 32);
+                                        game_update_collisions();
+
+                                        skip_turn = true;
+                                    }
+                                }
+
                             } break;
 
                             default:

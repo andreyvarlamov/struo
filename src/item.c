@@ -336,18 +336,33 @@ int item_get_comp_req(MachineType for_machine_type, ItemType for_item_type, Item
     }
 }
 
-bool item_can_craft(MachineType for_machine_type, ItemType for_item_type, int *item_counts)
+typedef struct CanCraftResult
 {
+    int need_items[ITEM_MAX];
+    bool yes;
+} CanCraftResult;
+
+CanCraftResult item_can_craft(MachineType for_machine_type, ItemType for_item_type, int *item_counts)
+{
+    CanCraftResult result = {0};
+
     if (for_machine_type == MACHINE_COMPUTER)
     {
-        return item_counts[ITEM_COMPUTER] >= 1;
+        result.need_items[ITEM_COMPUTER] = 1;
+
+        result.yes = item_counts[ITEM_COMPUTER] >= 1;
     }
     else if (for_item_type == ITEM_COMPUTER)
     {
-        return item_counts[ITEM_CPU]  >= 1
-            && item_counts[ITEM_MOBO] >= 1
-            && item_counts[ITEM_GPU]  >= 1
-            && item_counts[ITEM_MEM]  >= 1;
+        result.need_items[ITEM_CPU] = 1;
+        result.need_items[ITEM_MOBO] = 1;
+        result.need_items[ITEM_GPU] = 1;
+        result.need_items[ITEM_MEM] = 1;
+
+        result.yes = item_counts[ITEM_CPU]  >= 1
+                  && item_counts[ITEM_MOBO] >= 1
+                  && item_counts[ITEM_GPU]  >= 1
+                  && item_counts[ITEM_MEM]  >= 1;
     }
     else
     {
@@ -359,28 +374,40 @@ bool item_can_craft(MachineType for_machine_type, ItemType for_item_type, int *i
 
         if (for_machine_type == MACHINE_CPU_AUTOMATON)
         {
+            result.need_items[ITEM_CPU_AUTOMAT_FRAME] = 1;
             have_or_dont_need_frame = item_counts[ITEM_CPU_AUTOMAT_FRAME] >= 1;
         }
         else if (for_machine_type == MACHINE_MOBO_AUTOMATON)
         {
+            result.need_items[ITEM_MOBO_AUTOMAT_FRAME] = 1;
             have_or_dont_need_frame = item_counts[ITEM_MOBO_AUTOMAT_FRAME] >= 1;
         }
         else if (for_machine_type == MACHINE_GPU_AUTOMATON)
         {
+            result.need_items[ITEM_GPU_AUTOMAT_FRAME] = 1;
             have_or_dont_need_frame = item_counts[ITEM_GPU_AUTOMAT_FRAME] >= 1;
         }
         else if (for_machine_type == MACHINE_MEM_AUTOMATON)
         {
+            result.need_items[ITEM_MEM_AUTOMAT_FRAME] = 1;
             have_or_dont_need_frame = item_counts[ITEM_MEM_AUTOMAT_FRAME] >= 1;
         }
         else if (for_machine_type == MACHINE_ASSEMBLER)
         {
+            result.need_items[ITEM_ASSEMBLER_FRAME] = 1;
             have_or_dont_need_frame = item_counts[ITEM_ASSEMBLER_FRAME] >= 1;
         }
 
-        return item_counts[ITEM_MECH_COMP] >= mech_req
-            && item_counts[ITEM_ELEC_COMP] >= elec_req
-            && item_counts[ITEM_JUNK]      >= junk_req
-            && have_or_dont_need_frame;
+        result.need_items[ITEM_MECH_COMP] = mech_req;
+        result.need_items[ITEM_ELEC_COMP] = elec_req;
+        result.need_items[ITEM_JUNK] = junk_req;
+
+
+        result.yes = item_counts[ITEM_MECH_COMP] >= mech_req
+                  && item_counts[ITEM_ELEC_COMP] >= elec_req
+                  && item_counts[ITEM_JUNK]      >= junk_req
+                  && have_or_dont_need_frame;
     }
+
+    return result;
 }

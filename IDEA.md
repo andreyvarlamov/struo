@@ -77,17 +77,18 @@ Speed
 * [x] Base location
 * [x] Machine entities
 * [x] Machine plans and UI
-* [ ] Built machines and UI
+* [x] Build machines
+* [ ] Built machines interactions and UI
 * [ ] Machine tie up with items
 * [ ] Craft computer
 * [ ] Game start and game over (won)
 * [ ] Base location persistency
 * [ ] Generate building and scavenge
-* [ ] Auto explore
-* [ ] Test and tweak the whole game flow
 * [ ] Do something about cheats
 * [ ] Start splash screen
 * [ ] ---> Iter 3 (shippable)
+* [ ] Auto explore
+* [ ] Test and tweak the whole game flow
 * [ ] Adjust base machine colors
 * [ ] Map procgen - lobby prefab only on floor 1
 * [ ] Map procgen - prefab translation and BSP flip
