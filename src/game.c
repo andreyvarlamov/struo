@@ -181,7 +181,182 @@ void game_pickup_item(ItemType item_type, Stats *player_stats)
 
         default:
         {
-        }
+        } break;
+    }
+}
+
+void game_spawn_item(Point pos, ItemType item_type)
+{
+    switch (item_type)
+    {
+        case ITEM_HEALTH:
+        {
+            Entity e = entity_nc_ctor(pos,
+                                      (vec3) { 0.1f, 0.6f, 0.1f },
+                                      GLM_VEC3_ONE,
+                                      '+',
+                                      true);
+            _gs.ent[e.id] = e;
+            _gs.item_pickup[e.id] = ITEM_HEALTH;
+        } break;
+
+        case ITEM_ARMOR_LEATHER:
+        {
+            Entity e = entity_nc_ctor(pos,
+                                      (vec3) { 0.2f, 0.2f, 0.2f },
+                                      (vec3) { 0.3f, 0.1f, 0.1f },
+                                      'y',
+                                      true);
+            _gs.ent[e.id] = e;
+            _gs.item_pickup[e.id] = ITEM_ARMOR_LEATHER;
+        } break;
+
+        case ITEM_ARMOR_METAL:
+        {
+            Entity e = entity_nc_ctor(pos,
+                                      (vec3) { 0.4f, 0.4f, 0.4f },
+                                      (vec3) { 0.6f, 0.1f, 0.1f },
+                                      'Y',
+                                      true);
+            _gs.ent[e.id] = e;
+            _gs.item_pickup[e.id] = ITEM_ARMOR_METAL;
+        } break;
+
+        case ITEM_ARMOR_COMBAT:
+        {
+            Entity e = entity_nc_ctor(pos,
+                                      (vec3) { 0.6f, 0.6f, 0.6f },
+                                      (vec3) { 0.9f, 0.1f, 0.1f },
+                                      0x9D,
+                                      true);
+            _gs.ent[e.id] = e;
+            _gs.item_pickup[e.id] = ITEM_ARMOR_COMBAT;
+        } break;
+
+        case ITEM_GUN_PISTOL:
+        {
+            Entity e = entity_nc_ctor(pos,
+                                      (vec3) { 0.2f, 0.2f, 0.2f },
+                                      (vec3) { 0.3f, 0.1f, 0.1f },
+                                      0xA9,
+                                      true);
+            _gs.ent[e.id] = e;
+            _gs.item_pickup[e.id] = ITEM_GUN_PISTOL;
+        } break;
+
+        case ITEM_GUN_RIFLE:
+        {
+            Entity e = entity_nc_ctor(pos,
+                                      (vec3) { 0.4f, 0.4f, 0.4f },
+                                      (vec3) { 0.6f, 0.1f, 0.1f },
+                                      0xF4,
+                                      true);
+            _gs.ent[e.id] = e;
+            _gs.item_pickup[e.id] = ITEM_GUN_RIFLE;
+        } break;
+
+        case ITEM_GUN_ROCKET:
+        {
+            Entity e = entity_nc_ctor(pos,
+                                      (vec3) { 0.6f, 0.6f, 0.6f },
+                                      (vec3) { 0.9f, 0.1f, 0.1f },
+                                      0x17,
+                                      true);
+            _gs.ent[e.id] = e;
+            _gs.item_pickup[e.id] = ITEM_GUN_ROCKET;
+        } break;
+
+        case ITEM_MECH_COMP:
+        {
+            Entity e = entity_nc_ctor(pos,
+                                      (vec3) { 0.6f, 0.2f, 0.6f },
+                                      (vec3) { 0.3f, 0.1f, 0.1f },
+                                      0xF0,
+                                      true);
+            _gs.ent[e.id] = e;
+            _gs.item_pickup[e.id] = ITEM_MECH_COMP;
+        } break;
+
+        case ITEM_ELEC_COMP:
+        {
+            Entity e = entity_nc_ctor(pos,
+                                      (vec3) { 0.6f, 0.2f, 0.6f },
+                                      (vec3) { 0.3f, 0.1f, 0.1f },
+                                      0xF7,
+                                      true);
+            _gs.ent[e.id] = e;
+            _gs.item_pickup[e.id] = ITEM_ELEC_COMP;
+        } break;
+
+        case ITEM_JUNK:
+        {
+            Entity e = entity_nc_ctor(pos,
+                                      (vec3) { 0.6f, 0.2f, 0.6f },
+                                      (vec3) { 0.3f, 0.1f, 0.1f },
+                                      '&',
+                                      true);
+            _gs.ent[e.id] = e;
+            _gs.item_pickup[e.id] = ITEM_JUNK;
+        } break;
+
+        case ITEM_CPU_AUTOMAT_FRAME:
+        {
+            Entity e = entity_nc_ctor(pos,
+                                        (vec3) { 0.9f, 0.5f, 0.9f },
+                                        (vec3) { 1.0f, 0.3f, 0.3f },
+                                        0x15,
+                                        true);
+            _gs.ent[e.id] = e;
+            _gs.item_pickup[e.id] = ITEM_CPU_AUTOMAT_FRAME;
+        } break;
+
+        case ITEM_MOBO_AUTOMAT_FRAME:
+        {
+            Entity e = entity_nc_ctor(pos,
+                                      (vec3) { 0.9f, 0.5f, 0.9f },
+                                      (vec3) { 1.0f, 0.3f, 1.0f },
+                                      0x15,
+                                      true);
+            _gs.ent[e.id] = e;
+            _gs.item_pickup[e.id] = ITEM_MOBO_AUTOMAT_FRAME;
+        } break;
+
+        case ITEM_GPU_AUTOMAT_FRAME:
+        {
+            Entity e = entity_nc_ctor(pos,
+                                      (vec3) { 0.9f, 0.5f, 0.9f },
+                                      (vec3) { 0.3f, 0.3f, 1.0f },
+                                      0x15,
+                                      true);
+            _gs.ent[e.id] = e;
+            _gs.item_pickup[e.id] = ITEM_GPU_AUTOMAT_FRAME;
+        } break;
+
+        case ITEM_MEM_AUTOMAT_FRAME:
+        {
+            Entity e = entity_nc_ctor(pos,
+                                      (vec3) { 0.9f, 0.5f, 0.9f },
+                                      (vec3) { 0.3f, 1.0f, 1.0f },
+                                      0x15,
+                                      true);
+            _gs.ent[e.id] = e;
+            _gs.item_pickup[e.id] = ITEM_MEM_AUTOMAT_FRAME;
+        } break;
+
+        case ITEM_ASSEMBLER_FRAME:
+        {
+                Entity e = entity_nc_ctor(pos,
+                                          (vec3) { 0.9f, 0.5f, 0.9f },
+                                          (vec3) { 0.3f, 1.0f, 0.3f },
+                                          0x15,
+                                          true);
+                _gs.ent[e.id] = e;
+                _gs.item_pickup[e.id] = ITEM_ASSEMBLER_FRAME;
+        } break;
+
+        default:
+        {
+        } break;
     }
 }
 
@@ -251,129 +426,28 @@ void game_update(float dt, int *_new_key)
             for (size_t i = 0; i < 1; i++)
             {
                 // Health pack
-                Entity e = entity_nc_ctor(util_xy_to_p(5, 30),
-                                          (vec3) { 0.1f, 0.6f, 0.1f },
-                                          GLM_VEC3_ONE,
-                                          '+',
-                                          true);
-                _gs.ent[e.id] = e;
-                _gs.item_pickup[e.id] = ITEM_HEALTH;
+                game_spawn_item(util_xy_to_p(5, 30), ITEM_HEALTH);
 
                 // Armor
-                e = entity_nc_ctor(util_xy_to_p(5, 31),
-                                          (vec3) { 0.2f, 0.2f, 0.2f },
-                                          (vec3) { 0.3f, 0.1f, 0.1f },
-                                          'y',
-                                          true);
-                _gs.ent[e.id] = e;
-                _gs.item_pickup[e.id] = ITEM_ARMOR_LEATHER;
-
-                e = entity_nc_ctor(util_xy_to_p(5, 32),
-                                          (vec3) { 0.4f, 0.4f, 0.4f },
-                                          (vec3) { 0.6f, 0.1f, 0.1f },
-                                          'Y',
-                                          true);
-                _gs.ent[e.id] = e;
-                _gs.item_pickup[e.id] = ITEM_ARMOR_METAL;
-
-                e = entity_nc_ctor(util_xy_to_p(5, 33),
-                                          (vec3) { 0.6f, 0.6f, 0.6f },
-                                          (vec3) { 0.9f, 0.1f, 0.1f },
-                                          0x9D,
-                                          true);
-                _gs.ent[e.id] = e;
-                _gs.item_pickup[e.id] = ITEM_ARMOR_COMBAT;
+                game_spawn_item(util_xy_to_p(5, 31), ITEM_ARMOR_LEATHER);
+                game_spawn_item(util_xy_to_p(5, 32), ITEM_ARMOR_METAL);
+                game_spawn_item(util_xy_to_p(5, 33), ITEM_ARMOR_COMBAT);
 
                 // Guns
-                e = entity_nc_ctor(util_xy_to_p(5, 34),
-                                          (vec3) { 0.2f, 0.2f, 0.2f },
-                                          (vec3) { 0.3f, 0.1f, 0.1f },
-                                          0xA9,
-                                          true);
-                _gs.ent[e.id] = e;
-                _gs.item_pickup[e.id] = ITEM_GUN_PISTOL;
-
-                e = entity_nc_ctor(util_xy_to_p(5, 35),
-                                          (vec3) { 0.4f, 0.4f, 0.4f },
-                                          (vec3) { 0.6f, 0.1f, 0.1f },
-                                          0xF4,
-                                          true);
-                _gs.ent[e.id] = e;
-                _gs.item_pickup[e.id] = ITEM_GUN_RIFLE;
-
-                e = entity_nc_ctor(util_xy_to_p(5, 36),
-                                          (vec3) { 0.6f, 0.6f, 0.6f },
-                                          (vec3) { 0.9f, 0.1f, 0.1f },
-                                          0x17,
-                                          true);
-                _gs.ent[e.id] = e;
-                _gs.item_pickup[e.id] = ITEM_GUN_ROCKET;
+                game_spawn_item(util_xy_to_p(5, 34), ITEM_GUN_PISTOL);
+                game_spawn_item(util_xy_to_p(5, 35), ITEM_GUN_RIFLE);
+                game_spawn_item(util_xy_to_p(5, 36), ITEM_GUN_ROCKET);
 
                 // Story items
-                e = entity_nc_ctor(util_xy_to_p(7, 30),
-                                          (vec3) { 0.6f, 0.2f, 0.6f },
-                                          (vec3) { 0.3f, 0.1f, 0.1f },
-                                          0xF0,
-                                          true);
-                _gs.ent[e.id] = e;
-                _gs.item_pickup[e.id] = ITEM_MECH_COMP;
+                game_spawn_item(util_xy_to_p(7, 30), ITEM_MECH_COMP);
+                game_spawn_item(util_xy_to_p(7, 31), ITEM_ELEC_COMP);
+                game_spawn_item(util_xy_to_p(7, 32), ITEM_JUNK);
 
-                e = entity_nc_ctor(util_xy_to_p(7, 31),
-                                          (vec3) { 0.6f, 0.2f, 0.6f },
-                                          (vec3) { 0.3f, 0.1f, 0.1f },
-                                          0xF7,
-                                          true);
-                _gs.ent[e.id] = e;
-                _gs.item_pickup[e.id] = ITEM_ELEC_COMP;
-
-                e = entity_nc_ctor(util_xy_to_p(7, 32),
-                                          (vec3) { 0.6f, 0.2f, 0.6f },
-                                          (vec3) { 0.3f, 0.1f, 0.1f },
-                                          '&',
-                                          true);
-                _gs.ent[e.id] = e;
-                _gs.item_pickup[e.id] = ITEM_JUNK;
-
-                e = entity_nc_ctor(util_xy_to_p(7, 33),
-                                          (vec3) { 0.9f, 0.5f, 0.9f },
-                                          (vec3) { 1.0f, 0.3f, 0.3f },
-                                          0x15,
-                                          true);
-                _gs.ent[e.id] = e;
-                _gs.item_pickup[e.id] = ITEM_CPU_AUTOMAT_FRAME;
-
-                e = entity_nc_ctor(util_xy_to_p(7, 34),
-                            (vec3) { 0.9f, 0.5f, 0.9f },
-                            (vec3) { 1.0f, 0.3f, 1.0f },
-
-                            0x15,
-                            true);
-                _gs.ent[e.id] = e;
-                _gs.item_pickup[e.id] = ITEM_MOBO_AUTOMAT_FRAME;
-
-                e = entity_nc_ctor(util_xy_to_p(7, 35),
-                            (vec3) { 0.9f, 0.5f, 0.9f },
-                            (vec3) { 0.3f, 0.3f, 1.0f },
-                            0x15,
-                            true);
-                _gs.ent[e.id] = e;
-                _gs.item_pickup[e.id] = ITEM_GPU_AUTOMAT_FRAME;
-
-                e = entity_nc_ctor(util_xy_to_p(7, 36),
-                            (vec3) { 0.9f, 0.5f, 0.9f },
-                            (vec3) { 0.3f, 1.0f, 1.0f },
-                            0x15,
-                            true);
-                _gs.ent[e.id] = e;
-                _gs.item_pickup[e.id] = ITEM_MEM_AUTOMAT_FRAME;
-
-                e = entity_nc_ctor(util_xy_to_p(7, 37),
-                            (vec3) { 0.9f, 0.5f, 0.9f },
-                            (vec3) { 0.3f, 1.0f, 0.3f },
-                            0x15,
-                            true);
-                _gs.ent[e.id] = e;
-                _gs.item_pickup[e.id] = ITEM_ASSEMBLER_FRAME;
+                game_spawn_item(util_xy_to_p(7, 33), ITEM_CPU_AUTOMAT_FRAME);
+                game_spawn_item(util_xy_to_p(7, 34), ITEM_MOBO_AUTOMAT_FRAME);
+                game_spawn_item(util_xy_to_p(7, 35), ITEM_GPU_AUTOMAT_FRAME);
+                game_spawn_item(util_xy_to_p(7, 36), ITEM_MEM_AUTOMAT_FRAME);
+                game_spawn_item(util_xy_to_p(7, 37), ITEM_ASSEMBLER_FRAME);
 
                 game_update_collisions();
             }
