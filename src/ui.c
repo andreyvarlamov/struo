@@ -2,10 +2,11 @@
 
 global_variable int log_cursor = 0;
 
-global_variable Point log_origin = { 1, SCREEN_ROWS - LOG_LINES - 1 };
+global_variable Point location_origin = { 1, UI_LOCATION_ROW };
 global_variable Point stats_origin = { 1, UI_STATS_ROW };
 global_variable Point items_origin = { 1, UI_ITEMS_ROW };
 global_variable Point interact_origin = { 1, SCREEN_ROWS - LOG_LINES - 5 };
+global_variable Point log_origin = { 1, SCREEN_ROWS - LOG_LINES - 1 };
 
 void ui_reset_log_cursor()
 {
@@ -39,6 +40,20 @@ void ui_printf(Glyph *ui, int ui_width, int ui_height, Point pos,
     va_end(args);
 
     ui_print(ui, ui_width, ui_height, pos, buffer);
+}
+
+void ui_draw_header(Glyph *ui, int ui_width, int ui_height)
+{
+    Point p = { 15, 2 };
+    ui_printf(ui, UI_COLS, SCREEN_ROWS, p, "%c %c struo", 0xE0, 0xEA);
+}
+
+void ui_draw_location(Glyph *ui, int ui_width, int ui_height, int current_level, int current_building)
+{
+    ui_printf(ui, ui_width, ui_height, location_origin, " LOCATION ");
+
+    Point p = { location_origin.x, location_origin.y + 2 };
+    ui_printf(ui, ui_width, ui_height, p, "Building %04d. Floor %d", current_building, current_level);
 }
 
 void ui_draw_log(Glyph *ui, int ui_width, int ui_height, char **log_lines)

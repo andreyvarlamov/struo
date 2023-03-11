@@ -80,6 +80,7 @@ Speed
 * [ ] Game flow: base location<->branches
 * [ ] Game over (won or lost)
 * [ ] Loose ends
+* [ ] Do something about cheats
 * [ ] ---> Iter 3 (shippable)
 * [ ] Map procgen - Cellular automata algorithm to make some rooms destroyed
 * [ ] Timing system

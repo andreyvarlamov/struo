@@ -37,11 +37,13 @@ typedef struct GameState
     PlayerState player_state;
     RunState run_state;
     int current_level;
+    int current_building;
     Point level_exit;
 } GameState;
 
 global_variable GameState _gs;
 global_variable bool _skip_resetting_player_stats;
+global_variable bool _skip_gen_new_building_number;
 
 bool game_try_move_entity_p(size_t entity_id, Point *pos, Point new, int map_width)
 {
@@ -628,8 +630,14 @@ void game_update(float dt, int *_new_key)
 
             // Init UI
             // -------
-            Point p = { 15, 2 };
-            ui_printf(_gs.ui, UI_COLS, SCREEN_ROWS, p, "%c %c struo", 0xE0, 0xEA);
+            ui_draw_header(_gs.ui, UI_COLS, SCREEN_ROWS);
+
+            if (!_skip_gen_new_building_number)
+            {
+                _gs.current_building = rand() % 10000;
+                _skip_gen_new_building_number = true;
+            }
+            ui_draw_location(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.current_level + 1, _gs.current_building);
 
             for (int i = 0; i < LOG_LINES; i++)
             {
@@ -1037,6 +1045,14 @@ void game_render(float dt)
         {
             glyph = 0xB4;
         }
+        else if (p.x == 0 && p.y == UI_LOCATION_ROW)
+        {
+            glyph = 0xC3;
+        }
+        else if (p.x == UI_COLS - 1 && p.y == UI_LOCATION_ROW)
+        {
+            glyph = 0xB4;
+        }
         else if (p.x == 0 || p.x == UI_COLS - 1)
         {
             glyph = 0xB3;
@@ -1045,6 +1061,7 @@ void game_render(float dt)
               || p.y == SCREEN_ROWS - LOG_LINES - 3
               || p.y == UI_STATS_ROW
               || p.y == UI_ITEMS_ROW
+              || p.y == UI_LOCATION_ROW
               || p.y == SCREEN_ROWS - 1)
         {
             glyph = 0xC4;
