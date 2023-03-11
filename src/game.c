@@ -14,6 +14,13 @@ typedef struct EntIdBag
     size_t ent_nc;
 } EntIdBag;
 
+typedef enum PlayerState
+{
+    PSTATE_NONE,
+    PSTATE_OVER_ITEM,
+    PSTATE_OVER_EXIT
+} PlayerState;
+
 typedef struct GameState
 {
     Entity ent[ENTITY_NUM];
@@ -27,9 +34,10 @@ typedef struct GameState
     Map map;
     Glyph ui[UI_COLS * SCREEN_ROWS];
     char *log_lines[LOG_LINES];
-    bool player_over_item;
+    PlayerState player_state;
     RunState run_state;
     int current_level;
+    Point level_exit;
 } GameState;
 
 global_variable GameState _gs;
@@ -49,14 +57,24 @@ bool game_try_move_entity_p(size_t entity_id, Point *pos, Point new, int map_wid
         // If player stepped over an item pickup entity ...
         if (entity_id == 1 && target.ent_nc >= ENTITY_NC_OFFSET)
         {
-            _gs.player_over_item = true;
-            ui_clean_pickup_item(_gs.ui, UI_COLS, SCREEN_ROWS);
-            ui_draw_pickup_item(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.item_pickup[target.ent_nc]);
+            _gs.player_state = PSTATE_OVER_ITEM;
+            ui_draw_interact_item(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.item_pickup[target.ent_nc]);
         }
-        else if(entity_id == 1 && _gs.player_over_item)
+        else if(entity_id == 1 && _gs.player_state == PSTATE_OVER_ITEM)
         {
-            _gs.player_over_item = false;
-            ui_clean_pickup_item(_gs.ui, UI_COLS, SCREEN_ROWS);
+            _gs.player_state = PSTATE_NONE;
+            ui_clean_interact(_gs.ui, UI_COLS, SCREEN_ROWS);
+        }
+
+        if (entity_id == 1 && util_p_cmp(_gs.level_exit, new))
+        {
+            _gs.player_state = PSTATE_OVER_EXIT;
+            ui_draw_interact_exit(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.current_level + 1);
+        }
+        else if(entity_id == 1 && _gs.player_state == PSTATE_OVER_EXIT)
+        {
+            _gs.player_state = PSTATE_NONE;
+            ui_clean_interact(_gs.ui, UI_COLS, SCREEN_ROWS);
         }
 
     }
@@ -375,6 +393,7 @@ void game_spawn_item_randomly(ItemType item_type)
         pos.y = rand() % MAP_ROWS;
         found = !_gs.collisions[util_p_to_i(pos, MAP_COLS)];
         found &= !_gs.ent_by_pos[util_p_to_i(pos, MAP_COLS)].ent_nc;
+        found &= !util_p_cmp(pos, _gs.level_exit); // TODO: Didn't test this.
         attempts--;
     }
     while (!found && attempts >= 0);
@@ -429,7 +448,7 @@ void game_spawn_level_items()
 
 void game_spawn_enemies()
 {
-    for (size_t i = 0; i < 1; i++)
+    for (size_t i = 0; i < 30; i++)
     {
         Point pos;
 
@@ -440,6 +459,7 @@ void game_spawn_enemies()
             pos.x = rand() % MAP_COLS;
             pos.y = rand() % MAP_ROWS;
             found = !_gs.collisions[util_p_to_i(pos, MAP_COLS)];
+            found &= !util_p_cmp(pos, _gs.level_exit); // TODO: Didn't test this.
             attempts--;
         }
         while (!found && attempts >= 0);
@@ -491,6 +511,39 @@ void game_spawn_player(Point pos)
     );
 }
 
+void game_spawn_exit()
+{
+    for (size_t i = 0; i < 1; i++)
+    {
+        Point pos;
+
+        bool found = false;
+        int attempts = 10000;
+        do
+        {
+            pos.x = rand() % MAP_COLS;
+            pos.y = rand() % MAP_ROWS;
+            found = !_gs.map.blocked[util_p_to_i(pos, MAP_COLS)];
+            attempts--;
+        }
+        while (!found && attempts >= 0);
+
+        if (!found)
+        {
+            printf("game_spawn_exit: Could not find a place for exit after 10,000 attempts. Setting at 1, 1.\n");
+            pos = util_xy_to_p(1, 1);
+        }
+
+        printf("level exit: %d, %d\n", pos.x, pos.y);
+
+        _gs.level_exit = pos;
+        _gs.map.blocked[util_p_to_i(pos, MAP_COLS)] = false; // Just in case exit was spawned at a
+        _gs.map.opaque[util_p_to_i(pos, MAP_COLS)] = false;  // forced location, make it walkable
+
+        game_update_collisions();
+    }
+}
+
 void game_clean()
 {
     // Reset entities
@@ -532,7 +585,7 @@ void game_clean()
 
     // Reset player_over_item
     // ----------------------
-    _gs.player_over_item = false;
+    _gs.player_state = PSTATE_NONE;
 
     // Reset log lines
     // ---------------
@@ -555,6 +608,10 @@ void game_update(float dt, int *_new_key)
             game_clean();
 
             map_gen_level(&_gs.map, MAP_COLS, MAP_ROWS);
+
+            // Randomize exit
+            // --------------
+            game_spawn_exit();
 
             // Init player
             // -----------
@@ -652,29 +709,41 @@ void game_update(float dt, int *_new_key)
 
                     case GLFW_KEY_G:
                     {
-                        if (_gs.player_over_item)
+                        switch (_gs.player_state)
                         {
-                            size_t e_id = 
-                                _gs.ent_by_pos[util_p_to_i(_gs.ent[1].pos, MAP_COLS)].ent_nc;
+                            case PSTATE_OVER_ITEM:
+                            {
+                                size_t e_id = 
+                                    _gs.ent_by_pos[util_p_to_i(_gs.ent[1].pos, MAP_COLS)].ent_nc;
 
-                            _gs.ent[e_id].alive = false;
+                                _gs.ent[e_id].alive = false;
 
-                            ItemType item_type = _gs.item_pickup[e_id];
+                                ItemType item_type = _gs.item_pickup[e_id];
+                                AString item_name = item_get_item_name(item_type);
+                                ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines,
+                                                "%s picked up.", item_name.str);
 
-                            AString item_name = item_get_item_name(item_type);
+                                game_pickup_item(item_type, &_gs.stats[1]);
 
-                            ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines,
-                                            "%s picked up.", item_name.str);
+                                ui_draw_player_stats(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.stats[1]);
 
-                            game_pickup_item(item_type, &_gs.stats[1]);
+                                ui_clean_interact(_gs.ui, UI_COLS, SCREEN_ROWS);
 
-                            ui_draw_player_stats(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.stats[1]);
+                                _gs.player_state = PSTATE_NONE;
 
-                            ui_clean_pickup_item(_gs.ui, UI_COLS, SCREEN_ROWS);
+                                skip_turn = true;
+                            } break;
 
-                            _gs.player_over_item = false;
+                            case PSTATE_OVER_EXIT:
+                            {
+                                _gs.current_level++;
+                                _gs.run_state = INIT;
+                            } break;
 
-                            skip_turn = true;
+                            default:
+                            {
+
+                            } break;
                         }
                     } break;
 
@@ -846,6 +915,21 @@ void game_render(float dt)
                 !_gs.player_fov[i] && _gs.player_map_mem[i]
             );
         }
+    }
+
+    // Render exit
+    // -----------
+    if (_gs.player_map_mem[util_p_to_i(_gs.level_exit, MAP_ROWS)]
+        || _gs.player_fov[util_p_to_i(_gs.level_exit, MAP_ROWS)])
+    {
+        render_render_tile((vec2) { _gs.level_exit.x * SCREEN_TILE_WIDTH,
+                                    _gs.level_exit.y * SCREEN_TILE_WIDTH
+                        },
+                        0xAF,
+                        GLM_VEC3_ONE,
+                        (vec3) { 0.2f, 0.2f, 0.2f },
+                        !_gs.player_fov[util_p_to_i(_gs.level_exit, MAP_ROWS)] 
+                            && _gs.player_map_mem[util_p_to_i(_gs.level_exit, MAP_ROWS)]);
     }
 
     // Render non-char entities

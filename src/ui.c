@@ -5,7 +5,7 @@ global_variable int log_cursor = 0;
 global_variable Point log_origin = { 1, SCREEN_ROWS - LOG_LINES - 1 };
 global_variable Point stats_origin = { 1, UI_STATS_ROW };
 global_variable Point items_origin = { 1, UI_ITEMS_ROW };
-global_variable Point pickup_origin = { 1, SCREEN_ROWS - LOG_LINES - 5 };
+global_variable Point interact_origin = { 1, SCREEN_ROWS - LOG_LINES - 5 };
 
 void ui_reset_log_cursor()
 {
@@ -122,20 +122,27 @@ void ui_draw_player_stats(Glyph *ui, int ui_width, int ui_height, Stats stats)
     ui_printf(ui, ui_width, ui_height, gun_pos, "WEAPN: %s", gun_name.str);
 }
 
-void ui_draw_pickup_item(Glyph *ui, int ui_width, int ui_height, ItemType item_type)
-{
-    AString name = item_get_item_name(item_type);
-    ui_printf(ui, ui_width, ui_height, pickup_origin, "G - pick up %s.", name.str);
-}
-
-void ui_clean_pickup_item(Glyph *ui, int ui_width, int ui_height)
+void ui_clean_interact(Glyph *ui, int ui_width, int ui_height)
 {
     for (int i = 0; i < UI_COLS - 1; i++)
     {
         Point offset_p = { i, 0 };
-        Point char_p = { pickup_origin.x + offset_p.x, pickup_origin.y + offset_p.y };
+        Point char_p = { interact_origin.x + offset_p.x, interact_origin.y + offset_p.y };
         ui[util_p_to_i(char_p, ui_width)] = 0;
     }
+}
+
+void ui_draw_interact_item(Glyph *ui, int ui_width, int ui_height, ItemType item_type)
+{
+    ui_clean_interact(ui, ui_width, ui_height);
+    AString name = item_get_item_name(item_type);
+    ui_printf(ui, ui_width, ui_height, interact_origin, "G - pick up %s.", name.str);
+}
+
+void ui_draw_interact_exit(Glyph *ui, int ui_width, int ui_height, int to_level)
+{
+    ui_clean_interact(ui, ui_width, ui_height);
+    ui_printf(ui, ui_width, ui_height, interact_origin, "G - exit to floor %d.", to_level);
 }
 
 void ui_draw_player_items(Glyph *ui, int ui_width, int ui_height, int *item_counts)
