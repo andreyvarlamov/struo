@@ -80,7 +80,7 @@ void ui_add_log_line(Glyph *ui, int ui_width,  int ui_height,
 void ui_draw_player_stats(Glyph *ui, int ui_width, int ui_height, Stats stats)
 {
     Stats mod_stats = combat_get_modified_stats(stats);
-    for (int i = 0; i < 7 * UI_COLS; i++)
+    for (int i = 0; i < 11 * UI_COLS; i++)
     {
         Point offset_p = util_i_to_p(i, ui_width);
         Point char_p = { stats_origin.x + offset_p.x, stats_origin.y + offset_p.y };
@@ -118,22 +118,8 @@ void ui_draw_player_stats(Glyph *ui, int ui_width, int ui_height, Stats stats)
 
 void ui_draw_pickup_item(Glyph *ui, int ui_width, int ui_height, ItemType item_type)
 {
-    char item_name[16] = {0};
-
-    switch (item_type)
-    {
-        case ITEM_HEALTH:
-        {
-            strcpy(item_name, "Health Pack");
-        } break;
-
-        default:
-        {
-            return;
-        } break;
-    }
-
-    ui_printf(ui, ui_width, ui_height, pickup_origin, "G - pick up %s.", item_name);
+    AString name = item_get_item_name(item_type);
+    ui_printf(ui, ui_width, ui_height, pickup_origin, "G - pick up %s.", name.str);
 }
 
 void ui_clean_pickup_item(Glyph *ui, int ui_width, int ui_height)

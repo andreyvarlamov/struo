@@ -66,8 +66,9 @@ Speed
 * [x] Item pickup UI
 * [x] Equipment in combat
 * [x] Equipment UI
-* [ ] Implement actual item game logic
+* [x] Implement actual item game logic
 * [ ] Story items
+* [ ] Item RNG
 * [ ] Multiple levels
 * [ ] Progression
 * [ ] ---> Iter 2 (single building branch w/ progression and items)

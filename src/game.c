@@ -48,6 +48,7 @@ bool game_try_move_entity_p(size_t entity_id, Point *pos, Point new, int map_wid
         if (entity_id == 1 && target.ent_nc >= ENTITY_NC_OFFSET)
         {
             _gs.player_over_item = true;
+            ui_clean_pickup_item(_gs.ui, UI_COLS, SCREEN_ROWS);
             ui_draw_pickup_item(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.item_pickup[target.ent_nc]);
         }
         else if(entity_id == 1 && _gs.player_over_item)
@@ -94,7 +95,7 @@ void game_update_collisions()
         MAP_COLS * MAP_ROWS * sizeof(bool)
     );
 
-    memset(_gs.ent_by_pos, 0, MAP_COLS * MAP_ROWS * sizeof(size_t));
+    memset(_gs.ent_by_pos, 0, MAP_COLS * MAP_ROWS * sizeof(EntIdBag));
 
     for (size_t i = 0; i < entity_nc_get_count(); i++)
     {
@@ -114,6 +115,91 @@ void game_update_collisions()
         {
             _gs.collisions[util_p_to_i(e.pos, MAP_COLS)] = true;
             _gs.ent_by_pos[util_p_to_i(e.pos, MAP_COLS)].ent_char = e.id;
+        }
+    }
+}
+
+void game_pickup_item(ItemType item_type, Stats *player_stats)
+{
+   switch (item_type)
+    {
+        case ITEM_HEALTH:
+        {
+            int prev_health = player_stats->health;
+            player_stats->health += 25;
+            if (player_stats->health > player_stats->max_health)
+            {
+                player_stats->health = player_stats->max_health;
+            }
+
+            ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines,
+                            "+ %d health.", player_stats->health - prev_health);
+        } break;
+
+        case ITEM_ARMOR_LEATHER:
+        {
+            player_stats->armor = ARMOR_LEATHER;
+        } break;
+
+        case ITEM_ARMOR_METAL:
+        {
+            player_stats->armor = ARMOR_METAL;
+        } break;
+
+        case ITEM_ARMOR_COMBAT:
+        {
+            player_stats->armor = ARMOR_COMBAT;
+        } break;
+
+        case ITEM_GUN_PISTOL:
+        {
+            player_stats->gun = GUN_PISTOL;
+        } break;
+
+        case ITEM_GUN_RIFLE:
+        {
+            player_stats->gun = GUN_RIFLE;
+        } break;
+
+        case ITEM_GUN_ROCKET:
+        {
+            player_stats->gun = GUN_ROCKET;
+        } break;
+
+        case ITEM_MECH_COMP:
+        {
+        } break;
+
+        case ITEM_ELEC_COMP:
+        {
+        } break;
+
+        case ITEM_JUNK:
+        {
+        } break;
+
+        case ITEM_CPU_AUTOMAT_FRAME:
+        {
+        } break;
+
+        case ITEM_MOBO_AUTOMAT_FRAME:
+        {
+        } break;
+
+        case ITEM_GPU_AUTOMAT_FRAME:
+        {
+        } break;
+
+        case ITEM_MEM_AUTOMAT_FRAME:
+        {
+        } break;
+
+        case ITEM_ASSEMBLER_FRAME:
+        {
+        } break;
+
+        default:
+        {
         }
     }
 }
@@ -138,7 +224,7 @@ void game_update(float dt, int *_new_key)
                                                     7, 7,
                                                     20, 2,
                                                     1,
-                                                    ARMOR_COMBAT, GUN_ROCKET);
+                                                    ARMOR_NONE, GUN_NONE);
 
                 game_update_collisions();
                 entity_calc_player_fov(
@@ -183,6 +269,7 @@ void game_update(float dt, int *_new_key)
             // ----------
             for (size_t i = 0; i < 1; i++)
             {
+                // Health pack
                 Entity e = entity_nc_ctor(util_xy_to_p(5, 30),
                                           (vec3) { 0.1f, 0.6f, 0.1f },
                                           GLM_VEC3_ONE,
@@ -190,6 +277,56 @@ void game_update(float dt, int *_new_key)
                                           true);
                 _gs.ent[e.id] = e;
                 _gs.item_pickup[e.id] = ITEM_HEALTH;
+
+                // Armor
+                e = entity_nc_ctor(util_xy_to_p(5, 31),
+                                          (vec3) { 0.2f, 0.2f, 0.2f },
+                                          (vec3) { 0.3f, 0.1f, 0.1f },
+                                          'y',
+                                          true);
+                _gs.ent[e.id] = e;
+                _gs.item_pickup[e.id] = ITEM_ARMOR_LEATHER;
+
+                e = entity_nc_ctor(util_xy_to_p(5, 32),
+                                          (vec3) { 0.4f, 0.4f, 0.4f },
+                                          (vec3) { 0.6f, 0.1f, 0.1f },
+                                          'Y',
+                                          true);
+                _gs.ent[e.id] = e;
+                _gs.item_pickup[e.id] = ITEM_ARMOR_METAL;
+
+                e = entity_nc_ctor(util_xy_to_p(5, 33),
+                                          (vec3) { 0.6f, 0.6f, 0.6f },
+                                          (vec3) { 0.9f, 0.1f, 0.1f },
+                                          0x9D,
+                                          true);
+                _gs.ent[e.id] = e;
+                _gs.item_pickup[e.id] = ITEM_ARMOR_COMBAT;
+
+                // Guns
+                e = entity_nc_ctor(util_xy_to_p(5, 34),
+                                          (vec3) { 0.2f, 0.2f, 0.2f },
+                                          (vec3) { 0.3f, 0.1f, 0.1f },
+                                          0xA9,
+                                          true);
+                _gs.ent[e.id] = e;
+                _gs.item_pickup[e.id] = ITEM_GUN_PISTOL;
+
+                e = entity_nc_ctor(util_xy_to_p(5, 35),
+                                          (vec3) { 0.4f, 0.4f, 0.4f },
+                                          (vec3) { 0.6f, 0.1f, 0.1f },
+                                          0xF4,
+                                          true);
+                _gs.ent[e.id] = e;
+                _gs.item_pickup[e.id] = ITEM_GUN_RIFLE;
+
+                e = entity_nc_ctor(util_xy_to_p(5, 36),
+                                          (vec3) { 0.6f, 0.6f, 0.6f },
+                                          (vec3) { 0.9f, 0.1f, 0.1f },
+                                          0x17,
+                                          true);
+                _gs.ent[e.id] = e;
+                _gs.item_pickup[e.id] = ITEM_GUN_ROCKET;
 
                 game_update_collisions();
             }
@@ -281,11 +418,21 @@ void game_update(float dt, int *_new_key)
                                 _gs.ent_by_pos[util_p_to_i(_gs.ent[1].pos, MAP_COLS)].ent_nc;
 
                             _gs.ent[e_id].alive = false;
-                            // ItemType item_type = _gs.item_pickup[e_id];
 
-                            printf("Item %zu picked up.\n", e_id);
+                            ItemType item_type = _gs.item_pickup[e_id];
+
+                            AString item_name = item_get_item_name(item_type);
+
+                            ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines,
+                                            "%s picked up.", item_name.str);
+
+                            game_pickup_item(item_type, &_gs.stats[1]);
+
+                            ui_draw_player_stats(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.stats[1]);
 
                             ui_clean_pickup_item(_gs.ui, UI_COLS, SCREEN_ROWS);
+
+                            _gs.player_over_item = false;
 
                             skip_turn = true;
                         }

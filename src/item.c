@@ -84,7 +84,7 @@ AString item_get_item_name(ItemType item_type)
 
         case ITEM_GUN_ROCKET:
         {
-            strcpy(name.str, "Rocket Launer");
+            strcpy(name.str, "Rocket Launcher");
         } break;
 
         case ITEM_MECH_COMP:
