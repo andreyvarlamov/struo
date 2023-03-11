@@ -360,6 +360,71 @@ void game_spawn_item(Point pos, ItemType item_type)
     }
 }
 
+
+void game_spawn_item_randomly(ItemType item_type)
+{
+    Point pos;
+
+    bool found = false;
+    int attempts = 20;
+    do
+    {
+        pos.x = rand() % MAP_COLS;
+        pos.y = rand() % MAP_ROWS;
+        found = !_gs.collisions[util_p_to_i(pos, MAP_COLS)];
+        found &= !_gs.ent_by_pos[util_p_to_i(pos, MAP_COLS)].ent_nc;
+        attempts--;
+    }
+    while (!found && attempts >= 0);
+
+    game_spawn_item(pos, item_type);
+}
+
+void game_spawn_level_items(int level)
+{
+    size_t num[ITEM_MAX] = {0};
+
+    switch (level)
+    {
+        case 0:
+        {
+            num[ITEM_HEALTH]             = 10;
+
+            num[ITEM_ARMOR_LEATHER]      = 1;
+            num[ITEM_ARMOR_METAL]        = 1;
+            num[ITEM_ARMOR_COMBAT]       = 1;
+
+            num[ITEM_GUN_PISTOL]         = 1;
+            num[ITEM_GUN_RIFLE]          = 1;
+            num[ITEM_GUN_ROCKET]         = 1;
+
+            num[ITEM_MECH_COMP]          = 1;
+            num[ITEM_ELEC_COMP]          = 1;
+            num[ITEM_JUNK]               = 1;
+
+            num[ITEM_CPU_AUTOMAT_FRAME]  = 1;
+            num[ITEM_MOBO_AUTOMAT_FRAME] = 1;
+            num[ITEM_GPU_AUTOMAT_FRAME]  = 1;
+            num[ITEM_MEM_AUTOMAT_FRAME]  = 1;
+            num[ITEM_ASSEMBLER_FRAME]    = 1;
+        } break;
+
+        default:
+        {
+
+        } break;
+    }
+
+    for (int type = ITEM_HEALTH; type < ITEM_MAX; type++)
+    {
+        for (size_t i = 0; i < num[type]; i++)
+        {
+            game_spawn_item_randomly(type);
+            game_update_collisions();
+        }
+    }
+}
+
 void game_update(float dt, int *_new_key)
 {
     switch (_gs.run_state)
@@ -423,34 +488,7 @@ void game_update(float dt, int *_new_key)
 
             // Init items
             // ----------
-            for (size_t i = 0; i < 1; i++)
-            {
-                // Health pack
-                game_spawn_item(util_xy_to_p(5, 30), ITEM_HEALTH);
-
-                // Armor
-                game_spawn_item(util_xy_to_p(5, 31), ITEM_ARMOR_LEATHER);
-                game_spawn_item(util_xy_to_p(5, 32), ITEM_ARMOR_METAL);
-                game_spawn_item(util_xy_to_p(5, 33), ITEM_ARMOR_COMBAT);
-
-                // Guns
-                game_spawn_item(util_xy_to_p(5, 34), ITEM_GUN_PISTOL);
-                game_spawn_item(util_xy_to_p(5, 35), ITEM_GUN_RIFLE);
-                game_spawn_item(util_xy_to_p(5, 36), ITEM_GUN_ROCKET);
-
-                // Story items
-                game_spawn_item(util_xy_to_p(7, 30), ITEM_MECH_COMP);
-                game_spawn_item(util_xy_to_p(7, 31), ITEM_ELEC_COMP);
-                game_spawn_item(util_xy_to_p(7, 32), ITEM_JUNK);
-
-                game_spawn_item(util_xy_to_p(7, 33), ITEM_CPU_AUTOMAT_FRAME);
-                game_spawn_item(util_xy_to_p(7, 34), ITEM_MOBO_AUTOMAT_FRAME);
-                game_spawn_item(util_xy_to_p(7, 35), ITEM_GPU_AUTOMAT_FRAME);
-                game_spawn_item(util_xy_to_p(7, 36), ITEM_MEM_AUTOMAT_FRAME);
-                game_spawn_item(util_xy_to_p(7, 37), ITEM_ASSEMBLER_FRAME);
-
-                game_update_collisions();
-            }
+            game_spawn_level_items(0);
 
             // Init UI
             // -------
