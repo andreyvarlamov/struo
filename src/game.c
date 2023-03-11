@@ -436,7 +436,7 @@ void game_spawn_item(Point pos, ItemType item_type)
         {
             Entity e = entity_nc_ctor(pos,
                                         (vec3) { 0.9f, 0.5f, 0.9f },
-                                        (vec3) { 1.0f, 0.3f, 0.3f },
+                                        (vec3) { 1.0f, 1.0f, 1.0f },
                                         0x15,
                                         true);
             _gs.ent[e.id] = e;
@@ -447,7 +447,7 @@ void game_spawn_item(Point pos, ItemType item_type)
         {
             Entity e = entity_nc_ctor(pos,
                                       (vec3) { 0.9f, 0.5f, 0.9f },
-                                      (vec3) { 1.0f, 0.3f, 1.0f },
+                                      (vec3) { 1.0f, 0.3f, 0.3f },
                                       0x15,
                                       true);
             _gs.ent[e.id] = e;
@@ -458,7 +458,7 @@ void game_spawn_item(Point pos, ItemType item_type)
         {
             Entity e = entity_nc_ctor(pos,
                                       (vec3) { 0.9f, 0.5f, 0.9f },
-                                      (vec3) { 0.3f, 0.3f, 1.0f },
+                                      (vec3) { 0.1f, 0.1f, 1.0f },
                                       0x15,
                                       true);
             _gs.ent[e.id] = e;
@@ -469,7 +469,7 @@ void game_spawn_item(Point pos, ItemType item_type)
         {
             Entity e = entity_nc_ctor(pos,
                                       (vec3) { 0.9f, 0.5f, 0.9f },
-                                      (vec3) { 0.3f, 1.0f, 1.0f },
+                                      (vec3) { 0.3f, 0.1f, 0.1f },
                                       0x15,
                                       true);
             _gs.ent[e.id] = e;
@@ -926,13 +926,13 @@ void game_init_base_level()
         Entity cpu_plan_e;
         cpu_plan_e.pos = cpu_pos;
         glm_vec3_copy((vec3) { 0.9f, 0.5f, 0.9f }, cpu_plan_e.bg);
-        glm_vec3_copy((vec3) { 1.0f, 0.3f, 0.3f }, cpu_plan_e.fg);
+        glm_vec3_copy((vec3) { 1.0f, 1.0f, 1.0f }, cpu_plan_e.fg);
         cpu_plan_e.glyph = '?';
         cpu_plan_e.alive = true;
         Entity cpu_built_e;
         cpu_built_e.pos = cpu_pos;
         glm_vec3_copy((vec3) { 0.9f, 0.5f, 0.9f }, cpu_built_e.bg);
-        glm_vec3_copy((vec3) { 1.0f, 0.3f, 0.3f }, cpu_built_e.fg);
+        glm_vec3_copy((vec3) { 1.0f, 1.0f, 1.0f }, cpu_built_e.fg);
         cpu_built_e.glyph = 0x80;
         cpu_built_e.alive = true;
         _gs.base_machines[MACHINE_CPU_AUTOMATON].e_plan = cpu_plan_e;
@@ -943,13 +943,13 @@ void game_init_base_level()
         Entity mobo_plan_e;
         mobo_plan_e.pos = mobo_pos;
         glm_vec3_copy((vec3) { 0.9f, 0.5f, 0.9f }, mobo_plan_e.bg);
-        glm_vec3_copy((vec3) { 1.0f, 0.3f, 1.0f }, mobo_plan_e.fg);
+        glm_vec3_copy((vec3) { 1.0f, 0.3f, 0.3f }, mobo_plan_e.fg);
         mobo_plan_e.glyph = '?';
         mobo_plan_e.alive = true;
         Entity mobo_built_e;
         mobo_built_e.pos = mobo_pos;
         glm_vec3_copy((vec3) { 0.9f, 0.5f, 0.9f }, mobo_built_e.bg);
-        glm_vec3_copy((vec3) { 1.0f, 0.3f, 1.0f }, mobo_built_e.fg);
+        glm_vec3_copy((vec3) { 1.0f, 0.3f, 0.3f }, mobo_built_e.fg);
         mobo_built_e.glyph = 0xE6;
         mobo_built_e.alive = true;
         _gs.base_machines[MACHINE_MOBO_AUTOMATON].e_plan = mobo_plan_e;
@@ -977,13 +977,13 @@ void game_init_base_level()
         Entity gpu_plan_e;
         gpu_plan_e.pos = gpu_pos;
         glm_vec3_copy((vec3) { 0.9f, 0.5f, 0.9f }, gpu_plan_e.bg);
-        glm_vec3_copy((vec3) { 0.3f, 0.3f, 1.0f }, gpu_plan_e.fg);
+        glm_vec3_copy((vec3) { 0.1f, 0.1f, 1.0f }, gpu_plan_e.fg);
         gpu_plan_e.glyph = '?';
         gpu_plan_e.alive = true;
         Entity gpu_built_e;
         gpu_built_e.pos = gpu_pos;
         glm_vec3_copy((vec3) { 0.9f, 0.5f, 0.9f }, gpu_built_e.bg);
-        glm_vec3_copy((vec3) { 0.3f, 0.3f, 1.0f }, gpu_built_e.fg);
+        glm_vec3_copy((vec3) { 0.1f, 0.1f, 1.0f }, gpu_built_e.fg);
         gpu_built_e.glyph = 0xE2;
         gpu_built_e.alive = true;
         _gs.base_machines[MACHINE_GPU_AUTOMATON].e_plan = gpu_plan_e;
@@ -994,13 +994,13 @@ void game_init_base_level()
         Entity mem_plan_e;
         mem_plan_e.pos = mem_pos;
         glm_vec3_copy((vec3) { 0.9f, 0.5f, 0.9f }, mem_plan_e.bg);
-        glm_vec3_copy((vec3) { 0.3f, 1.0f, 1.0f }, mem_plan_e.fg);
+        glm_vec3_copy((vec3) { 0.3f, 0.1f, 0.1f }, mem_plan_e.fg);
         mem_plan_e.glyph = '?';
         mem_plan_e.alive = true;
         Entity mem_built_e;
         mem_built_e.pos = mem_pos;
         glm_vec3_copy((vec3) { 0.9f, 0.5f, 0.9f }, mem_built_e.bg);
-        glm_vec3_copy((vec3) { 0.3f, 1.0f, 1.0f }, mem_built_e.fg);
+        glm_vec3_copy((vec3) { 0.3f, 0.1f, 0.1f }, mem_built_e.fg);
         mem_built_e.glyph = 0x14;
         mem_built_e.alive = true;
         _gs.base_machines[MACHINE_MEM_AUTOMATON].e_plan = mem_plan_e;
