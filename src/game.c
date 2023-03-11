@@ -400,7 +400,10 @@ void game_spawn_item_randomly(ItemType item_type)
     }
     while (!found && attempts >= 0);
 
-    game_spawn_item(pos, item_type);
+    if (found)
+    {
+        game_spawn_item(pos, item_type);
+    }
 }
 
 void game_spawn_level_items()
@@ -523,30 +526,72 @@ void game_spawn_enemy(Point pos, EnemyType enemy_type)
     }
 }
 
-// void game_spawn_enemies_randomly(int count, Glyph glyph, )
-// {
-//     for (size_t i = 0; i < 30; i++)
-//     {
-//         Point pos;
+void game_spawn_enemy_randomly(EnemyType enemy_type)
+{
+    Point pos;
 
-//         bool found = false;
-//         int attempts = 20;
-//         do
-//         {
-//             pos.x = rand() % MAP_COLS;
-//             pos.y = rand() % MAP_ROWS;
-//             found = !_gs.collisions[util_p_to_i(pos, MAP_COLS)];
-//             found &= !util_p_cmp(pos, _gs.level_exit); // TODO: Didn't test this.
-//             attempts--;
-//         }
-//         while (!found && attempts >= 0);
+    bool found = false;
+    int attempts = 20;
+    do
+    {
+        pos.x = rand() % MAP_COLS;
+        pos.y = rand() % MAP_ROWS;
+        found = !_gs.collisions[util_p_to_i(pos, MAP_COLS)];
+        found &= !util_p_cmp(pos, _gs.level_exit); // TODO: Didn't test this.
+        attempts--;
+    }
+    while (!found && attempts >= 0);
 
-//         if (found)
-//         {
-//             game_update_collisions();
-//         }
-//     }
-// }
+    if (found)
+    {
+        game_spawn_enemy(pos, enemy_type);
+    }
+}
+
+void game_spawn_level_enemies()
+{
+    size_t num[ENEMY_MAX] = {0};
+
+    Stats player_stats = _gs.stats[1];
+
+    if (player_stats.armor >= ARMOR_COMBAT && player_stats.gun >= GUN_ROCKET)
+    {
+        num[ENEMY_RAT]    = 3 + (rand() % 3); // 3-5
+        num[ENEMY_ZOMBIE] = 3 + (rand() % 3); // 3-5
+        num[ENEMY_SAVAGE] = 3 + (rand() % 3); // 3-5
+        num[ENEMY_ROBOT]  = 3 + (rand() % 3); // 3-5
+    }
+    else if (player_stats.armor >= ARMOR_METAL && player_stats.gun >= GUN_RIFLE)
+    {
+        num[ENEMY_RAT]    = 4 + (rand() % 4); // 4-7
+        num[ENEMY_ZOMBIE] = 3 + (rand() % 3); // 3-5
+        num[ENEMY_SAVAGE] = 2 + (rand() % 3); // 2-4
+        num[ENEMY_ROBOT]  = 0 + (rand() % 100) / 99; // 1% chance one robot
+    }
+    else if (player_stats.armor >= ARMOR_LEATHER && player_stats.gun >= GUN_PISTOL)
+    {
+        num[ENEMY_RAT]    = 4 + (rand() % 4); // 4-7
+        num[ENEMY_ZOMBIE] = 4 + (rand() % 4); // 4-7
+        num[ENEMY_SAVAGE] = 0 + (rand() % 100) / 79; // 20% chance one savage
+        num[ENEMY_ROBOT]  = 0;
+    }
+    else
+    {
+        num[ENEMY_RAT]    = 10 + (rand() % 6); // 10-15
+        num[ENEMY_ZOMBIE] = 0 + (rand() % 100) / 33; // 66% - 1; 33% - 2; 1% - 3
+        num[ENEMY_SAVAGE] = 0;
+        num[ENEMY_ROBOT]  = 0;
+    }
+
+    for (int type = ENEMY_RAT; type < ENEMY_MAX; type++)
+    {
+        for (size_t i = 0; i < num[type]; i++)
+        {
+            game_spawn_enemy_randomly(type);
+            game_update_collisions();
+        }
+    }
+}
 
 void game_spawn_player(Point pos)
 {
@@ -685,17 +730,18 @@ void game_update(float dt, int *_new_key)
             // Init enemies
             // ------------
             // game_spawn_level_enemies();
-            Point rat_pos = { 5, 30 };
+            // Point rat_pos = { 5, 30 };
             // game_spawn_enemy(rat_pos, ENEMY_RAT);
 
-            Point zombie_pos = { 5, 30 };
+            // Point zombie_pos = { 5, 30 };
             // game_spawn_enemy(zombie_pos, ENEMY_ZOMBIE);
 
-            Point savage_pos = { 5, 30 };
+            // Point savage_pos = { 5, 30 };
             // game_spawn_enemy(savage_pos, ENEMY_SAVAGE);
 
-            Point robot_pos = { 5, 30 };
-            game_spawn_enemy(robot_pos, ENEMY_ROBOT);
+            // Point robot_pos = { 5, 30 };
+            //game_spawn_enemy(robot_pos, ENEMY_ROBOT);
+            game_spawn_level_enemies();
 
             // Init items
             // ----------
