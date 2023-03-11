@@ -411,3 +411,43 @@ CanCraftResult item_can_craft(MachineType for_machine_type, ItemType for_item_ty
 
     return result;
 }
+
+ItemType item_machine_to_item_it_crafts(MachineType machine_type)
+{
+    ItemType item_type = ITEM_NONE;
+
+    switch (machine_type)
+    {
+        case MACHINE_CPU_AUTOMATON:
+        {
+            item_type = ITEM_CPU;
+        } break;
+
+        case MACHINE_MOBO_AUTOMATON:
+        {
+            item_type = ITEM_MOBO;
+        } break;
+
+        case MACHINE_GPU_AUTOMATON:
+        {
+            item_type = ITEM_GPU;
+        } break;
+
+        case MACHINE_MEM_AUTOMATON:
+        {
+            item_type = ITEM_MEM;
+        } break;
+
+        case MACHINE_ASSEMBLER:
+        {
+            item_type = ITEM_COMPUTER;
+        } break;
+
+        default:
+        {
+
+        } break;
+    }
+
+    return item_type;
+}

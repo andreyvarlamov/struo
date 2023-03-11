@@ -61,6 +61,31 @@ MachineType game_check_player_over_machine_plan(Point pos)
     return MACHINE_NONE;
 }
 
+MachineType game_check_player_next_to_built_machine(Point pos)
+{
+    Point neighbors[4] = {0};
+    neighbors[0] = util_xy_to_p(pos.x - 1, pos.y);
+    neighbors[1] = util_xy_to_p(pos.x + 1, pos.y);
+    neighbors[2] = util_xy_to_p(pos.x,     pos.y - 1);
+    neighbors[3] = util_xy_to_p(pos.x,     pos.y + 1);
+
+    for (MachineType type = MACHINE_CPU_AUTOMATON; type < MACHINE_MAX; type++)
+    {
+        if (_gs.base_machines[type].built)
+        {
+            for (int n_i = 0; n_i < 4; n_i++)
+            {
+                if (util_p_cmp(_gs.base_machines[type].e_plan.pos, neighbors[n_i]))
+                {
+                    return type;
+                }
+            }
+        }
+    }
+
+    return MACHINE_NONE;
+}
+
 bool game_try_move_entity_p(size_t entity_id, Point *pos, Point new, int map_width)
 {
     EntIdBag target = _gs.ent_by_pos[util_p_to_i(new, map_width)];
@@ -97,27 +122,51 @@ bool game_try_move_entity_p(size_t entity_id, Point *pos, Point new, int map_wid
             ui_clean_interact(_gs.ui, UI_COLS, SCREEN_ROWS);
         }
 
-        // Machine plan logic
-        // If player is stepping over a machine plan
+        // Machine plan/built logic
         // TODO: Only in base level
         if (entity_id == 1)
         {
-            MachineType type = game_check_player_over_machine_plan(new);
-
-            if (type > MACHINE_NONE && type < MACHINE_MAX)
+            // If player is stepping over a machine plan ...
             {
-                _gs.player_state = PSTATE_OVER_MACHINE_PLAN;
-                ui_draw_machine(_gs.ui, UI_COLS, SCREEN_ROWS, type, _gs.player_items);
-                if (item_can_craft(type, ITEM_NONE, _gs.player_items).yes)
+                MachineType type = game_check_player_over_machine_plan(new);
+
+                if (type > MACHINE_NONE && type < MACHINE_MAX)
                 {
-                    ui_draw_interact_machine_plan(_gs.ui, UI_COLS, SCREEN_ROWS, type);
+                    _gs.player_state = PSTATE_OVER_MACHINE_PLAN;
+                    ui_draw_machine(_gs.ui, UI_COLS, SCREEN_ROWS, type, _gs.player_items, false);
+                    if (item_can_craft(type, ITEM_NONE, _gs.player_items).yes)
+                    {
+                        ui_draw_interact_machine_plan(_gs.ui, UI_COLS, SCREEN_ROWS, type);
+                    }
+                }
+                else if(_gs.player_state == PSTATE_OVER_MACHINE_PLAN)
+                {
+                    _gs.player_state = PSTATE_NONE;
+                    ui_clean_machine(_gs.ui, UI_COLS, SCREEN_ROWS);
+                    ui_clean_interact(_gs.ui, UI_COLS, SCREEN_ROWS);
                 }
             }
-            else if(_gs.player_state == PSTATE_OVER_MACHINE_PLAN)
+
+            // If player is stepping next to a built machine ...
             {
-                _gs.player_state = PSTATE_NONE;
-                ui_clean_machine(_gs.ui, UI_COLS, SCREEN_ROWS);
-                ui_clean_interact(_gs.ui, UI_COLS, SCREEN_ROWS);
+                MachineType type = game_check_player_next_to_built_machine(new);
+
+                if (type > MACHINE_NONE && type < MACHINE_MAX)
+                {
+                    _gs.player_state = PSTATE_NEXT_TO_BUILT_MACHINE;
+
+                    ui_draw_machine(_gs.ui, UI_COLS, SCREEN_ROWS, type, _gs.player_items, true);
+                    if (item_can_craft(type, ITEM_NONE, _gs.player_items).yes)
+                    {
+                        ui_draw_interact_machine_plan(_gs.ui, UI_COLS, SCREEN_ROWS, type);
+                    }
+                }
+                else if(_gs.player_state == PSTATE_NEXT_TO_BUILT_MACHINE)
+                {
+                    _gs.player_state = PSTATE_NONE;
+                    ui_clean_machine(_gs.ui, UI_COLS, SCREEN_ROWS);
+                    ui_clean_interact(_gs.ui, UI_COLS, SCREEN_ROWS);
+                }
             }
         }
     }

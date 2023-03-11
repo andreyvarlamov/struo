@@ -78,8 +78,9 @@ Speed
 * [x] Machine entities
 * [x] Machine plans and UI
 * [x] Build machines
-* [ ] Built machines interactions and UI
-* [ ] Machine tie up with items
+* [x] Machine tie up with items
+* [x] Built machines UI
+* [ ] Built machines interactions
 * [ ] Craft computer
 * [ ] Game start and game over (won)
 * [ ] Base location persistency

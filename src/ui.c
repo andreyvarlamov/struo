@@ -196,7 +196,7 @@ void ui_draw_player_items(Glyph *ui, int ui_width, int ui_height, int *item_coun
 
 void ui_clean_machine(Glyph *ui, int ui_width, int ui_height)
 {
-    for (int i = 0; i < 5 * ui_width; i++)
+    for (int i = 0; i < 7 * ui_width; i++)
     {
         Point offset_p = util_i_to_p(i, ui_width);
         Point char_p = { machine_origin.x + offset_p.x - 1, machine_origin.y + offset_p.y };
@@ -204,7 +204,7 @@ void ui_clean_machine(Glyph *ui, int ui_width, int ui_height)
     }
 }
 
-void ui_draw_machine(Glyph *ui, int ui_width, int ui_height, MachineType machine_type, int *item_counts)
+void ui_draw_machine(Glyph *ui, int ui_width, int ui_height, MachineType machine_type, int *item_counts, bool built)
 {
     ui_clean_machine(ui, ui_width, ui_height);
 
@@ -214,42 +214,86 @@ void ui_draw_machine(Glyph *ui, int ui_width, int ui_height, MachineType machine
     }
     ui[util_xy_to_i(0, machine_origin.y, ui_width)] = 0xC3;
     ui[util_xy_to_i(ui_width - 1, machine_origin.y, ui_width)] = 0xB4;
-    ui_printf(ui, ui_width, ui_height, machine_origin, " MACHINE: %s ", entity_get_machine_name(machine_type).str);
 
-    switch (machine_type)
+    if (!built)
     {
-        case MACHINE_CPU_AUTOMATON:
-        case MACHINE_MOBO_AUTOMATON:
-        case MACHINE_GPU_AUTOMATON:
-        case MACHINE_MEM_AUTOMATON:
-        case MACHINE_ASSEMBLER:
+        ui_printf(ui, ui_width, ui_height, machine_origin, " MACHINE PLAN: %s ", entity_get_machine_name(machine_type).str);
+
+        switch (machine_type)
         {
-            Point mech_pos = { machine_origin.x, machine_origin.y + 2 };
-            AString item_name = item_get_item_name(ITEM_MECH_COMP);
-            int item_req = item_get_comp_req(machine_type, ITEM_NONE, ITEM_MECH_COMP);
-            ui_printf(ui, ui_width, ui_height, mech_pos, "%02d/%02d - %s", item_counts[ITEM_MECH_COMP], item_req, item_name.str);
+            case MACHINE_CPU_AUTOMATON:
+            case MACHINE_MOBO_AUTOMATON:
+            case MACHINE_GPU_AUTOMATON:
+            case MACHINE_MEM_AUTOMATON:
+            case MACHINE_ASSEMBLER:
+            case MACHINE_COMPUTER:
+            {
+                CanCraftResult ccr = item_can_craft(machine_type, ITEM_NONE, item_counts);
 
-            Point elec_pos = { machine_origin.x, machine_origin.y + 3 };
-            item_name = item_get_item_name(ITEM_ELEC_COMP);
-            item_req = item_get_comp_req(machine_type, ITEM_NONE, ITEM_ELEC_COMP);
-            ui_printf(ui, ui_width, ui_height, elec_pos, "%02d/%02d - %s", item_counts[ITEM_ELEC_COMP], item_req, item_name.str);
+                int print_offset = 2;
 
-            Point junk_pos = { machine_origin.x, machine_origin.y + 4 };
-            item_name = item_get_item_name(ITEM_JUNK);
-            item_req = item_get_comp_req(machine_type, ITEM_NONE, ITEM_JUNK);
-            ui_printf(ui, ui_width, ui_height, junk_pos, "%02d/%02d - %s", item_counts[ITEM_JUNK], item_req, item_name.str);
-        } break;
+                for (ItemType type = ITEM_MECH_COMP; type < ITEM_MAX; type++)
+                {
+                    if (ccr.need_items[type] > 0)
+                    {
+                        Point pos = { machine_origin.x, machine_origin.y + print_offset };
+                        AString item_name = item_get_item_name(type);
+                        ui_printf(ui, ui_width, ui_height, pos,
+                                  "%02d/%02d - %s", item_counts[type], ccr.need_items[type], item_name.str);
 
-        case MACHINE_COMPUTER:
-        {
-            Point mech_pos = { machine_origin.x, machine_origin.y + 2 };
-            AString item_name = item_get_item_name(ITEM_COMPUTER);
-            ui_printf(ui, ui_width, ui_height, mech_pos, "%d/%d - %s", item_counts[ITEM_COMPUTER], 1, item_name.str);
+                        print_offset++;
+                    }
+                }
+            } break;
+
+            default:
+            {
+
+            } break;
         }
-
-        default:
-        {
-
-        } break;
     }
+    else
+    {
+        ui_printf(ui, ui_width, ui_height, machine_origin, " MACHINE: %s ", entity_get_machine_name(machine_type).str);
+
+        switch (machine_type)
+        {
+            case MACHINE_CPU_AUTOMATON:
+            case MACHINE_MOBO_AUTOMATON:
+            case MACHINE_GPU_AUTOMATON:
+            case MACHINE_MEM_AUTOMATON:
+            case MACHINE_ASSEMBLER:
+            {
+                ItemType craftable = item_machine_to_item_it_crafts(machine_type);
+                CanCraftResult ccr = item_can_craft(MACHINE_NONE, craftable, item_counts);
+
+                int print_offset = 2;
+
+                for (ItemType type = ITEM_MECH_COMP; type < ITEM_MAX; type++)
+                {
+                    if (ccr.need_items[type] > 0)
+                    {
+                        Point pos = { machine_origin.x, machine_origin.y + print_offset };
+                        AString item_name = item_get_item_name(type);
+                        ui_printf(ui, ui_width, ui_height, pos,
+                                  "%02d/%02d - %s", item_counts[type], ccr.need_items[type], item_name.str);
+
+                        print_offset++;
+                    }
+                }
+            } break;
+
+            case MACHINE_COMPUTER:
+            {
+                Point pos = { machine_origin.x, machine_origin.y + 2 };
+                ui_printf(ui, ui_width, ui_height, pos, "%c%c%c%c%c%c%c%c%c%c", 0x92, 0x92, 0x92, 0x92, 0x92, 0x92, 0x92, 0x92, 0x92, 0x92);
+            }
+
+            default:
+            {
+
+            } break;
+        }
+    }
+
 }
