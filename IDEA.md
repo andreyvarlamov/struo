@@ -90,7 +90,7 @@ Speed
 * [x] Start splash screen
 * [x] Test frame items
 * [x] Map procgen - lobby prefab only on floor 1
-* [ ] Map procgen - prefab translation and BSP flip
+* [x] Player random location
 * [ ] Adjust base machine colors
 * [ ] ---> Iter 3 (shippable)
 * [ ] Auto explore
@@ -99,6 +99,7 @@ Speed
 
 
 NO WAY:
+* [ ] Map procgen - prefab translation and BSP flip
 * [ ] Extension to have a more interesting plot/twist
 * [ ] Map procgen - Cellular automata algorithm to make some rooms destroyed
 * [ ] Timing system

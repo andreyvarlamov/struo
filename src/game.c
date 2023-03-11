@@ -866,11 +866,21 @@ void game_init_level()
 
     // Randomize exit
     // --------------
+    Point old_exit = _gs.level_exit;
     game_spawn_exit();
 
     // Init player
     // -----------
-    Point player_pos = { 3, 32 };
+    Point player_pos;
+    if (_gs.current_level == 1)
+    {
+        player_pos = util_xy_to_p(3, 32);
+    }
+    else
+    {
+        player_pos = old_exit;
+    }
+
     game_spawn_player(player_pos);
 
     // Init enemies
