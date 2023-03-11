@@ -93,7 +93,8 @@ Speed
 * [x] Player random location
 * [x] Adjust base machine colors
 * [x] ---> Iter 3 (shippable)
-* [ ] Auto explore
+* [x] Auto explore
+* [ ] Go to exit
 * [ ] Test and tweak the whole game flow
 * [ ] TURN ON SPLASH SCREEN
 * [ ] ---> Iter 4 (polished)

@@ -33,6 +33,7 @@ typedef struct GameState
     bool collisions[MAP_COLS * MAP_ROWS];
     bool player_fov[MAP_COLS * MAP_ROWS];
     bool player_map_mem[MAP_COLS * MAP_ROWS];
+    bool autoexplore_mem[MAP_COLS * MAP_ROWS];
     int player_items[ITEM_MAX];
     Map map;
     MachineEntity base_machines[MACHINE_MAX];
@@ -836,8 +837,12 @@ void game_clean()
     memset(_gs.player_fov, 0, MAP_COLS * MAP_ROWS * sizeof(bool));
 
     // Reset player map memory
-    // ----------------
+    // -----------------------
     memset(_gs.player_map_mem, 0, MAP_COLS * MAP_ROWS * sizeof(bool));
+
+    // Reset player autoexplore memory
+    // -------------------------------
+    memset(_gs.autoexplore_mem, 0, MAP_COLS * MAP_ROWS * sizeof(bool));
 
     // Reset map
     // ---------
@@ -1031,16 +1036,21 @@ void game_init_base_level()
     }
 }
 
-bool game_check_entities_in_player_fov()
+bool game_check_entities_in_player_fov(bool initial_check)
 {
     for (size_t i = 0; i < entity_nc_get_count(); i++)
     {
         size_t offset_i = i + ENTITY_NC_OFFSET;
         if (_gs.ent[offset_i].alive)
         {
-            if (_gs.player_fov[util_p_to_i(_gs.ent[offset_i].pos, MAP_COLS)])
+            if (_gs.player_fov[util_p_to_i(_gs.ent[offset_i].pos, MAP_COLS)]
+             && !_gs.autoexplore_mem[util_p_to_i(_gs.ent[offset_i].pos, MAP_COLS)])
             {
-                return true;
+                _gs.autoexplore_mem[util_p_to_i(_gs.ent[offset_i].pos, MAP_COLS)] = true;
+                if (!initial_check)
+                {
+                    return true;
+                }
             }
         }
     }
@@ -1056,9 +1066,14 @@ bool game_check_entities_in_player_fov()
         }
     }
 
-    if (_gs.player_fov[util_p_to_i(_gs.level_exit, MAP_COLS)])
+    if (_gs.player_fov[util_p_to_i(_gs.level_exit, MAP_COLS)]
+     && !_gs.autoexplore_mem[util_p_to_i(_gs.level_exit, MAP_COLS)])
     {
-        return true;
+        _gs.autoexplore_mem[util_p_to_i(_gs.level_exit, MAP_COLS)] = true;
+        if (!initial_check)
+        {
+            return true;
+        }
     }
 
     return false;
@@ -1447,7 +1462,7 @@ void game_update(float dt, int *_new_key)
                     {
                         if (!_gs.level_explored)
                         {
-                            bool any_entities = game_check_entities_in_player_fov();
+                            bool any_entities = game_check_entities_in_player_fov(true);
                             if (!any_entities)
                             {
                                 Point p = game_next_unvisited_location();
@@ -1464,7 +1479,7 @@ void game_update(float dt, int *_new_key)
                                         entity_calc_player_fov(_gs.map.opaque, MAP_COLS, MAP_ROWS,
                                                                _gs.ent[1].pos, _gs.player_fov, _gs.player_map_mem);
 
-                                        if (game_check_entities_in_player_fov())
+                                        if (game_check_entities_in_player_fov(false))
                                         {
                                             break;
                                         }
