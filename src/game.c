@@ -23,7 +23,7 @@ typedef struct GameState
     bool collisions[MAP_COLS * MAP_ROWS];
     bool player_fov[MAP_COLS * MAP_ROWS];
     bool player_map_mem[MAP_COLS * MAP_ROWS];
-    int player_items[ITEM_NONE];
+    int player_items[ITEM_MAX];
     Map map;
     Glyph ui[UI_COLS * SCREEN_ROWS];
     char *log_lines[LOG_LINES]; // TODO: clean up if stop showing log at some point
@@ -167,35 +167,16 @@ void game_pickup_item(ItemType item_type, Stats *player_stats)
         } break;
 
         case ITEM_MECH_COMP:
-        {
-        } break;
-
         case ITEM_ELEC_COMP:
-        {
-        } break;
-
         case ITEM_JUNK:
-        {
-        } break;
-
         case ITEM_CPU_AUTOMAT_FRAME:
-        {
-        } break;
-
         case ITEM_MOBO_AUTOMAT_FRAME:
-        {
-        } break;
-
         case ITEM_GPU_AUTOMAT_FRAME:
-        {
-        } break;
-
         case ITEM_MEM_AUTOMAT_FRAME:
-        {
-        } break;
-
         case ITEM_ASSEMBLER_FRAME:
         {
+            _gs.player_items[item_type] += 1;
+            ui_draw_player_items(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.player_items);
         } break;
 
         default:
@@ -235,7 +216,7 @@ void game_update(float dt, int *_new_key)
 
             // Init enemies
             // ------------
-            for (size_t i = 0; i < 30; i++)
+            for (size_t i = 0; i < 0; i++)
             {
                 Point pos;
 
@@ -328,6 +309,72 @@ void game_update(float dt, int *_new_key)
                 _gs.ent[e.id] = e;
                 _gs.item_pickup[e.id] = ITEM_GUN_ROCKET;
 
+                // Story items
+                e = entity_nc_ctor(util_xy_to_p(7, 30),
+                                          (vec3) { 0.6f, 0.2f, 0.6f },
+                                          (vec3) { 0.3f, 0.1f, 0.1f },
+                                          0xF0,
+                                          true);
+                _gs.ent[e.id] = e;
+                _gs.item_pickup[e.id] = ITEM_MECH_COMP;
+
+                e = entity_nc_ctor(util_xy_to_p(7, 31),
+                                          (vec3) { 0.6f, 0.2f, 0.6f },
+                                          (vec3) { 0.3f, 0.1f, 0.1f },
+                                          0xF7,
+                                          true);
+                _gs.ent[e.id] = e;
+                _gs.item_pickup[e.id] = ITEM_ELEC_COMP;
+
+                e = entity_nc_ctor(util_xy_to_p(7, 32),
+                                          (vec3) { 0.6f, 0.2f, 0.6f },
+                                          (vec3) { 0.3f, 0.1f, 0.1f },
+                                          '&',
+                                          true);
+                _gs.ent[e.id] = e;
+                _gs.item_pickup[e.id] = ITEM_JUNK;
+
+                e = entity_nc_ctor(util_xy_to_p(7, 33),
+                                          (vec3) { 0.9f, 0.5f, 0.9f },
+                                          (vec3) { 1.0f, 0.3f, 0.3f },
+                                          0x15,
+                                          true);
+                _gs.ent[e.id] = e;
+                _gs.item_pickup[e.id] = ITEM_CPU_AUTOMAT_FRAME;
+
+                e = entity_nc_ctor(util_xy_to_p(7, 34),
+                            (vec3) { 0.9f, 0.5f, 0.9f },
+                            (vec3) { 1.0f, 0.3f, 1.0f },
+
+                            0x15,
+                            true);
+                _gs.ent[e.id] = e;
+                _gs.item_pickup[e.id] = ITEM_MOBO_AUTOMAT_FRAME;
+
+                e = entity_nc_ctor(util_xy_to_p(7, 35),
+                            (vec3) { 0.9f, 0.5f, 0.9f },
+                            (vec3) { 0.3f, 0.3f, 1.0f },
+                            0x15,
+                            true);
+                _gs.ent[e.id] = e;
+                _gs.item_pickup[e.id] = ITEM_GPU_AUTOMAT_FRAME;
+
+                e = entity_nc_ctor(util_xy_to_p(7, 36),
+                            (vec3) { 0.9f, 0.5f, 0.9f },
+                            (vec3) { 0.3f, 1.0f, 1.0f },
+                            0x15,
+                            true);
+                _gs.ent[e.id] = e;
+                _gs.item_pickup[e.id] = ITEM_MEM_AUTOMAT_FRAME;
+
+                e = entity_nc_ctor(util_xy_to_p(7, 37),
+                            (vec3) { 0.9f, 0.5f, 0.9f },
+                            (vec3) { 0.3f, 1.0f, 0.3f },
+                            0x15,
+                            true);
+                _gs.ent[e.id] = e;
+                _gs.item_pickup[e.id] = ITEM_ASSEMBLER_FRAME;
+
                 game_update_collisions();
             }
 
@@ -347,6 +394,8 @@ void game_update(float dt, int *_new_key)
                             "Hello, player %c! hjkl-move .-skip", 0x01);
 
             ui_draw_player_stats(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.stats[1]);
+
+            ui_draw_player_items(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.player_items);
 
             _gs.run_state = AWAITING_INPUT;
         } break;
@@ -699,6 +748,14 @@ void game_render(float dt)
         {
             glyph = 0xB4;
         }
+        else if (p.x == 0 && p.y == UI_ITEMS_ROW)
+        {
+            glyph = 0xC3;
+        }
+        else if (p.x == UI_COLS - 1 && p.y == UI_ITEMS_ROW)
+        {
+            glyph = 0xB4;
+        }
         else if (p.x == 0 || p.x == UI_COLS - 1)
         {
             glyph = 0xB3;
@@ -706,6 +763,7 @@ void game_render(float dt)
         else if (p.y == 0 
               || p.y == SCREEN_ROWS - LOG_LINES - 3
               || p.y == UI_STATS_ROW
+              || p.y == UI_ITEMS_ROW
               || p.y == SCREEN_ROWS - 1)
         {
             glyph = 0xC4;

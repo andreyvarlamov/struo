@@ -4,6 +4,7 @@ global_variable int log_cursor = 0;
 
 global_variable Point log_origin = { 1, SCREEN_ROWS - LOG_LINES - 1 };
 global_variable Point stats_origin = { 1, UI_STATS_ROW };
+global_variable Point items_origin = { 1, UI_ITEMS_ROW };
 global_variable Point pickup_origin = { 1, SCREEN_ROWS - LOG_LINES - 5 };
 
 void ui_print(Glyph *ui, int ui_width, int ui_height, Point pos,
@@ -129,5 +130,31 @@ void ui_clean_pickup_item(Glyph *ui, int ui_width, int ui_height)
         Point offset_p = { i, 0 };
         Point char_p = { pickup_origin.x + offset_p.x, pickup_origin.y + offset_p.y };
         ui[util_p_to_i(char_p, ui_width)] = 0;
+    }
+}
+
+void ui_draw_player_items(Glyph *ui, int ui_width, int ui_height, int *item_counts)
+{
+    int rows = ITEM_MAX - ITEM_MECH_COMP;
+    int row_i = 0;
+
+    for (int i = 0; i < rows; i++)
+    {
+        Point offset_p = util_i_to_p(i, ui_width);
+        Point char_p = { items_origin.x + offset_p.x, items_origin.y + offset_p.y };
+        ui[util_p_to_i(char_p, ui_width)] = 0;
+    }
+
+    ui_printf(ui, ui_width, ui_height, items_origin, " ITEMS ");
+
+    for (int i = ITEM_MECH_COMP; i < ITEM_MAX; i++)
+    {
+        if (item_counts[i] > 0 || i < ITEM_CPU_AUTOMAT_FRAME)
+        {
+            Point pos = { items_origin.x, items_origin.y + row_i + 2 };
+            AString item_name = item_get_item_name(i);
+            ui_printf(ui, ui_width, ui_height, pos, "%d - %s", item_counts[i], item_name.str);
+            row_i++;
+        }
     }
 }

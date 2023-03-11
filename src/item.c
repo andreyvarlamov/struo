@@ -89,12 +89,12 @@ AString item_get_item_name(ItemType item_type)
 
         case ITEM_MECH_COMP:
         {
-            strcpy(name.str, "Mechanical Comp");
+            strcpy(name.str, "Mechanical Components");
         } break;
 
         case ITEM_ELEC_COMP:
         {
-            strcpy(name.str, "Electrical Comp");
+            strcpy(name.str, "Electrical Components");
         } break;
 
         case ITEM_JUNK:
@@ -104,22 +104,22 @@ AString item_get_item_name(ItemType item_type)
 
         case ITEM_CPU_AUTOMAT_FRAME:
         {
-            strcpy(name.str, "CPU AutomatFrame");
+            strcpy(name.str, "CPU Automaton Frame");
         } break;
 
         case ITEM_MOBO_AUTOMAT_FRAME:
         {
-            strcpy(name.str, "MoBo AutomatFrame");
+            strcpy(name.str, "MoBo Automaton Frame");
         } break;
 
         case ITEM_GPU_AUTOMAT_FRAME:
         {
-            strcpy(name.str, "GPU AutomatFrame");
+            strcpy(name.str, "GPU Automaton Frame");
         } break;
 
         case ITEM_MEM_AUTOMAT_FRAME:
         {
-            strcpy(name.str, "MEM AutomatFrame");
+            strcpy(name.str, "MEM Automaton Frame");
         } break;
 
         case ITEM_ASSEMBLER_FRAME:

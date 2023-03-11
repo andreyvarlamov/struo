@@ -67,7 +67,7 @@ Speed
 * [x] Equipment in combat
 * [x] Equipment UI
 * [x] Implement actual item game logic
-* [ ] Story items
+* [x] Story items
 * [ ] Item RNG
 * [ ] Multiple levels
 * [ ] Progression

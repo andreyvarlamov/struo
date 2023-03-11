@@ -367,7 +367,7 @@ void map_gen_level(Map *map, int width, int height)
         else if (walls[i] == 9) // Screen
         {
             map->glyphs[i] = 0x08;
-            glm_vec3_copy((vec3) { 0.7f, 0.7f, 0.7f }, map->fg_col[i]);
+            glm_vec3_copy((vec3) { 0.5f, 0.5f, 0.5f }, map->fg_col[i]);
             glm_vec3_copy(lobby_bg, map->bg_col[i]);
             map->blocked[i] = true;
         }
