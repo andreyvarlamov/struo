@@ -95,6 +95,7 @@ Speed
 * [x] ---> Iter 3 (shippable)
 * [ ] Auto explore
 * [ ] Test and tweak the whole game flow
+* [ ] TURN ON SPLASH SCREEN
 * [ ] ---> Iter 4 (polished)
 
 

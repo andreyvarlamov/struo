@@ -1026,6 +1026,114 @@ void game_init_base_level()
     }
 }
 
+bool game_check_entities_in_player_fov()
+{
+    for (size_t i = 0; i < entity_nc_get_count(); i++)
+    {
+        size_t offset_i = i + ENTITY_NC_OFFSET;
+        if (_gs.ent[offset_i].alive)
+        {
+            if (_gs.player_fov[util_p_to_i(_gs.ent[offset_i].pos, MAP_COLS)])
+            {
+                return true;
+            }
+        }
+    }
+
+    for (size_t i = 2; i < entity_char_get_count(); i++)
+    {
+        if (_gs.ent[i].alive)
+        {
+            if (_gs.player_fov[util_p_to_i(_gs.ent[i].pos, MAP_COLS)])
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool _game_check_valid_unvisited_location(Point pos)
+{
+    return !_gs.player_map_mem[util_p_to_i(pos, MAP_COLS)]
+        && !_gs.map.blocked[util_p_to_i(pos, MAP_COLS)];
+}
+
+Point game_next_unvisited_location()
+{
+    int x0 = _gs.ent[1].pos.x - 1;
+    if (x0 < 0)
+    {
+        x0 = 0;
+    }
+    int x1 = _gs.ent[1].pos.x + 1;
+    if (x1 >= MAP_COLS)
+    {
+        x1 = MAP_COLS - 1;
+    }
+    int y0 = _gs.ent[1].pos.y - 1;
+    if (y0 < 0)
+    {
+        y0 = 0;
+    }
+    int y1 = _gs.ent[1].pos.y + 1;
+    if (y1 >= MAP_ROWS)
+    {
+        y1 = MAP_ROWS - 1;
+    }
+
+    while (x0 != 0 || x1 !=  MAP_COLS - 1 || y0 != 0 || y1 != MAP_ROWS - 1)
+    {
+        x0 -= 1;
+        if (x0 < 0)
+        {
+            x0 = 0;
+        }
+        x1 += 1;
+        if (x1 >= MAP_COLS)
+        {
+            x1 = MAP_COLS - 1;
+        }
+        y0 -= 1;
+        if (y0 < 0)
+        {
+            y0 = 0;
+        }
+        y1 += 1;
+        if (y1 >= MAP_ROWS)
+        {
+            y1 = MAP_ROWS - 1;
+        }
+
+        for (int dx = 0; dx <= x1 - x0; dx++)
+        {
+            if (_game_check_valid_unvisited_location(util_xy_to_p(x0 + dx, y0)))
+            {
+                return util_xy_to_p(x0 + dx, y0);
+            }
+            if (_game_check_valid_unvisited_location(util_xy_to_p(x0 + dx, y1)))
+            {
+                return util_xy_to_p(x0 + dx, y1);
+            }
+        }
+
+        for (int dy = 0; dy <= y1 - y0; dy++)
+        {
+            if (_game_check_valid_unvisited_location(util_xy_to_p(x0, y0 + dy)))
+            {
+                return util_xy_to_p(x0, y0 + dy);
+            }
+            if (_game_check_valid_unvisited_location(util_xy_to_p(x1, y0 + dy)))
+            {
+                return util_xy_to_p(x1, y0 + dy);
+            }
+        }
+    }
+
+    return util_xy_to_p(-1, -1);
+}
+
 global_variable float _splash_accum;
 
 void game_update(float dt, int *_new_key)
@@ -1312,6 +1420,16 @@ void game_update(float dt, int *_new_key)
                         _gs.run_state = INIT;
                     } break;
 
+                    case GLFW_KEY_O: // Auto-explore
+                    {
+                        bool any_entities = game_check_entities_in_player_fov();
+                        if (!any_entities)
+                        {
+                            Point p = game_next_unvisited_location();
+                            move_to = p;
+                        }
+                    } break;
+
                     case GLFW_KEY_EQUAL:
                     {
                         ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines,
@@ -1319,7 +1437,6 @@ void game_update(float dt, int *_new_key)
                         _gs.stats[1].health = _gs.stats[1].max_health;
                         ui_draw_player_stats(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.stats[1]);
                     } break;
-
 
                     case GLFW_KEY_COMMA:
                     {
