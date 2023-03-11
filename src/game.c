@@ -32,6 +32,7 @@ typedef struct GameState
     bool player_map_mem[MAP_COLS * MAP_ROWS];
     int player_items[ITEM_MAX];
     Map map;
+    MachineEntity base_machines[MACHINE_MAX];
     Glyph ui[UI_COLS * SCREEN_ROWS];
     char *log_lines[LOG_LINES];
     PlayerState player_state;
@@ -733,6 +734,159 @@ void game_clean()
     ui_reset_log_cursor();
 }
 
+void game_init_level()
+{
+    map_gen_level(&_gs.map, MAP_COLS, MAP_ROWS);
+
+    // Randomize exit
+    // --------------
+    game_spawn_exit();
+
+    // Init player
+    // -----------
+    Point player_pos = { 3, 30 };
+    game_spawn_player(player_pos);
+
+    // Init enemies
+    // ------------
+    // game_spawn_level_enemies();
+    // Point rat_pos = { 5, 30 };
+    // game_spawn_enemy(rat_pos, ENEMY_RAT);
+
+    // Point zombie_pos = { 5, 30 };
+    // game_spawn_enemy(zombie_pos, ENEMY_ZOMBIE);
+
+    // Point savage_pos = { 5, 30 };
+    // game_spawn_enemy(savage_pos, ENEMY_SAVAGE);
+
+    // Point robot_pos = { 5, 30 };
+    //game_spawn_enemy(robot_pos, ENEMY_ROBOT);
+
+    game_spawn_level_enemies();
+
+    // Init items
+    // ----------
+    game_spawn_level_items();
+}
+
+void game_init_base_level()
+{
+    map_gen_base(&_gs.map, MAP_COLS, MAP_ROWS);
+
+    // Place exit
+    // ----------
+    _gs.level_exit = util_xy_to_p(32, 45);
+
+    // Init player
+    // -----------
+    Point player_pos = { 32, 32 };
+    game_spawn_player(player_pos);
+
+    // Init machines
+    // -------------
+    Point cpu_pos = { 25, 32 };
+    Entity cpu_plan_e;
+    cpu_plan_e.pos = cpu_pos;
+    glm_vec3_copy((vec3) { 0.9f, 0.5f, 0.9f }, cpu_plan_e.bg);
+    glm_vec3_copy((vec3) { 1.0f, 0.3f, 0.3f }, cpu_plan_e.fg);
+    cpu_plan_e.glyph = '?';
+    cpu_plan_e.alive = true;
+    Entity cpu_built_e;
+    cpu_built_e.pos = cpu_pos;
+    glm_vec3_copy((vec3) { 0.9f, 0.5f, 0.9f }, cpu_built_e.bg);
+    glm_vec3_copy((vec3) { 1.0f, 0.3f, 0.3f }, cpu_built_e.fg);
+    cpu_built_e.glyph = 0x80;
+    cpu_built_e.alive = true;
+    _gs.base_machines[MACHINE_CPU_AUTOMATON].e_plan = cpu_plan_e;
+    _gs.base_machines[MACHINE_CPU_AUTOMATON].e_built = cpu_built_e;
+    _gs.base_machines[MACHINE_CPU_AUTOMATON].built = false;
+
+    Point mobo_pos = { 25, 25 };
+    Entity mobo_plan_e;
+    mobo_plan_e.pos = mobo_pos;
+    glm_vec3_copy((vec3) { 0.9f, 0.5f, 0.9f }, mobo_plan_e.bg);
+    glm_vec3_copy((vec3) { 1.0f, 0.3f, 1.0f }, mobo_plan_e.fg);
+    mobo_plan_e.glyph = '?';
+    mobo_plan_e.alive = true;
+    Entity mobo_built_e;
+    mobo_built_e.pos = mobo_pos;
+    glm_vec3_copy((vec3) { 0.9f, 0.5f, 0.9f }, mobo_built_e.bg);
+    glm_vec3_copy((vec3) { 1.0f, 0.3f, 1.0f }, mobo_built_e.fg);
+    mobo_built_e.glyph = 0xE6;
+    mobo_built_e.alive = true;
+    _gs.base_machines[MACHINE_MOBO_AUTOMATON].e_plan = mobo_plan_e;
+    _gs.base_machines[MACHINE_MOBO_AUTOMATON].e_built = mobo_built_e;
+    _gs.base_machines[MACHINE_MOBO_AUTOMATON].built = false;
+
+    Point assembler_pos = { 32, 25 };
+    Entity assembler_plan_e;
+    assembler_plan_e.pos = assembler_pos;
+    glm_vec3_copy((vec3) { 0.9f, 0.5f, 0.9f }, assembler_plan_e.bg);
+    glm_vec3_copy((vec3) { 0.3f, 1.0f, 0.3f }, assembler_plan_e.fg);
+    assembler_plan_e.glyph = '?';
+    assembler_plan_e.alive = true;
+    Entity assembler_built_e;
+    assembler_built_e.pos = assembler_pos;
+    glm_vec3_copy((vec3) { 0.9f, 0.5f, 0.9f }, assembler_built_e.bg);
+    glm_vec3_copy((vec3) { 0.3f, 1.0f, 0.3f }, assembler_built_e.fg);
+    assembler_built_e.glyph = 0x8E;
+    assembler_built_e.alive = true;
+    _gs.base_machines[MACHINE_ASSEMBLER].e_plan = assembler_plan_e;
+    _gs.base_machines[MACHINE_ASSEMBLER].e_built = assembler_built_e;
+    _gs.base_machines[MACHINE_ASSEMBLER].built = false;
+
+    Point gpu_pos = { 39, 25 };
+    Entity gpu_plan_e;
+    gpu_plan_e.pos = gpu_pos;
+    glm_vec3_copy((vec3) { 0.9f, 0.5f, 0.9f }, gpu_plan_e.bg);
+    glm_vec3_copy((vec3) { 0.3f, 0.3f, 1.0f }, gpu_plan_e.fg);
+    gpu_plan_e.glyph = '?';
+    gpu_plan_e.alive = true;
+    Entity gpu_built_e;
+    gpu_built_e.pos = gpu_pos;
+    glm_vec3_copy((vec3) { 0.9f, 0.5f, 0.9f }, gpu_built_e.bg);
+    glm_vec3_copy((vec3) { 0.3f, 0.3f, 1.0f }, gpu_built_e.fg);
+    gpu_built_e.glyph = 0xE2;
+    gpu_built_e.alive = true;
+    _gs.base_machines[MACHINE_GPU_AUTOMATON].e_plan = gpu_plan_e;
+    _gs.base_machines[MACHINE_GPU_AUTOMATON].e_built = gpu_built_e;
+    _gs.base_machines[MACHINE_GPU_AUTOMATON].built = false;
+
+    Point mem_pos = { 39, 32 };
+    Entity mem_plan_e;
+    mem_plan_e.pos = mem_pos;
+    glm_vec3_copy((vec3) { 0.9f, 0.5f, 0.9f }, mem_plan_e.bg);
+    glm_vec3_copy((vec3) { 0.3f, 1.0f, 1.0f }, mem_plan_e.fg);
+    mem_plan_e.glyph = '?';
+    mem_plan_e.alive = true;
+    Entity mem_built_e;
+    mem_built_e.pos = mem_pos;
+    glm_vec3_copy((vec3) { 0.9f, 0.5f, 0.9f }, mem_built_e.bg);
+    glm_vec3_copy((vec3) { 0.3f, 1.0f, 1.0f }, mem_built_e.fg);
+    mem_built_e.glyph = 0x14;
+    mem_built_e.alive = true;
+    _gs.base_machines[MACHINE_MEM_AUTOMATON].e_plan = mem_plan_e;
+    _gs.base_machines[MACHINE_MEM_AUTOMATON].e_built = mem_built_e;
+    _gs.base_machines[MACHINE_MEM_AUTOMATON].built = false;
+
+    Point computer_pos = { 32, 40 };
+    Entity computer_plan_e;
+    computer_plan_e.pos = computer_pos;
+    glm_vec3_copy((vec3) { 1.0f, 1.0f, 1.0f }, computer_plan_e.bg);
+    glm_vec3_copy((vec3) { 1.0f, 0.1f, 1.0f }, computer_plan_e.fg);
+    computer_plan_e.glyph = '?';
+    computer_plan_e.alive = true;
+    Entity computer_built_e;
+    computer_built_e.pos = computer_pos;
+    glm_vec3_copy((vec3) { 1.0f, 0.1f, 1.0f }, computer_built_e.bg);
+    glm_vec3_copy((vec3) { 0.1f, 1.0f, 0.1f }, computer_built_e.fg);
+    computer_built_e.glyph = 0xEA;
+    computer_built_e.alive = true;
+    _gs.base_machines[MACHINE_COMPUTER].e_plan = computer_plan_e;
+    _gs.base_machines[MACHINE_COMPUTER].e_built = computer_built_e;
+    _gs.base_machines[MACHINE_COMPUTER].built = false;
+}
+
 void game_update(float dt, int *_new_key)
 {
     switch (_gs.run_state)
@@ -743,37 +897,9 @@ void game_update(float dt, int *_new_key)
 
             game_clean();
 
-            map_gen_level(&_gs.map, MAP_COLS, MAP_ROWS);
+            // game_init_level();
 
-            // Randomize exit
-            // --------------
-            game_spawn_exit();
-
-            // Init player
-            // -----------
-            Point player_pos = { 3, 30 };
-            game_spawn_player(player_pos);
-
-            // Init enemies
-            // ------------
-            // game_spawn_level_enemies();
-            // Point rat_pos = { 5, 30 };
-            // game_spawn_enemy(rat_pos, ENEMY_RAT);
-
-            // Point zombie_pos = { 5, 30 };
-            // game_spawn_enemy(zombie_pos, ENEMY_ZOMBIE);
-
-            // Point savage_pos = { 5, 30 };
-            // game_spawn_enemy(savage_pos, ENEMY_SAVAGE);
-
-            // Point robot_pos = { 5, 30 };
-            //game_spawn_enemy(robot_pos, ENEMY_ROBOT);
-
-            game_spawn_level_enemies();
-
-            // Init items
-            // ----------
-            game_spawn_level_items();
+            game_init_base_level();
 
             // Init UI
             // -------
@@ -1088,7 +1214,7 @@ void game_render(float dt)
     }
 
     // Render non-char entities
-    // --------------
+    // ------------------------
     for (size_t i = 0; i < entity_nc_get_count(); i++)
     {
         size_t offset_i = i + ENTITY_NC_OFFSET;
@@ -1109,8 +1235,37 @@ void game_render(float dt)
         }
     }
 
+    // Render base level machines
+    // --------------------------
+    for (MachineType type = MACHINE_CPU_AUTOMATON; type < MACHINE_MAX; type++)
+    {
+        Entity entity_to_render;
+        if (_gs.base_machines[type].built)
+        {
+            entity_to_render = _gs.base_machines[type].e_built;
+        }
+        else
+        {
+            entity_to_render = _gs.base_machines[type].e_plan;
+        }
+
+        if (_gs.player_map_mem[util_p_to_i(entity_to_render.pos, MAP_ROWS)]
+            || _gs.player_fov[util_p_to_i(entity_to_render.pos, MAP_ROWS)])
+        {
+            render_render_tile(
+                (vec2) {
+                    entity_to_render.pos.x * SCREEN_TILE_WIDTH,
+                    entity_to_render.pos.y * SCREEN_TILE_WIDTH
+                },
+                entity_to_render.glyph,
+                entity_to_render.fg, entity_to_render.bg,
+                !_gs.player_fov[util_p_to_i(entity_to_render.pos, MAP_ROWS)] 
+                            && _gs.player_map_mem[util_p_to_i(entity_to_render.pos, MAP_ROWS)]);
+        }
+    }
+
     // Render char entities
-    // --------------
+    // --------------------
     for (size_t i = 2; i < entity_char_get_count(); i++)
     {
         if (_gs.ent[i].alive)
@@ -1131,19 +1286,19 @@ void game_render(float dt)
     }
 
     // Render player entity
-    // --------------
-        if (_gs.ent[1].alive)
-        {
-            render_render_tile(
-                (vec2) {
-                    _gs.ent[1].pos.x * SCREEN_TILE_WIDTH,
-                    _gs.ent[1].pos.y * SCREEN_TILE_WIDTH
-                },
-                _gs.ent[1].glyph,
-                _gs.ent[1].fg, _gs.ent[1].bg,
-                false
-            );
-        }
+    // --------------------
+    if (_gs.ent[1].alive)
+    {
+        render_render_tile(
+            (vec2) {
+                _gs.ent[1].pos.x * SCREEN_TILE_WIDTH,
+                _gs.ent[1].pos.y * SCREEN_TILE_WIDTH
+            },
+            _gs.ent[1].glyph,
+            _gs.ent[1].fg, _gs.ent[1].bg,
+            false
+        );
+    }
 
     // Render UI
     // ---------

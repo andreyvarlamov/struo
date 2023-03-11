@@ -74,8 +74,9 @@ Speed
 * [x] Level UI
 * [x] Progression
 * [x] ---> Iter 2 (single building branch w/ progression and items)
-* [ ] Base location; persistent
+* [x] Base location
 * [ ] Machine entities
+* [ ] Base location persistency
 * [ ] Tie up with items
 * [ ] Craft computer
 * [ ] Game start and game over (won)

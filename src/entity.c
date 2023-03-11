@@ -22,6 +22,28 @@ typedef enum EnemyType
     ENEMY_MAX
 } EnemyType;
 
+typedef enum MachineType
+{
+    MACHINE_NONE,
+
+    MACHINE_CPU_AUTOMATON,
+    MACHINE_MOBO_AUTOMATON,
+    MACHINE_GPU_AUTOMATON,
+    MACHINE_MEM_AUTOMATON,
+    MACHINE_ASSEMBLER,
+
+    MACHINE_COMPUTER,
+
+    MACHINE_MAX
+} MachineType;
+
+typedef struct MachineEntity
+{
+    Entity e_plan;
+    Entity e_built;
+    bool built;
+} MachineEntity;
+
 global_variable size_t next_char_id = 1;
 global_variable size_t next_nc_id = ENTITY_NC_OFFSET;
 

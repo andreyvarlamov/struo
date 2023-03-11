@@ -37,7 +37,7 @@ void _map_gen_room(
 
 void _map_gen_line(
     char *to_fill, int map_width, int map_height,
-    int start, int len, int pos, Direction dir)
+    int start, int len, int pos, Direction dir, int tile_type)
 {
     switch (dir)
     {
@@ -52,7 +52,7 @@ void _map_gen_line(
 
             for (int i = start; i < start + len; i++)
             {
-                to_fill[util_xy_to_i(pos, i, map_width)] = 1;
+                to_fill[util_xy_to_i(pos, i, map_width)] = tile_type;
             }
         } break;
 
@@ -67,7 +67,7 @@ void _map_gen_line(
 
             for (int i = start; i < start + len; i++)
             {
-                to_fill[util_xy_to_i(i, pos, map_width)] = 1;
+                to_fill[util_xy_to_i(i, pos, map_width)] = tile_type;
             }
         } break;
 
@@ -236,7 +236,7 @@ void map_gen_test(Map *map, int width, int height)
     char *walls = calloc(1, width * height * sizeof(Glyph));
     Rect map_rect = { 0, 0, width, height };
     _map_gen_room(walls, width, height, map_rect);
-    _map_gen_line(walls, width, height, 0, 10, 5, DIR_SOUTH);
+    _map_gen_line(walls, width, height, 0, 10, 5, DIR_SOUTH, 1);
 
     for (int i  = 0; i < width * height; i++)
     {
@@ -392,6 +392,51 @@ void map_gen_level(Map *map, int width, int height)
             glm_vec3_copy((vec3) { 1.0f, 0.0f, 0.1f }, map->fg_col[i]);
             glm_vec3_copy(lobby_bg, map->bg_col[i]);
             map->blocked[i] = true;
+        }
+    }
+
+    free(walls);
+}
+
+void map_gen_base(Map *map, int width, int height)
+{
+    for (int i = 0; i <  width * height; i++)
+    {
+        map->glyphs[i] = 0x04;
+        glm_vec3_copy((vec3) { 0.1f, 0.1f, 0.1f }, map->fg_col[i]);
+        glm_vec3_copy(GLM_VEC3_ZERO, map->bg_col[i]);
+    }
+
+    char *walls = calloc(1, width * height * sizeof(Glyph));
+
+    int room_width = 40;
+    int room_height = 30;
+    int room_x = MAP_COLS/2 - room_width/2;
+    int room_y = MAP_ROWS/2 - room_height/2;
+    Rect room = { room_x, room_y, room_width, room_height };
+    _map_gen_room(walls, MAP_COLS, MAP_ROWS, room);
+
+    _map_gen_line(walls, MAP_COLS, MAP_ROWS, 31, 3, 39, DIR_EAST, 2);
+    _map_gen_line(walls, MAP_COLS, MAP_ROWS, 31, 3, 40, DIR_EAST, 2);
+    _map_gen_line(walls, MAP_COLS, MAP_ROWS, 31, 3, 41, DIR_EAST, 2);
+
+    for (int i  = 0; i < width * height; i++)
+    {
+        if (walls[i] == 1)
+        {
+            map->glyphs[i] = '#';
+            glm_vec3_copy((vec3) { 0.5f, 0.5f, 0.5f }, map->fg_col[i]);
+            glm_vec3_copy((vec3) { 0.6f, 0.1f, 0.1f }, map->bg_col[i]);
+            map->blocked[i] = true;
+            map->opaque[i] = true;
+        }
+        else if (walls[i] == 2)
+        {
+            map->glyphs[i] = 0x0A;
+            glm_vec3_copy((vec3) { 0.5f, 0.5f, 0.5f }, map->fg_col[i]);
+            glm_vec3_copy((vec3) { 0.1f, 0.1f, 0.1f }, map->bg_col[i]);
+            map->blocked[i] = false;
+            map->opaque[i] = false;
         }
     }
 
