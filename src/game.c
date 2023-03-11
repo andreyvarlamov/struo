@@ -156,9 +156,12 @@ bool game_try_move_entity_p(size_t entity_id, Point *pos, Point new, int map_wid
                     _gs.player_state = PSTATE_NEXT_TO_BUILT_MACHINE;
 
                     ui_draw_machine(_gs.ui, UI_COLS, SCREEN_ROWS, type, _gs.player_items, true);
-                    if (item_can_craft(type, ITEM_NONE, _gs.player_items).yes)
+
+                    ItemType craftable = item_machine_to_item_it_crafts(type);
+                    CanCraftResult ccr = item_can_craft(MACHINE_NONE, craftable, _gs.player_items);
+                    if (ccr.yes || type == MACHINE_COMPUTER)
                     {
-                        ui_draw_interact_machine_plan(_gs.ui, UI_COLS, SCREEN_ROWS, type);
+                        ui_draw_interact_built_machine(_gs.ui, UI_COLS, SCREEN_ROWS, type);
                     }
                 }
                 else if(_gs.player_state == PSTATE_NEXT_TO_BUILT_MACHINE)
@@ -750,12 +753,12 @@ void game_spawn_player(Point pos)
     _gs.player_items[ITEM_MEM_AUTOMAT_FRAME] = 1;
     _gs.player_items[ITEM_ASSEMBLER_FRAME] = 1;
 
-    _gs.player_items[ITEM_CPU] = 1;
-    _gs.player_items[ITEM_MOBO] = 1;
-    _gs.player_items[ITEM_GPU] = 1;
-    _gs.player_items[ITEM_MEM] = 1;
+    // _gs.player_items[ITEM_CPU] = 1;
+    // _gs.player_items[ITEM_MOBO] = 1;
+    // _gs.player_items[ITEM_GPU] = 1;
+    // _gs.player_items[ITEM_MEM] = 1;
 
-    _gs.player_items[ITEM_COMPUTER] = 1;
+    // _gs.player_items[ITEM_COMPUTER] = 1;
 
     game_update_collisions();
     entity_calc_player_fov(
@@ -1151,16 +1154,50 @@ void game_update(float dt, int *_new_key)
                                             _gs.player_items[type] -= ccr.need_items[type];
                                         }
 
-                                        ui_draw_player_items(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.player_items);
-
                                         _gs.base_machines[type].built = true;
                                         _gs.ent[1].pos = util_xy_to_p(32, 32);
                                         game_update_collisions();
+
+                                        ui_draw_player_items(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.player_items);
+
+                                        ui_clean_machine(_gs.ui, UI_COLS, SCREEN_ROWS);
+                                        ui_clean_interact(_gs.ui, UI_COLS, SCREEN_ROWS);
 
                                         skip_turn = true;
                                     }
                                 }
 
+                            } break;
+
+                            case PSTATE_NEXT_TO_BUILT_MACHINE:
+                            {
+                                MachineType type = game_check_player_next_to_built_machine(_gs.ent[1].pos);
+
+                                if (type > MACHINE_NONE && type < MACHINE_MAX)
+                                {
+                                    ItemType craftable = item_machine_to_item_it_crafts(type);
+                                    CanCraftResult ccr = item_can_craft(MACHINE_NONE, craftable, _gs.player_items);
+                                    if (ccr.yes)
+                                    {
+                                        for (ItemType type = ITEM_MECH_COMP; type < ITEM_MAX; type++)
+                                        {
+                                            _gs.player_items[type] -= ccr.need_items[type];
+                                        }
+
+                                        _gs.player_items[craftable]++;
+
+                                        ui_draw_player_items(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.player_items);
+                                        ui_draw_machine(_gs.ui, UI_COLS, SCREEN_ROWS, type, _gs.player_items, true);
+
+                                        CanCraftResult ccr_after = item_can_craft(MACHINE_NONE, craftable, _gs.player_items);
+                                        if (!ccr_after.yes)
+                                        {
+                                            ui_clean_interact(_gs.ui, UI_COLS, SCREEN_ROWS);
+                                        }
+
+                                        skip_turn = true;
+                                    }
+                                }
                             } break;
 
                             default:

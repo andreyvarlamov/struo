@@ -168,6 +168,21 @@ void ui_draw_interact_machine_plan(Glyph *ui, int ui_width, int ui_height, Machi
     ui_printf(ui, ui_width, ui_height, interact_origin, "G - assemble %s.", name.str);
 }
 
+void ui_draw_interact_built_machine(Glyph *ui, int ui_width, int ui_height, MachineType machine_type)
+{
+    ui_clean_interact(ui, ui_width, ui_height);
+    if (machine_type != MACHINE_COMPUTER)
+    {
+        ItemType craftable = item_machine_to_item_it_crafts(machine_type);
+        AString name = item_get_item_name(craftable);
+        ui_printf(ui, ui_width, ui_height, interact_origin, "G - craft %s.", name.str);
+    }
+    else
+    {
+        ui_printf(ui, ui_width, ui_height, interact_origin, "G - execute the nuclear sequence.");
+    }
+}
+
 void ui_draw_player_items(Glyph *ui, int ui_width, int ui_height, int *item_counts)
 {
     int rows = ITEM_MAX - ITEM_MECH_COMP + 2;
@@ -285,8 +300,8 @@ void ui_draw_machine(Glyph *ui, int ui_width, int ui_height, MachineType machine
 
             case MACHINE_COMPUTER:
             {
-                Point pos = { machine_origin.x, machine_origin.y + 2 };
-                ui_printf(ui, ui_width, ui_height, pos, "%c%c%c%c%c%c%c%c%c%c", 0x92, 0x92, 0x92, 0x92, 0x92, 0x92, 0x92, 0x92, 0x92, 0x92);
+                Point pos = util_xy_to_p(machine_origin.x, machine_origin.y + 2);
+                ui_printf(ui, ui_width, ui_height, pos, "%c%c%c%c%c%c%c%c%c%cshes to ashes", 0x92, 0x92, 0x92, 0x92, 0x92, 0x92, 0x92, 0x92, 0x92, 0x92);
             }
 
             default:

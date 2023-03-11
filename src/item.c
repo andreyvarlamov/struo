@@ -364,7 +364,7 @@ CanCraftResult item_can_craft(MachineType for_machine_type, ItemType for_item_ty
                   && item_counts[ITEM_GPU]  >= 1
                   && item_counts[ITEM_MEM]  >= 1;
     }
-    else
+    else if (for_machine_type != MACHINE_NONE || for_item_type != ITEM_NONE)
     {
         int mech_req = item_get_comp_req(for_machine_type, for_item_type, ITEM_MECH_COMP);
         int elec_req = item_get_comp_req(for_machine_type, for_item_type, ITEM_ELEC_COMP);

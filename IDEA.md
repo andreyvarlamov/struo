@@ -80,9 +80,10 @@ Speed
 * [x] Build machines
 * [x] Machine tie up with items
 * [x] Built machines UI
-* [ ] Built machines interactions
-* [ ] Craft computer
-* [ ] Game start and game over (won)
+* [x] Built machines interactions and UI
+* [x] Craft computer
+* [ ] Game over (won)
+* [ ] Game start
 * [ ] Base location persistency
 * [ ] Generate building and scavenge
 * [ ] Do something about cheats
