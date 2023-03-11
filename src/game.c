@@ -2,6 +2,7 @@
 
 typedef enum RunState
 {
+    SPLASH_SCREEN,
     INIT,
     AWAITING_INPUT,
     COMP_TURN,
@@ -37,6 +38,7 @@ typedef struct GameState
     MachineEntity base_machines[MACHINE_MAX];
     Glyph ui[UI_COLS * SCREEN_ROWS];
     char *log_lines[LOG_LINES];
+    SplashScreenMap splash_screen;
     PlayerState player_state;
     RunState run_state;
     int current_level;
@@ -1019,6 +1021,11 @@ void game_update(float dt, int *_new_key)
 {
     switch (_gs.run_state)
     {
+        case SPLASH_SCREEN:
+        {
+            map_gen_splash_screen(&_gs.splash_screen, SCREEN_COLS, SCREEN_ROWS);
+        } break;
+
         case INIT:
         {
             game_clean();
@@ -1449,6 +1456,26 @@ void game_update(float dt, int *_new_key)
 
 void game_render(float dt)
 {
+    if (_gs.run_state == SPLASH_SCREEN)
+    {
+        for (size_t i = 0; i < SCREEN_COLS * SCREEN_ROWS; i++)
+        {
+                vec2 screen_offset ={
+                    (i % SCREEN_COLS) * SCREEN_TILE_WIDTH,
+                    (i / SCREEN_COLS) * SCREEN_TILE_WIDTH
+                };
+
+                render_render_tile(
+                    screen_offset,
+                    _gs.splash_screen.glyphs[i],
+                    _gs.splash_screen.fg_col[i], _gs.splash_screen.bg_col[i],
+                    false
+                );
+        }
+
+        return;
+    }
+
     // Render map
     // ----------
     for (size_t i = 0; i < MAP_COLS * MAP_ROWS; i++)

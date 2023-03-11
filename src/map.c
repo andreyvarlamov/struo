@@ -9,6 +9,13 @@ typedef struct Map
     bool opaque [MAP_COLS * MAP_ROWS];
 } Map;
 
+typedef struct SplashScrenMap
+{
+    vec3 fg_col [SCREEN_COLS * SCREEN_ROWS];
+    vec3 bg_col [SCREEN_COLS * SCREEN_ROWS];
+    Glyph glyphs[SCREEN_COLS * SCREEN_ROWS];
+} SplashScreenMap;
+
 // to_fill should come preallocated and initialized
 void _map_gen_room(
     char *to_fill, int map_width, int map_height,
@@ -441,4 +448,44 @@ void map_gen_base(Map *map, int width, int height)
     }
 
     free(walls);
+}
+
+void map_gen_splash_screen(SplashScreenMap *map, int width, int height)
+{
+    for (int i = 0; i <  width * height; i++)
+    {
+        map->glyphs[i] = ' ';
+        glm_vec3_copy(GLM_VEC3_ZERO, map->fg_col[i]);
+        glm_vec3_copy(GLM_VEC3_ZERO, map->bg_col[i]);
+    }
+
+    char *cells = calloc(1, width * height * sizeof(Glyph));
+
+    Rect map_room = { 0, 0, width, height };
+    _map_gen_from_prefab(cells, width, height, map_room, "res/prefabs/splash.txt");
+    // _map_gen_room(cells, width, height, map_room);
+
+    for (int i  = 0; i < width * height; i++)
+    {
+        if (cells[i] == 1) // light
+        {
+            map->glyphs[i] = 0xB0;
+            glm_vec3_copy(GLM_VEC3_ONE, map->fg_col[i]);
+            glm_vec3_copy(GLM_VEC3_ZERO, map->bg_col[i]);
+        }
+        else if (cells[i] == 2) // medium
+        {
+            map->glyphs[i] = 0xB1;
+            glm_vec3_copy(GLM_VEC3_ONE, map->fg_col[i]);
+            glm_vec3_copy(GLM_VEC3_ZERO, map->bg_col[i]);
+        }
+        else if (cells[i] == 3) // dark
+        {
+            map->glyphs[i] = 0xB2;
+            glm_vec3_copy(GLM_VEC3_ONE, map->fg_col[i]);
+            glm_vec3_copy(GLM_VEC3_ZERO, map->bg_col[i]);
+        }
+    }
+
+    free(cells);
 }

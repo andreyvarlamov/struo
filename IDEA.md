@@ -88,10 +88,11 @@ Speed
 * [x] Base location persistency & work with other levels
 * [x] Generate building and scavenge
 * [ ] Start splash screen
+* [ ] Test frame items
 * [ ] ---> Iter 3 (shippable)
+* [ ] Adjust base machine colors
 * [ ] Auto explore
 * [ ] Test and tweak the whole game flow
-* [ ] Adjust base machine colors
 * [ ] Map procgen - lobby prefab only on floor 1
 * [ ] Map procgen - prefab translation and BSP flip
 * [ ] Extension to have a more interesting plot/twist
