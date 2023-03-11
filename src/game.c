@@ -1017,13 +1017,35 @@ void game_init_base_level()
     }
 }
 
+global_variable float _splash_accum;
+
 void game_update(float dt, int *_new_key)
 {
     switch (_gs.run_state)
     {
         case SPLASH_SCREEN:
         {
-            map_gen_splash_screen(&_gs.splash_screen, SCREEN_COLS, SCREEN_ROWS);
+            if (_splash_accum == 0.0f)
+            {
+                map_gen_splash_screen(&_gs.splash_screen, SCREEN_COLS, SCREEN_ROWS);
+            }
+            _splash_accum += dt;
+
+            if (_splash_accum > 1.0f)
+            {
+                vec3 new_color;
+                float percent = (3.0f - _splash_accum) / 2.0f;
+                glm_vec3_scale(GLM_VEC3_ONE, percent, new_color);
+                for (size_t i = 0; i < SCREEN_COLS * SCREEN_ROWS; i++)
+                {
+                    glm_vec3_copy(new_color, _gs.splash_screen.fg_col[i]);
+                }
+            }
+
+            if (_splash_accum > 3.2f)
+            {
+                _gs.run_state = INIT;
+            }
         } break;
 
         case INIT:

@@ -87,7 +87,7 @@ Speed
 * [x] Game start
 * [x] Base location persistency & work with other levels
 * [x] Generate building and scavenge
-* [ ] Start splash screen
+* [x] Start splash screen
 * [ ] Test frame items
 * [ ] ---> Iter 3 (shippable)
 * [ ] Adjust base machine colors
