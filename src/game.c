@@ -48,13 +48,12 @@ bool game_try_move_entity_p(size_t entity_id, Point *pos, Point new, int map_wid
         if (entity_id == 1 && target.ent_nc >= ENTITY_NC_OFFSET)
         {
             _gs.player_over_item = true;
-            // TODO: Draw UI
-
+            ui_draw_pickup_item(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.item_pickup[target.ent_nc]);
         }
         else if(entity_id == 1 && _gs.player_over_item)
         {
             _gs.player_over_item = false;
-            // TODO: Clear UI
+            ui_clean_pickup_item(_gs.ui, UI_COLS, SCREEN_ROWS);
         }
 
     }
@@ -198,7 +197,7 @@ void game_update(float dt, int *_new_key)
             ui_draw_log(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines);
 
             ui_add_log_line(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.log_lines, 
-                            "Hello, player %c", 0x01);
+                            "Hello, player %c! hjkl-move .-skip", 0x01);
 
             ui_draw_player_stats(_gs.ui, UI_COLS, SCREEN_ROWS, _gs.stats[1]);
 
@@ -275,6 +274,8 @@ void game_update(float dt, int *_new_key)
                             // ItemType item_type = _gs.item_pickup[e_id];
 
                             printf("Item %zu picked up.\n", e_id);
+
+                            ui_clean_pickup_item(_gs.ui, UI_COLS, SCREEN_ROWS);
 
                             skip_turn = true;
                         }

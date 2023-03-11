@@ -1,8 +1,10 @@
 #include "main.h"
 
 global_variable int log_cursor = 0;
+
 global_variable Point log_origin = { 1, SCREEN_ROWS - LOG_LINES - 1 };
 global_variable Point stats_origin = { 1, UI_STATS_ROW };
+global_variable Point pickup_origin = { 1, SCREEN_ROWS - LOG_LINES - 5 };
 
 void ui_print(Glyph *ui, int ui_width, int ui_height, Point pos,
               const char *to_print)
@@ -103,4 +105,34 @@ void ui_draw_player_stats(Glyph *ui, int ui_width, int ui_height, Stats stats)
 
     Point speed_pos = { stats_origin.x, stats_origin.y + 7 };
     ui_printf(ui, ui_width, ui_height, speed_pos, "SPD:  %d", stats.speed);
+}
+
+void ui_draw_pickup_item(Glyph *ui, int ui_width, int ui_height, ItemType item_type)
+{
+    char item_name[16] = {0};
+
+    switch (item_type)
+    {
+        case ITEM_HEALTH:
+        {
+            strcpy(item_name, "Health Pack");
+        } break;
+
+        default:
+        {
+            return;
+        } break;
+    }
+
+    ui_printf(ui, ui_width, ui_height, pickup_origin, "G - pick up %s.", item_name);
+}
+
+void ui_clean_pickup_item(Glyph *ui, int ui_width, int ui_height)
+{
+    for (int i = 0; i < UI_COLS - 1; i++)
+    {
+        Point offset_p = { i, 0 };
+        Point char_p = { pickup_origin.x + offset_p.x, pickup_origin.y + offset_p.y };
+        ui[util_p_to_i(char_p, ui_width)] = 0;
+    }
 }

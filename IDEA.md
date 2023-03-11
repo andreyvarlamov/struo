@@ -63,8 +63,9 @@ Speed
 * [x] Player stat HUD
 * [x] Non-character entities
 * [x] Item pickups
-* [ ] Item pickup UI
+* [x] Item pickup UI
 * [ ] Equipment
+* [ ] Implement actual item game logic
 * [ ] Story items
 * [ ] Multiple levels
 * [ ] Progression
