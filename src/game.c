@@ -26,7 +26,7 @@ typedef struct GameState
     int player_items[ITEM_MAX];
     Map map;
     Glyph ui[UI_COLS * SCREEN_ROWS];
-    char *log_lines[LOG_LINES]; // TODO: clean up if stop showing log at some point
+    char *log_lines[LOG_LINES];
     bool player_over_item;
     RunState run_state;
 } GameState;
@@ -425,66 +425,133 @@ void game_spawn_level_items(int level)
     }
 }
 
+void game_spawn_enemies(int level)
+{
+    for (size_t i = 0; i < 0; i++)
+    {
+        Point pos;
+
+        bool found = false;
+        int attempts = 20;
+        do
+        {
+            pos.x = rand() % MAP_COLS;
+            pos.y = rand() % MAP_ROWS;
+            found = !_gs.collisions[util_p_to_i(pos, MAP_COLS)];
+            attempts--;
+        }
+        while (!found && attempts >= 0);
+
+        if (found)
+        {
+            Entity e = entity_char_ctor(pos,
+                                        (vec3) { 0.5f, 0.15f, 0.15f },
+                                        (vec3) { 1.0f, 0.5f, 0.05f },
+                                        'r',
+                                        true);
+            _gs.ent[e.id] = e;
+            _gs.stats[e.id] = combat_stats_ctor("Rat",
+                                                30,
+                                                9, 4,
+                                                7, 2,
+                                                1,
+                                                ARMOR_NONE, GUN_NONE);
+
+            game_update_collisions();
+        }
+    }
+}
+
+void game_spawn_player(Point pos)
+{
+    Entity p = entity_char_ctor(pos,
+                                GLM_VEC3_ZERO,
+                                (vec3) {1.0f, 1.0f, 0.5f },
+                                0x02, true);
+    _gs.ent[p.id] = p;
+    _gs.stats[p.id] = combat_stats_ctor("Player", 
+                                        100,
+                                        7, 7,
+                                        20, 2,
+                                        1,
+                                        ARMOR_NONE, GUN_NONE);
+
+    game_update_collisions();
+    entity_calc_player_fov(
+        _gs.map.opaque, MAP_COLS, MAP_COLS,
+        _gs.ent[1].pos, _gs.player_fov, _gs.player_map_mem
+    );
+}
+
+void game_clean()
+{
+    // Reset entities
+    // -------------
+    memset(_gs.ent, 0, ENTITY_NUM * sizeof(Entity));
+
+    // Reset entity stats
+    // ------------------
+    memset(_gs.stats + 2, 0, (ENTITY_NUM - 1) * sizeof(Entity));
+
+    // Reset item pickups
+    // ------------------
+    memset(_gs.item_pickup, 0, ENTITY_NUM * sizeof(ItemType));
+
+    // Reset entity pos references
+    // ---------------------------
+    memset(_gs.ent_by_pos, 0, MAP_COLS * MAP_ROWS * sizeof(EntIdBag));
+
+    // Reset collisions
+    // ----------------
+    memset(_gs.collisions, 0, MAP_COLS * MAP_ROWS * sizeof(bool));
+
+    // Reset player fov
+    // ----------------
+    memset(_gs.player_fov, 0, MAP_COLS * MAP_ROWS * sizeof(bool));
+
+    // Reset player map memory
+    // ----------------
+    memset(_gs.player_map_mem, 0, MAP_COLS * MAP_ROWS * sizeof(bool));
+
+    // Reset map
+    // ---------
+    memset(&_gs.map, 0, sizeof(Map));
+
+    // Reset UI
+    // --------
+    memset(_gs.ui, 0, UI_COLS * SCREEN_ROWS * sizeof(Glyph));
+
+    // Reset player_over_item
+    // ----------------------
+    _gs.player_over_item = false;
+
+    // Reset log lines
+    // ---------------
+    for (int i = 0; i < LOG_LINES; i++)
+    {
+        free(_gs.log_lines[i]);
+        _gs.log_lines[i] = NULL;
+    }
+}
+
 void game_update(float dt, int *_new_key)
 {
     switch (_gs.run_state)
     {
         case INIT:
         {
+            game_clean();
+
             map_gen_level(&_gs.map, MAP_COLS, MAP_ROWS);
 
             // Init player
             // -----------
-            {
-                Entity p = entity_char_ctor(util_xy_to_p(3, 30),
-                                    GLM_VEC3_ZERO, (vec3) {1.0f, 1.0f, 0.5f },
-                                    0x02, true);
-                _gs.ent[p.id] = p;
-                _gs.stats[p.id] = combat_stats_ctor("Player", 
-                                                    100,
-                                                    7, 7,
-                                                    20, 2,
-                                                    1,
-                                                    ARMOR_NONE, GUN_NONE);
-
-                game_update_collisions();
-                entity_calc_player_fov(
-                    _gs.map.opaque, MAP_COLS, MAP_COLS,
-                    _gs.ent[1].pos, _gs.player_fov, _gs.player_map_mem
-                );
-            }
+            Point player_pos = { 3, 30 };
+            game_spawn_player(player_pos);
 
             // Init enemies
             // ------------
-            for (size_t i = 0; i < 0; i++)
-            {
-                Point pos;
-
-                bool found = false;
-                int attempts = 20;
-                do
-                {
-                    pos.x = rand() % MAP_COLS;
-                    pos.y = rand() % MAP_ROWS;
-                    found = !_gs.collisions[util_p_to_i(pos, MAP_COLS)];
-                    attempts--;
-                }
-                while (!found && attempts >= 0);
-
-                if (found)
-                {
-                    Entity e = entity_char_ctor(pos, (vec3) { 0.5f, 0.15f, 0.15f }, (vec3) { 1.0f, 0.5f, 0.05f }, 'r', true);
-                    _gs.ent[e.id] = e;
-                    _gs.stats[e.id] = combat_stats_ctor("Rat",
-                                                        30,
-                                                        9, 4,
-                                                        7, 2,
-                                                        1,
-                                                        ARMOR_NONE, GUN_NONE);
-
-                    game_update_collisions();
-                }
-            }
+            game_spawn_enemies(0);
 
             // Init items
             // ----------

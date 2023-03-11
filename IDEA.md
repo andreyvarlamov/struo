@@ -68,8 +68,9 @@ Speed
 * [x] Equipment UI
 * [x] Implement actual item game logic
 * [x] Story items
-* [ ] Item RNG
+* [x] Item RNG
 * [ ] Multiple levels
+* [ ] Level exits
 * [ ] Progression
 * [ ] ---> Iter 2 (single building branch w/ progression and items)
 * [ ] Base location; persistent
