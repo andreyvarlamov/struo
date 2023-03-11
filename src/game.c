@@ -1056,6 +1056,11 @@ bool game_check_entities_in_player_fov()
         }
     }
 
+    if (_gs.player_fov[util_p_to_i(_gs.level_exit, MAP_COLS)])
+    {
+        return true;
+    }
+
     return false;
 }
 
@@ -1448,7 +1453,23 @@ void game_update(float dt, int *_new_key)
                                 Point p = game_next_unvisited_location();
                                 if (p.x != -1 && p.y != -1)
                                 {
-                                    move_to = p;
+                                    Point next; 
+                                    do
+                                    {
+                                        next = pathfinding_bfs(_gs.collisions, MAP_COLS, MAP_ROWS,
+                                                               _gs.ent[1].pos, p);
+
+                                        _gs.ent[1].pos = next;
+
+                                        entity_calc_player_fov(_gs.map.opaque, MAP_COLS, MAP_ROWS,
+                                                               _gs.ent[1].pos, _gs.player_fov, _gs.player_map_mem);
+
+                                        if (game_check_entities_in_player_fov())
+                                        {
+                                            break;
+                                        }
+                                    }
+                                    while(!util_p_cmp(next, p));
                                 }
                                 else
                                 {
