@@ -72,20 +72,27 @@ Speed
 * [x] Multiple levels
 * [x] Level exits
 * [x] Level UI
-* [ ] Progression
-* [ ] ---> Iter 2 (single building branch w/ progression and items)
+* [x] Progression
+* [x] ---> Iter 2 (single building branch w/ progression and items)
 * [ ] Base location; persistent
 * [ ] Machine entities
 * [ ] Tie up with items
-* [ ] Game flow: base location<->branches
-* [ ] Game over (won or lost)
-* [ ] Loose ends
+* [ ] Craft computer
+* [ ] Game start and game over (won)
+* [ ] Generate building and scavenge
+* [ ] Auto explore
+* [ ] Test and tweak the whole game flow
 * [ ] Do something about cheats
+* [ ] Start splash screen
 * [ ] ---> Iter 3 (shippable)
-* [ ] Map procgen - Cellular automata algorithm to make some rooms destroyed
-* [ ] Timing system
-* [ ] Better AI (follow to last known location)
-* [ ] More input refactoring, key repeat, diagonal movement (maybe?)
-* [ ] Map procgen - More prefabs
-* [ ] Mechanics Improvements
+* [ ] Map procgen - lobby prefab only on floor 1
+* [ ] Map procgen - prefab translation and BSP flip
 * [ ] Extension to have a more interesting plot/twist
+* [ ] Map procgen - Cellular automata algorithm to make some rooms destroyed
+
+NO WAY:
+
+* [ ] Timing system
+* [ ] More input refactoring, key repeat, diagonal movement (maybe?)
+* [ ] Better AI (follow to last known location)
+* [ ] Mechanics Improvements
