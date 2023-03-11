@@ -1452,17 +1452,16 @@ void game_update(float dt, int *_new_key)
                         }
                     } break;
 
-                    // TODO: Comment out
-                    case GLFW_KEY_BACKSPACE:
-                    {
-                        _gs.current_level++;
-                        if (_gs.current_level > 5)
-                        {
-                            _skip_gen_new_building_number = false;
-                            _gs.current_level = 0;
-                        }
-                        _gs.run_state = INIT;
-                    } break;
+                    // case GLFW_KEY_BACKSPACE:
+                    // {
+                    //     _gs.current_level++;
+                    //     if (_gs.current_level > 5)
+                    //     {
+                    //         _skip_gen_new_building_number = false;
+                    //         _gs.current_level = 0;
+                    //     }
+                    //     _gs.run_state = INIT;
+                    // } break;
 
                     case GLFW_KEY_O: // Auto-explore
                     {
