@@ -96,8 +96,8 @@ Speed
 * [x] Auto explore
 * [x] Go to exit
 * [x] TURN ON SPLASH SCREEN
-* [ ] Test and tweak the whole game flow
-* [ ] ---> Iter 4 (polished)
+* [x] Test and tweak the whole game flow
+* [x] ---> Iter 4 (polished)
 
 
 NO WAY:
